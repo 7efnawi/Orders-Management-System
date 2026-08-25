@@ -1,0 +1,317 @@
+// Order Control System — Phase 1 Schema
+// المصدر الملزم: docs/specs/2026-08-25-data-model-design.md
+// أي تعديل هنا لازم يتسجل في PROJECT_LOG.md في نفس اللحظة (Directives §0)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─────────────────────────── Enums ───────────────────────────
+
+enum Role {
+  OWNER
+  MANAGER
+  CASHIER
+}
+
+enum OrderStatus {
+  NEW
+  CONFIRMED
+  PREPARING
+  READY
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  CASH
+  VISA
+  ONLINE
+}
+
+enum DriverType {
+  OWN
+  APP
+  EXTERNAL
+  PICKUP
+}
+
+enum DiscountStatus {
+  NONE
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum CancelReason {
+  CUSTOMER_CHANGED_MIND
+  DELIVERY_ISSUE
+  QUALITY_ISSUE
+  NO_ANSWER
+  ITEM_UNAVAILABLE
+  OTHER
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  CANCEL
+  STATUS_CHANGE
+  DISCOUNT_REQUEST
+  DISCOUNT_APPROVE
+  DISCOUNT_REJECT
+}
+
+// ─────────────────────── Lookup Tables ───────────────────────
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String
+  role      Role     @default(CASHIER)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  createdExpenseTypes ExpenseType[] @relation("ExpenseTypeCreator")
+  cashShifts          Shift[]       @relation("ShiftCashier")
+  cashierOrders       Order[]       @relation("OrderCashier")
+  discountRequests    Order[]       @relation("DiscountRequester")
+  discountApprovals   Order[]       @relation("DiscountApprover")
+  auditLogs           AuditLog[]
+  expenses            Expense[]     @relation("ExpenseCreator")
+}
+
+model Brand {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  categories Category[]
+  orders     Order[]
+}
+
+model Platform {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  orders Order[]
+}
+
+model DeliveryZone {
+  id       String  @id @default(uuid())
+  name     String  @unique
+  fee      Decimal @db.Decimal(10, 2) // سعر واحد لكل منطقة (قرار 2026-08-25)
+  isActive Boolean @default(true)
+
+  orders Order[]
+}
+
+model DeliveryDriver {
+  id       String     @id @default(uuid())
+  name     String
+  type     DriverType
+  isActive Boolean    @default(true)
+
+  orders Order[]
+}
+
+model Category {
+  id        String  @id @default(uuid())
+  name      String
+  brandId   String
+  sortOrder Int     @default(0)
+  isActive  Boolean @default(true)
+
+  brand    Brand     @relation(fields: [brandId], references: [id], onDelete: Restrict)
+  products Product[]
+
+  @@index([brandId])
+}
+
+model Product {
+  id          String  @id @default(uuid())
+  name        String
+  description String?
+  price       Decimal @db.Decimal(10, 2)
+  categoryId  String
+  isActive    Boolean @default(true)
+
+  category   Category    @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  orderItems OrderItem[]
+
+  @@index([categoryId])
+}
+
+model ExpenseType {
+  id        String  @id @default(uuid())
+  name      String  @unique
+  isDefault Boolean @default(false)
+  createdBy String?
+
+  user     User?     @relation("ExpenseTypeCreator", fields: [createdBy], references: [id])
+  expenses Expense[]
+
+  @@index([createdBy])
+}
+
+// ────────────────────── Operational Tables ──────────────────────
+
+model Customer {
+  id          String    @id @default(uuid())
+  name        String
+  phone       String    @unique
+  address     String?
+  notes       String?
+  totalOrders Int       @default(0)
+  lastOrderAt DateTime?
+  createdAt   DateTime  @default(now())
+  isActive    Boolean   @default(true)
+
+  orders Order[]
+}
+
+model Order {
+  id          String  @id @default(uuid())
+  orderNumber String  @unique // auto-generated, non-editable
+  externalId  String? // رقم الأوردر من التطبيق
+
+  platformId String
+  brandId    String
+  customerId String
+  zoneId     String?
+  driverId   String?
+  cashierId  String
+
+  status OrderStatus @default(NEW)
+
+  // Timeline timestamps — تُكتب تلقائيًا عبر State Machine فقط
+  createdAt        DateTime  @default(now())
+  confirmedAt      DateTime?
+  preparingAt      DateTime?
+  readyAt          DateTime?
+  outForDeliveryAt DateTime?
+  deliveredAt      DateTime?
+  cancelledAt      DateTime?
+
+  // المالية — الحساب في طبقة الخدمة، لا في الـ UI
+  subtotal    Decimal @db.Decimal(10, 2)
+  discount    Decimal @default(0) @db.Decimal(10, 2)
+  deliveryFee Decimal @default(0) @db.Decimal(10, 2)
+
+  discountStatus      DiscountStatus @default(NONE)
+  discountReason      String?
+  discountRequestedBy String?
+  discountApprovedBy  String?
+
+  paymentMethod PaymentMethod
+  cancelReason  CancelReason?
+  notes         String?
+
+  platform  Platform        @relation(fields: [platformId], references: [id])
+  brand     Brand           @relation(fields: [brandId], references: [id])
+  customer  Customer        @relation(fields: [customerId], references: [id])
+  zone      DeliveryZone?   @relation(fields: [zoneId], references: [id])
+  driver    DeliveryDriver? @relation(fields: [driverId], references: [id])
+  cashier   User            @relation("OrderCashier", fields: [cashierId], references: [id])
+  requester User?           @relation("DiscountRequester", fields: [discountRequestedBy], references: [id])
+  approver  User?           @relation("DiscountApprover", fields: [discountApprovedBy], references: [id])
+
+  items OrderItem[]
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([customerId])
+  @@index([platformId, brandId])
+  @@index([cashierId])
+  @@index([driverId])
+}
+
+model OrderItem {
+  id         String  @id @default(uuid())
+  orderId    String
+  productId  String
+  quantity   Int
+  unitPrice  Decimal @db.Decimal(10, 2) // snapshot من سعر المنيو لحظة الطلب
+  totalPrice Decimal @db.Decimal(10, 2)
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+model Expense {
+  id            String   @id @default(uuid())
+  expenseTypeId String
+  description   String
+  quantity      Int      @default(1)
+  value         Decimal  @db.Decimal(10, 2)
+  date          DateTime @default(now()) @db.Date
+  createdBy     String
+  createdAt     DateTime @default(now())
+
+  expenseType ExpenseType @relation(fields: [expenseTypeId], references: [id])
+  user        User        @relation("ExpenseCreator", fields: [createdBy], references: [id])
+
+  @@index([date])
+  @@index([expenseTypeId])
+}
+
+model Shift {
+  id        String    @id @default(uuid())
+  cashierId String
+  openedAt  DateTime  @default(now())
+  closedAt  DateTime?
+
+  cashier User          @relation("ShiftCashier", fields: [cashierId], references: [id])
+  closing DailyClosing?
+
+  @@index([cashierId])
+}
+
+model DailyClosing {
+  id                String   @id @default(uuid())
+  shiftId           String   @unique // إغلاق واحد لكل شيفت
+  date              DateTime @db.Date
+  totalOrders       Int      @default(0)
+  cancelledOrders   Int      @default(0)
+  totalCash         Decimal  @default(0) @db.Decimal(10, 2)
+  totalVisa         Decimal  @default(0) @db.Decimal(10, 2)
+  totalOnline       Decimal  @default(0) @db.Decimal(10, 2)
+  totalDeliveryFees Decimal  @default(0) @db.Decimal(10, 2)
+  totalExpenses     Decimal  @default(0) @db.Decimal(10, 2)
+  netCash           Decimal  @default(0) @db.Decimal(10, 2)
+  notes             String?
+  closedAt          DateTime @default(now())
+
+  shift Shift @relation(fields: [shiftId], references: [id])
+
+  @@index([date])
+}
+
+model AuditLog {
+  id         String      @id @default(uuid())
+  userId     String
+  action     AuditAction
+  entityType String
+  entityId   String
+  oldValue   Json?
+  newValue   Json?
+  timestamp  DateTime    @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([entityType, entityId])
+  @@index([userId])
+  @@index([timestamp])
+}
