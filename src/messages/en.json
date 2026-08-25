@@ -1,0 +1,26 @@
+{
+  "app": {
+    "name": "Order Control System",
+    "title": "Order Control System — Sushi Restaurant"
+  },
+  "common": {
+    "loading": "Loading…",
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Deactivate",
+    "search": "Search",
+    "language": "العربية"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "orders": "Orders",
+    "menu": "Menu",
+    "delivery": "Delivery",
+    "expenses": "Expenses",
+    "closing": "Daily Closing",
+    "reports": "Reports",
+    "audit": "Audit Log",
+    "users": "Users"
+  }
+}
