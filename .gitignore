@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+
+# Next.js
+.next/
+out/
+
+# Builds
+dist/
+build/
+
+# Env
+.env
+.env.*
+
+# Agent skills (reinstallable via skills-lock.json)
+.agents/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
