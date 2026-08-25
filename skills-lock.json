@@ -217,6 +217,12 @@
       "skillPath": "skills/in-progress/writing-fragments/SKILL.md",
       "computedHash": "e97c829457cb9119aa6a636b989b3c3e273e55c9bcf27b6d281d8132e04ca972"
     },
+    "writing-plans": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "skillPath": "skills/writing-plans/SKILL.md",
+      "computedHash": "27c75044e444a4fc68798c3f799dc23eaff3a6bfabff32e6ad75bb20f881c094"
+    },
     "writing-shape": {
       "source": "mattpocock/skills",
       "sourceType": "github",
