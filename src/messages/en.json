@@ -1,9 +1,6 @@
 {
-  "app": {
-    "name": "Order Control System",
-    "title": "Order Control System — Sushi Restaurant"
-  },
   "common": {
+    "appName": "Order Control System",
     "loading": "Loading…",
     "save": "Save",
     "cancel": "Cancel",
@@ -11,6 +8,29 @@
     "delete": "Deactivate",
     "search": "Search",
     "language": "العربية"
+  },
+  "auth": {
+    "title": "Sign in",
+    "subtitle": "Order Control System — Sushi Restaurant",
+    "email": "Email",
+    "password": "Password",
+    "signIn": "Sign in",
+    "signingIn": "Signing in…",
+    "logout": "Log out",
+    "signingOut": "Logging out…",
+    "welcome": "Welcome, {name} 👋",
+    "errors": {
+      "INVALID_CREDENTIALS": "Wrong email or password",
+      "NOT_AUTHORIZED": "This account is not authorized to sign in",
+      "INACTIVE": "Account deactivated — contact your manager",
+      "VALIDATION_ERROR": "Please enter a valid email and password",
+      "NETWORK": "Connection failed — please try again"
+    }
+  },
+  "roles": {
+    "OWNER": "Owner",
+    "MANAGER": "Manager",
+    "CASHIER": "Cashier"
   },
   "nav": {
     "dashboard": "Dashboard",
