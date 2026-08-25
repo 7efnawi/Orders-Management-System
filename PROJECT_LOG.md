@@ -61,3 +61,10 @@
 **السبب:** أي مسار جديد في proxy لازم يستثني api/ وإلا الـ intl middleware يتدخل فيه.
 **الملفات المتأثرة:** src/proxy.ts
 **تأثير على أجزاء تانية:** كل API routes الجاية محمية تلقائيًا من تداخل الـ intl
+
+## [2026-08-25] جولة صيانة قبل المرحلة 3
+**النوع:** Bug Fix / Chore
+**اللي اتعمل:** (1) LanguageSwitcher جديد بيبدّل اللغة مع الحفاظ على نفس الصفحة — كان اللينك ثابت على /login فالتبديل من الداشبورد بيرجّعك عربي، وكمان usePathname من next/navigation كان بيضاعف الـ prefix (/ar/en) — الحل نسخة next-intl. (2) .gitignore كان بيستبعد .env.example بسبب نمط .env.* — اتضاف !.env.example والملف رجع. (3) README.md بمعلومات التشغيل والقواعد. (4) تنظيف سيرفرات يتيمة من الاختبارات.
+**السبب:** مراجعة شاملة قبل المرحلة 3؛ bug اللغة هيبان أول ما المستخدم يبدل من جوه النظام.
+**الملفات المتأثرة:** src/components/language-switcher.tsx, src/app/[locale]/(dashboard)/layout.tsx, src/app/[locale]/login/page.tsx, .gitignore, .env.example, README.md
+**تأثير على أجزاء تانية:** الشاشات الجاية تستخدم LanguageSwitcher في أي header

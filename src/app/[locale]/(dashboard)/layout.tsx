@@ -1,7 +1,7 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Badge } from "@/components/ui/badge";
 import { LogoutButton } from "@/components/auth/logout-button";
-import { Link } from "@/i18n/navigation";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import { requirePageUser } from "@/lib/auth";
 
 export default async function DashboardLayout({
@@ -28,14 +28,7 @@ export default async function DashboardLayout({
             <span className="truncate text-sm text-muted-foreground">{user.name}</span>
           </div>
           <div className="flex shrink-0 items-center gap-2">
-            <Link
-              className="text-sm text-muted-foreground underline"
-              href="/login"
-              locale={locale === "ar" ? "en" : "ar"}
-              hrefLang={locale === "ar" ? "en" : "ar"}
-            >
-              {tCommon("language")}
-            </Link>
+            <LanguageSwitcher locale={locale} />
             <LogoutButton />
           </div>
         </div>
