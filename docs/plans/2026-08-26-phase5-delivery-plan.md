@@ -145,8 +145,8 @@ src/
 - Create: `scripts/verify-phase5.ts`
 - Modify: `PROJECT_LOG.md`
 
-- [ ] **Step 1: Write and run verification script `scripts/verify-phase5.ts` simulating full zone, driver, and order dispatch lifecycle**
-- [ ] **Step 2: Run `npm run typecheck`, `npm run lint`, and `npm run build`**
-- [ ] **Step 3: Update `PROJECT_LOG.md` with Phase 5 Completion ADR entry**
-- [ ] **Step 4: Update `docs/plans/2026-08-26-phase5-delivery-plan.md` marking all steps complete**
-- [ ] **Step 5: Final Commit**
+- [x] **Step 1: Write and run verification script `scripts/verify-phase5.ts` simulating full zone, driver, and order dispatch lifecycle**
+- [x] **Step 2: Run `npm run typecheck`, `npm run lint`, and `npm run build`**
+- [x] **Step 3: Update `PROJECT_LOG.md` with Phase 5 Completion ADR entry**
+- [x] **Step 4: Update `docs/plans/2026-08-26-phase5-delivery-plan.md` marking all steps complete**
+- [x] **Step 5: Final Commit**
