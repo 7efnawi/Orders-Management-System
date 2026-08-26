@@ -12,6 +12,117 @@
 
 ---
 
+## [2026-08-26] المرحلة 7 — اكتمال وبوابة التحقق المؤتمتة لنظام إدارة الشيفتات والإغلاق اليومي ومطابقة الخزينة (Phase 7 Shift Closing Subsystem Verification & Completion)
+**النوع:** Verification / Milestone Completion
+**اللي اتعمل:**
+1. إنشاء سكريبت التحقق والمحاكاة الشامل لنظام الشيفتات والإغلاق اليومي `scripts/verify-phase7.ts`:
+   - التحقق من بيانات التبعيات (Cashier, Brand, Products, Platform, Delivery Zones, Driver, Expense Types) وتجهيز بيئة الاختبار المعزولة.
+   - التحقق من فتح الشيفت للكاشير وإنشاء سجل `Shift` وتوثيق سجل المراقبة `AuditLog` من نوع `CREATE`.
+   - التحقق من حارس منع تكرار الشيفت المفتوح لنفس الكاشير برمي خطأ `SHIFT_ALREADY_OPEN`.
+   - محاكاة تسجيل طلبات الشيفت:
+     - طلب كاش: 2 منتج (200 ج) + رسوم توصيل منطقة 30 ج = 230 ج.
+     - طلب فيزا: 1 منتج (100 ج) + رسوم توصيل منطقة 20 ج = 120 ج.
+     - طلب كاش ملغي: 1 منتج (50 ج) وتم إلغاؤه بنجاح.
+   - محاكاة تسجيل مصروفات الشيفت:
+     - مصروف 1: "مشروبات" بقيمة 40 ج.
+     - مصروف 2: "أدوات نظافة" بقيمة 30 ج.
+   - التحقق من المعاينة المالية الحية للشيفت `getShiftPreview`:
+     - إجمالي الطلبات = 3، الملغاة = 1، النشطة = 2.
+     - إجمالي الكاش = 230 ج (الطلب 1 فقط).
+     - إجمالي الفيزا = 120 ج (الطلب 2).
+     - إجمالي رسوم التوصيل = 50 ج (30 + 20).
+     - إجمالي المصروفات = 70 ج (40 + 30).
+     - صافي الكاش في الدرج = 160 ج (230 - 70).
+   - التحقق من إغلاق الشيفت مع الملاحظات ("تم مطابقة الخزنة ولا يوجد عجز")، تحديث `closedAt`، إنشاء سجل `DailyClosing` بمطابقة كاملة للقيم، وتوثيق سجل المراقبة `AuditLog` من نوع `CREATE`.
+   - التحقق من الاستعلامات التاريخية `listDailyClosings` و`getDailyClosingById`.
+   - تنظيف بيانات الاختبار المعزولة تلقائيًا.
+2. تشغيل واجتياز اختبار التحقق الشامل `npm run verify:phase7` بنسبة 100% (8/8 خطوات).
+3. اجتياز الفحص المكتبي الصارم لـ TypeScript (`npm run typecheck`) بدون أي أخطاء.
+4. اجتياز الفحص النحوي (`npm run lint`) بدون أي أخطاء أو تحذيرات.
+5. اجتياز بناء الإنتاج الكامل بنجاح فائق (`npm run build`) وتوليد 35 صفحة ومسار API ثابتة وديناميكية.
+**السبب:** التحقق الشامل والأوتوماتيكي من صحة تكامل محرك الحسابات المالية، وطبقة الخدمات الذرية، والـ AuditLog، وتخزين لقطات الإغلاق اليومي المجمدة (ENGINEERING_DIRECTIVES.md §0, §2, §3, SRS §FR-CLOSE, USE_CASES UC-10).
+**الملفات المتأثرة:** `scripts/verify-phase7.ts`, `package.json`, `docs/plans/2026-08-26-phase7-closing-plan.md`, `PROJECT_LOG.md`
+**تأثير على أجزاء تانية:** اكتمال المرحلة 7 بالكامل بنجاح 100%، وجاهزية النظام للانتقال إلى المرحلة التالية.
+
+## [2026-08-26] المرحلة 7 — واجهات إدارة الشيفتات والإغلاق اليومي ومطابقة الخزينة (Phase 7 Shift Management & Daily Closing UI)
+**النوع:** Feature / UI & Dashboard
+**اللي اتعمل:**
+1. إنشاء شاشات ومكونات إدارة الشيفتات والإغلاق اليومي في `src/components/closing/` وصفحة `/closing`:
+   - `OpenShiftCard`: بطاقة تفاعلية لحالة عدم وجود شيفت مفتوح للكاشير، تعرض اسم الكاشير وزر فتح شيفت جديد متصل بـ `POST /api/shifts/open` مع التغذية الراجعة التلقائية.
+   - `ActiveShiftSummary`: شاشة مطابقة الخزينة الحية والتفصيل المالي متضمنة:
+     - شريط حالة الشيفت النشط مع مؤقت حي لمدة الشيفت وزر التحديث والطباعة.
+     - بطاقة المطابقة الكبرى: "صافي الكاش للتسليم (الخزينة)" و"إجمالي الكاش في الدرج".
+     - بطاقات تفصيل الدفع: الفيزا، الأونلاين، رسوم التوصيل المحصلة، ومصروفات الشيفت.
+     - ملخص أعداد الطلبات (الإجمالي، الناجحة، الملغاة).
+     - تفصيل قوائم الطلبات والمصروفات المسجلة خلال الشيفت.
+     - حوار تأكيد إغلاق الشيفت النهائي مع حقل إدخال ملاحظات وتبرير الفروقات المالية متصل بـ `POST /api/shifts/[id]/close`.
+   - `ClosingHistoryTable`: جدول تاريخي للإغلاقات السابقة مع فلاتر سريعة للفترات، بحث باسم الكاشير، وبطاقات عرض مخصصة للهواتف مع دعم الترقيم والعد الإجمالي.
+   - `ClosingDetailsModal`: نافذة منبثقة تفاعلية تعرض تقرير لقطة معتمدة ومجمدة للإغلاق اليومي والمطابقة المالية مع إمكانية الطباعة.
+   - `ClosingClient`: مكوّن إدارة التبويبات المتجاوب للتبديل السلس بين الشيفت الحالي وسجل الإغلاقات.
+   - صفحة `src/app/[locale]/(dashboard)/closing/page.tsx`: Server Component محمي بـ `requirePageUser()` مع التحميل المسبق للشيفت المفتوح والمعاينة وسجلات الإغلاق السابقة.
+2. تحديث ملفات الترجمة `src/messages/ar.json` و`src/messages/en.json` بنطاق الترجمة الكامل `closing`.
+3. تحديث شريط التنقل في `src/app/[locale]/(dashboard)/layout.tsx` لإضافة رابط `/closing`.
+4. اجتياز الفحص المكتبي الصارم لـ TypeScript (`npm run typecheck`) والـ Linting (`npm run lint`) بنجاح تام 100%.
+**السبب:** تمكين الكاشير والمديرين من متابعة الخزينة النقدية اللحظية، فتح وإغلاق الشيفتات، وتسجيل الإغلاقات اليومية وأرشفتها بسهولة وموثوقية (ENGINEERING_DIRECTIVES.md §2, §3, SRS §FR-CLOSE, USE_CASES UC-10).
+**الملفات المتأثرة:** `src/components/closing/open-shift-card.tsx`, `src/components/closing/active-shift-summary.tsx`, `src/components/closing/closing-details-modal.tsx`, `src/components/closing/closing-history-table.tsx`, `src/components/closing/closing-client.tsx`, `src/app/[locale]/(dashboard)/closing/page.tsx`, `src/app/[locale]/(dashboard)/layout.tsx`, `src/messages/ar.json`, `src/messages/en.json`, `src/services/closing.ts`, `docs/plans/2026-08-26-phase7-closing-plan.md`, `PROJECT_LOG.md`
+**تأثير على أجزاء تانية:** اكتمال واجهات الشيفت والإغلاق اليومي، والانتقال لبوابة التحقق الآلية الشاملة للمرحلة 7 (Task 5: Automated Verification Gate).
+
+## [2026-08-26] المرحلة 7 — مسارات الـ API المحمية لإدارة الشيفتات والإغلاق اليومي (Phase 7 Shift & Daily Closing API Routes)
+**النوع:** Feature / API Routes
+**اللي اتعمل:**
+1. إنشاء وتأمين مسارات الـ API المحمية للشيفتات والإغلاق اليومي بالكامل تحت الحارس الصارم للأدوار `requireApiRole("OWNER", "MANAGER", "CASHIER")` والمعالجة الموحدة للأخطاء `wrapApi`:
+   - `GET /api/shifts/current`: استرجاع بيانات الشيفت المفتوح حاليًا للكاشير (`cashierId` من query أو التلقائي `user.id`).
+   - `POST /api/shifts/open`: فتح شيفت جديد للكاشير والتحقق من صحة المعرف عبر Zod والرد بـ 201 `{ shift }`.
+   - `GET /api/shifts/[id]/preview`: استرجاع المعاينة المالية الحية للشيفت المفتوح أو المغلق متضمنة ملخص المبيعات، المصروفات، وأرصدة الدفع وصافي النقدية `{ shift, ordersCount, expensesCount, summary, orders, expenses }`.
+   - `POST /api/shifts/[id]/close`: إغلاق الشيفت وتسجيل الإغلاق اليومي `DailyClosing` مع التحقق من الملاحظات الاختيارية عبر Zod `closeShiftSchema` والرد بـ 200 `{ shift, closing }`.
+   - `GET /api/closing`: استرجاع وتصفية سجلات الإغلاق اليومي التاريخية عبر معايير الفلترة (`startDate`, `endDate`, `date`, `cashierId`, `limit`, `offset`) والرد بـ `{ closings, totalCount }`.
+   - `GET /api/closing/[id]`: استرجاع تفاصيل سجل إغلاق محدد بالـ ID أو الرد بـ 404 في حال عدم وجوده.
+2. تحديث `src/lib/api.ts` لمعالجة أخطاء الشيفتات المسبوقة بـ `SHIFT_` وتحويلها لردود HTTP 400 دلالية منسقة.
+3. إنشاء سكريبت التحقق والاختبار للمخططات وقواعد التحقق `scripts/test-closing-api-schemas.ts`.
+4. اجتياز الفحص المكتبي الصارم لـ TypeScript (`npm run typecheck`) والـ Linting (`npm run lint`) بنجاح تام 100%.
+**السبب:** توفير واجهات RESTful API مؤمنة وقوية وذات معايير تدقيق وتدقيق موحد للأخطاء لدعم شاشات كاشير الورديات والإغلاق اليومي وتقارير المالك (ENGINEERING_DIRECTIVES.md §2, §3, SRS §FR-CLOSE, USE_CASES UC-10).
+**الملفات المتأثرة:** `src/app/api/shifts/current/route.ts`, `src/app/api/shifts/open/route.ts`, `src/app/api/shifts/[id]/preview/route.ts`, `src/app/api/shifts/[id]/close/route.ts`, `src/app/api/closing/route.ts`, `src/app/api/closing/[id]/route.ts`, `src/lib/api.ts`, `scripts/test-closing-api-schemas.ts`, `docs/plans/2026-08-26-phase7-closing-plan.md`, `PROJECT_LOG.md`
+**تأثير على أجزاء تانية:** جاهزية مسارات الـ API لربط وبناء واجهات المستخدم للشاشات وإغلاق الخزينة (Task 4: Daily Closing UI).
+
+## [2026-08-26] المرحلة 7 — طبقة خدمات إدارة الشيفتات والإغلاق اليومي الذرية (Phase 7 Shift & Daily Closing Service Layer)
+**النوع:** Feature / Service Layer
+**اللي اتعمل:**
+1. إنشاء طبقة خدمات إدارة الشيفتات والإغلاق اليومي `src/services/closing.ts`:
+   - `getCurrentOpenShift(cashierId)`: استرجاع الشيفت المفتوح حاليًا للكاشير المحدد إن وُجد.
+   - `openShift(cashierId)`: فتح شيفت جديد مع التحقق من عدم وجود شيفت مفتوح مسبقًا لمنع التكرار (`SHIFT_ALREADY_OPEN`) وتوثيق الـ `AuditLog` لنوع `Shift` كـ `CREATE` داخل transaction ذرّية.
+   - `getShiftPreview(shiftId)`: جلب المعاينة المالية الحية للشيفت (الطلبات والمصروفات المحصلة خلال فترة الشيفت) واستدعاء `calculateShiftSummary` لحساب الإحصائيات وصافي الكاش اللحظي.
+   - `closeShift(userId, shiftId, notes)`: التحقق من وجود الشيفت وعدم إغلاقه مسبقًا، حصر كافة المعاملات المالية، تحديث توقيت إغلاق الشيفت `closedAt`، وإنشاء سجل الإغلاق اليومي `DailyClosing` مع توثيق سجل المراقبة `AuditLog` لنوع `DailyClosing` كـ `CREATE` بالكامل داخل `prisma.$transaction`.
+   - `listDailyClosings(filters)`: استرجاع وسجل التصفية للإغلاقات السابقة بالتاريخ والكاشير مع العد الإجمالي والترتيب الزمني التنازلي.
+   - `getDailyClosingById(closingId)`: استرجاع تفاصيل إغلاق محدد مع بيانات الكاشير والشيفت.
+2. إنشاء سكريبت الاختبارات والتكامل الشامل `scripts/test-closing-service.ts`:
+   - تغطية التحقق من صحة المدخلات والحراس ضد المعاملات غير الصالحة.
+   - تغطية دورة حياة فتح الشيفت والتحقق من منع فتح أكثر من شيفت نشط لنفس الكاشير.
+   - محاكاة تسجيل طلبات نقدية، إلكترونية، وملغية ومصروفات تشغيلية أثناء الشيفت ومطابقة المعاينة الحية.
+   - محاكاة إغلاق الشيفت الذري وإنشاء سجل الإغلاق اليومي وتوثيق الـ `AuditLog`.
+   - اختبار الاستعلام والفلترة على سجل الإغلاقات التاريخية.
+**السبب:** توفير Single Source of Truth متكامل لإدارة الورديات والإغلاق اليومي ومطابقة الخزينة النقدية بما يضمن الحسابات الذرية والتوثيق الرقابي التام (ENGINEERING_DIRECTIVES.md §2, §3, SRS §FR-CLOSE, USE_CASES UC-10).
+**الملفات المتأثرة:** `src/services/closing.ts`, `scripts/test-closing-service.ts`, `docs/plans/2026-08-26-phase7-closing-plan.md`, `PROJECT_LOG.md`
+**تأثير على أجزاء تانية:** جاهزية طبقة الخدمات لبناء مسارات الـ API المحمية للشيفتات والإغلاق (Task 3: Shift & Closing API Routes).
+
+## [2026-08-26] المرحلة 7 — محرك الحسابات المالية المجردة للشيفتات والإغلاق اليومي (Phase 7 Pure Shift & Daily Closing Engine)
+**النوع:** Feature / Pure Logic Engine
+**اللي اتعمل:**
+1. إنشاء محرك الحسابات المالية المجرد `src/lib/closing.ts`:
+   - تعريف واجهات البيانات: `OrderSummaryItem`, `ExpenseSummaryItem`, `ShiftFinancialSummary`, `DecimalLike`.
+   - دالة `calculateShiftSummary(orders, expenses)` لحساب الإحصائيات والمجاميع المالية:
+     - أعداد الطلبات: `totalOrders` (كافة الطلبات)، `cancelledOrders` (الطلبات الملغية)، `activeOrders` (الطلبات النشطة والمسلمة).
+     - تفصيل المبيعات حسب طريقة الدفع للطلبات غير الملغية: `totalCash`, `totalVisa`, `totalOnline` بدقة واحتساب (المجموع الفرعي - الخصم + رسوم التوصيل).
+     - إجمالي رسوم التوصيل المحصلة: `totalDeliveryFees` للطلبات النشطة.
+     - إجمالي المصروفات التشغيلية: `totalExpenses` كحاصل ضرب (الكمية × القيمة).
+     - صافي الكاش في الدرج: `netCash = totalCash - totalExpenses` مع دعم القيم السالبة إن زادت المصاريف عن الكاش.
+   - دوال مساعدة لمعالجة دقة الفاصلة العائمة `roundCurrency` وتحويل كائنات `Prisma.Decimal` والمدخلات النصية `toNumber`.
+2. إنشاء سكريبت الاختبارات الوحدوية الشامل `scripts/test-closing-logic.ts` وتغطية 7 سيناريوهات حاسمة (المدخلات الفارغة، توزيع طرق الدفع، استبعاد الطلبات الملغية، تجميع المصروفات، حالات صافي الكاش، الدقة الرقمية مع Prisma Decimal).
+3. اجتياز كافة الاختبارات الوحدوية بنسبة 100% (7/7).
+4. اجتياز الفحص المكتبي الصارم لـ TypeScript (`npm run typecheck`) والـ Linting (`npm run lint`).
+**السبب:** بناء النواة الحسابية الخالصة والمجردة لإغلاق الشيفتات ومطابقة الخزينة وحظر أي منطق أعمال في واجهات المستخدم (ENGINEERING_DIRECTIVES.md §2, SRS §FR-CLOSE, USE_CASES UC-10).
+**الملفات المتأثرة:** `src/lib/closing.ts`, `scripts/test-closing-logic.ts`, `docs/plans/2026-08-26-phase7-closing-plan.md`, `PROJECT_LOG.md`
+**تأثير على أجزاء تانية:** جاهزية المحرك الحسابي لبناء طبقة خدمات الشيفتات والإغلاق اليومي الذرية مع الـ AuditLog (Task 2: Shift & Closing Service Layer).
+
 ## [2026-08-26] المرحلة 6 — اكتمال وبوابة التحقق المؤتمتة لنظام إدارة وتسجيل وتتبع المصروفات (Phase 6 Expense Subsystem Verification & Completion)
 **النوع:** Verification / Milestone Completion
 **اللي اتعمل:**

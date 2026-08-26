@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "verify:phase4": "tsx scripts/verify-phase4.ts"
+    "verify:phase4": "tsx scripts/verify-phase4.ts",
+    "verify:phase7": "tsx scripts/verify-phase7.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",
