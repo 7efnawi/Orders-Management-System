@@ -11,6 +11,27 @@
 | هيكل المنيو / Variants (عينات الرسيتات) | ⏳ منتظرين العميل | Product / OrderItem |
 | القائمة النهائية للمنصات | ⏳ العيل يظبطها من UI | Platform seed |
 
+## [2026-08-26] المرحلة 5 — طبقة خدمات التوصيل والمناطق والمناديب وسجل التدقيق الذري (Delivery Service Layer)
+**النوع:** Feature / Service
+**اللي اتعمل:** بناء طبقة خدمات التوصيل `src/services/delivery.ts` لإدارة مناطق التوصيل والمناديب وتعيين المناديب للطلبات:
+1. `listDeliveryZones(includeInactive)` و `createDeliveryZone` و `updateDeliveryZone`:
+   - استرجاع المناطق وفلترتها وترتيبها أبجديًا.
+   - التحقق من الاسم وسعر التوصيل (fee >= 0).
+   - توثيق عمليات الإنشاء والتعديل ذرّيًا في `AuditLog` داخل نفس المعاملة `prisma.$transaction`.
+2. `listDeliveryDrivers(includeInactive, type)` و `createDeliveryDriver` و `updateDeliveryDriver`:
+   - استرجاع المناديب وفلترتهم بالنوع (`OWN`, `APP`, `EXTERNAL`, `PICKUP`) وحالة التفعيل.
+   - التحقق من صحة الاسم ونوع المندوب.
+   - توثيق عمليات الإنشاء والتعديل ذرّيًا في `AuditLog` داخل نفس المعاملة `prisma.$transaction`.
+3. `assignDriverToOrder(userId, orderId, driverId)`:
+   - التحقق من وجود الطلب والمندوب وكون المندوب نشطًا `isActive: true`.
+   - تحديث `driverId` للطلب.
+   - إعادة احتساب رسوم التوصيل الصافية تلقائيًا: تصفير الرسوم لأسطول التطبيقات `APP` والاستلام `PICKUP`، أو استرجاع رسوم المنطقة لأسطول المطعم `OWN` أو الخارجي `EXTERNAL`.
+   - توثيق سجل التدقيق `AuditLog` لإسناد المندوب وتغير الرسوم مع تسجيل القيم السابقة والجديدة.
+4. إنشاء سكريبت اختبارات وفحص القواعد `scripts/test-delivery-service.ts` والتحقق من اجتياز كافة القواعد ونقاط الفحص.
+**السبب:** الالتزام بقواعد هندسة النظام (Directives §2 و§3 و§4) وحصر كافة عمليات كتابة وتعديل التوصيل وتعيين المناديب والرسوم وسجل التدقيق داخل طبقة الخدمات.
+**الملفات المتأثرة:** `src/services/delivery.ts`, `scripts/test-delivery-service.ts`, `PROJECT_LOG.md`
+**تأثير على أجزاء تانية:** تمهيد لبناء راوتات الـ API الخاصة بالتوصيل في `src/app/api/delivery/` و`src/app/api/orders/[id]/driver/` (Task 2).
+
 ## [2026-08-26] اكتمال المرحلة 4 — نظام إدارة الطلبات وسجل التدقيق المركزي (Phase 4 Verification & Gate Passed)
 **النوع:** Verification / Milestone
 **اللي اتعمل:**
