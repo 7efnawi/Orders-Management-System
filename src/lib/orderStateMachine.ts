@@ -1,15 +1,6 @@
-// Single Source of Truth لانتقالات حالات الأوردر (Directives §3 — المواصفة §6)
-import { CancelReason, DriverType } from "@prisma/client";
+import { OrderStatus, CancelReason, DriverType } from "@prisma/client";
 
-export enum OrderStatus {
-  NEW = "NEW",
-  CONFIRMED = "CONFIRMED",
-  PREPARING = "PREPARING",
-  READY = "READY",
-  OUT_FOR_DELIVERY = "OUT_FOR_DELIVERY",
-  DELIVERED = "DELIVERED",
-  CANCELLED = "CANCELLED",
-}
+export { OrderStatus };
 
 // الانتقالات المسموحة فقط — أي شيء آخر مرفوض.
 // CANCELLED مسموح من كل الحالات غير النهائية مع cancelReason إجباري.

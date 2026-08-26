@@ -73,7 +73,7 @@ src/
   - `getOrderTimestampKey(status: OrderStatus): keyof Order | null`
   - `calculateOrderTotals(input: { items: { price: number; quantity: number }[]; discount: number; deliveryFee: number; driverType?: DriverType }): { subtotal: number; netDeliveryFee: number; total: number }`
 
-- [ ] **Step 1: Write failing logic test script in `scripts/test-order-logic.ts`**
+- [x] **Step 1: Write failing logic test script in `scripts/test-order-logic.ts`**
 
 ```typescript
 import assert from "node:assert";
@@ -134,12 +134,12 @@ assert.strictEqual(calcApp.total, 230); // 250 - 20 + 0
 console.log("All State Machine Tests PASSED!");
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `npx tsx scripts/test-order-logic.ts`
 Expected: FAIL (missing `assertTransition` or `calculateOrderTotals`)
 
-- [ ] **Step 3: Implement `src/lib/orderStateMachine.ts`**
+- [x] **Step 3: Implement `src/lib/orderStateMachine.ts`**
 
 ```typescript
 import { CancelReason, DriverType } from "@prisma/client";
@@ -231,12 +231,12 @@ export function calculateOrderTotals(input: {
 }
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `npx tsx scripts/test-order-logic.ts`
 Expected: Output `All State Machine Tests PASSED!`
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/lib/orderStateMachine.ts scripts/test-order-logic.ts
@@ -873,18 +873,18 @@ git commit -m "feat(orders): live orders dashboard with state transition trigger
 - Create: `scripts/verify-phase4.ts`
 - Modify: `PROJECT_LOG.md`
 
-- [ ] **Step 1: Write and run full verification script `scripts/verify-phase4.ts`**
+- [x] **Step 1: Write and run full verification script `scripts/verify-phase4.ts`**
   - Verify creating order generates correct order number and audit log.
   - Verify status transition timestamps and transition validation.
   - Verify discount workflow (Cashier pending -> Manager approved).
   - Verify cancellation requires cancelReason.
   - Verify unit prices remain snapshots.
-- [ ] **Step 2: Run verification gate commands**
+- [x] **Step 2: Run verification gate commands**
   - Run: `npm run typecheck`
   - Run: `npm run lint`
   - Run: `npm run build`
-- [ ] **Step 3: Update `PROJECT_LOG.md` with Phase 4 ADR entry**
-- [ ] **Step 4: Final Commit**
+- [x] **Step 3: Update `PROJECT_LOG.md` with Phase 4 ADR entry**
+- [x] **Step 4: Final Commit**
 
 ```bash
 git add scripts/verify-phase4.ts PROJECT_LOG.md
