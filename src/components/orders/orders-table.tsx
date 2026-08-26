@@ -14,6 +14,7 @@ import {
   Plus,
   RefreshCw,
   Search,
+  Truck,
   X,
   XCircle,
 } from "lucide-react";
@@ -39,6 +40,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { CancelDialog } from "./cancel-dialog";
 import { DiscountDialog, type PendingDiscountOrder } from "./discount-dialog";
 import { OrderDetailsModal } from "./order-details-modal";
+import { AssignDriverDialog, type AssignDriverOrder } from "@/components/delivery/assign-driver-dialog";
 import { OrderStatus, DiscountStatus, PaymentMethod, Role, CancelReason } from "@prisma/client";
 import { cn } from "@/lib/utils";
 
@@ -171,6 +173,10 @@ export function OrdersTable({
   const [selectedOrderForDiscount, setSelectedOrderForDiscount] = useState<PendingDiscountOrder | null>(null);
   const [discountModalOpen, setDiscountModalOpen] = useState(false);
 
+  const [selectedOrderForDriver, setSelectedOrderForDriver] = useState<AssignDriverOrder | null>(null);
+  const [driverModalOpen, setDriverModalOpen] = useState(false);
+  const [advanceOnDriverAssign, setAdvanceOnDriverAssign] = useState(false);
+
   // Debounce search
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -298,6 +304,19 @@ export function OrdersTable({
   const handleAdvanceStatus = async (order: OrderRowItem) => {
     const nextConfig = NEXT_STATUS_MAP[order.status];
     if (!nextConfig) return;
+
+    // If order is READY and next status is OUT_FOR_DELIVERY, check if driver is assigned
+    if (nextConfig.nextStatus === OrderStatus.OUT_FOR_DELIVERY && !order.driver) {
+      setSelectedOrderForDriver({
+        id: order.id,
+        orderNumber: order.orderNumber,
+        status: order.status,
+        driver: order.driver,
+      });
+      setAdvanceOnDriverAssign(true);
+      setDriverModalOpen(true);
+      return;
+    }
 
     setAdvancingOrderId(order.id);
     try {
@@ -631,6 +650,13 @@ export function OrdersTable({
                             {t(`statuses.${order.status}`)}
                           </Badge>
 
+                          {order.driver && (
+                            <span className="flex items-center gap-1 text-[10px] text-muted-foreground font-medium">
+                              <Truck className="size-2.5 text-primary shrink-0" />
+                              <span className="truncate max-w-[100px]">{order.driver.name}</span>
+                            </span>
+                          )}
+
                           {order.discountStatus === DiscountStatus.PENDING && (
                             <button
                               type="button"
@@ -723,6 +749,35 @@ export function OrdersTable({
                               <Percent className="size-3.5" />
                             </Button>
                           )}
+
+                          {/* Driver Assignment Button (if non-terminal) */}
+                          {order.status !== OrderStatus.DELIVERED &&
+                            order.status !== OrderStatus.CANCELLED && (
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => {
+                                  setSelectedOrderForDriver({
+                                    id: order.id,
+                                    orderNumber: order.orderNumber,
+                                    status: order.status,
+                                    driver: order.driver,
+                                  });
+                                  setAdvanceOnDriverAssign(false);
+                                  setDriverModalOpen(true);
+                                }}
+                                className={cn(
+                                  "h-7 size-7 p-0",
+                                  order.driver
+                                    ? "text-primary hover:text-primary hover:bg-primary/10"
+                                    : "text-muted-foreground hover:text-foreground"
+                                )}
+                                title={order.driver ? t("actions.reassignDriver") : t("actions.assignDriver")}
+                              >
+                                <Truck className="size-3.5" />
+                              </Button>
+                            )}
 
                           {/* Details Button */}
                           <Button
@@ -880,7 +935,7 @@ export function OrdersTable({
 
                     {/* Actions Footer */}
                     <div className="flex items-center justify-between gap-2 border-t pt-2.5">
-                      <div className="flex gap-1.5">
+                      <div className="flex flex-wrap gap-1.5">
                         <Button
                           type="button"
                           size="sm"
@@ -894,6 +949,37 @@ export function OrdersTable({
                           <Eye className="me-1 size-3.5" />
                           {t("actions.details")}
                         </Button>
+
+                        {order.status !== OrderStatus.DELIVERED &&
+                          order.status !== OrderStatus.CANCELLED && (
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                setSelectedOrderForDriver({
+                                  id: order.id,
+                                  orderNumber: order.orderNumber,
+                                  status: order.status,
+                                  driver: order.driver,
+                                });
+                                setAdvanceOnDriverAssign(false);
+                                setDriverModalOpen(true);
+                              }}
+                              className={cn(
+                                "h-8 text-xs px-2",
+                                order.driver
+                                  ? "text-primary border-primary/30"
+                                  : "text-muted-foreground"
+                              )}
+                              title={order.driver ? t("actions.reassignDriver") : t("actions.assignDriver")}
+                            >
+                              <Truck className="me-1 size-3.5" />
+                              <span className="max-w-[70px] truncate">
+                                {order.driver ? order.driver.name : t("actions.assignDriver")}
+                              </span>
+                            </Button>
+                          )}
 
                         {order.status !== OrderStatus.DELIVERED &&
                           order.status !== OrderStatus.CANCELLED && (
@@ -957,6 +1043,15 @@ export function OrdersTable({
         order={selectedOrderForDiscount}
         open={discountModalOpen}
         onOpenChange={setDiscountModalOpen}
+        onSuccess={handleRefresh}
+      />
+
+      {/* Assign Driver Dialog */}
+      <AssignDriverDialog
+        order={selectedOrderForDriver}
+        open={driverModalOpen}
+        onOpenChange={setDriverModalOpen}
+        defaultDispatch={advanceOnDriverAssign}
         onSuccess={handleRefresh}
       />
 

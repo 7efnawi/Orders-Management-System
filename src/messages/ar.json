@@ -203,7 +203,9 @@
       "deliver": "تم التسليم",
       "cancel": "إلغاء الطلب",
       "details": "التفاصيل",
-      "decideDiscount": "اعتماد الخصم"
+      "decideDiscount": "اعتماد الخصم",
+      "assignDriver": "تعيين مندوب",
+      "reassignDriver": "تغيير المندوب"
     },
     "cancelDialog": {
       "title": "إلغاء الطلب",
@@ -333,6 +335,23 @@
       "cancel": "إلغاء",
       "edit": "تعديل",
       "search": "بحث"
+    },
+    "assignDialog": {
+      "title": "تعيين مندوب التوصيل",
+      "description": "اختر المندوب المسؤول عن توصيل الطلب رقم #{orderNumber}.",
+      "selectDriver": "اختر المندوب",
+      "searchPlaceholder": "بحث في المناديب بالاسم...",
+      "noDrivers": "لا يوجد مناديب نشطين",
+      "noDriversDesc": "يرجى إضافة أو تفعيل مناديب من قسم إدارة التوصيل أولاً.",
+      "currentDriver": "المندوب الحالي",
+      "unassigned": "غير محدد",
+      "dispatchCheckbox": "خروج فوري للتوصيل (تحديث الحالة إلى في الطريق)",
+      "confirm": "تعيين المندوب",
+      "confirmAndDispatch": "تعيين وخروج للتوصيل",
+      "assigning": "جارٍ تعيين المندوب...",
+      "success": "تم تعيين المندوب للطلب رقم #{orderNumber} بنجاح",
+      "successAndDispatched": "تم تعيين المندوب والطلب رقم #{orderNumber} في الطريق الآن",
+      "error": "تعذر تعيين المندوب"
     },
     "error": "حدث خطأ — برجاء المحاولة مرة أخرى"
   }

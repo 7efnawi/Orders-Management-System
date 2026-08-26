@@ -132,10 +132,10 @@ src/
 - Consumes: `/api/orders/[id]/driver`, `/api/delivery/drivers`.
 - Produces: Seamless modal workflow when advancing order to `OUT_FOR_DELIVERY` prompting to pick a driver if unassigned.
 
-- [ ] **Step 1: Build `assign-driver-dialog.tsx`**
-- [ ] **Step 2: Integrate driver assignment button & `OUT_FOR_DELIVERY` prompt in `orders-table.tsx`**
-- [ ] **Step 3: Run `npm run typecheck` & `npm run lint`**
-- [ ] **Step 4: Update `PROJECT_LOG.md` and commit**
+- [x] **Step 1: Build `assign-driver-dialog.tsx`**
+- [x] **Step 2: Integrate driver assignment button & `OUT_FOR_DELIVERY` prompt in `orders-table.tsx`**
+- [x] **Step 3: Run `npm run typecheck` & `npm run lint`**
+- [x] **Step 4: Update `PROJECT_LOG.md` and commit**
 
 ---
 

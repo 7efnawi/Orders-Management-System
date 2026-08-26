@@ -1,12 +1,9 @@
 import assert from "node:assert";
-import { DriverType, Role } from "@prisma/client";
-import { prisma } from "../src/lib/prisma";
+import { DriverType } from "@prisma/client";
 import { calculateOrderTotals } from "../src/lib/orderStateMachine";
 import {
-  listDeliveryZones,
   createDeliveryZone,
   updateDeliveryZone,
-  listDeliveryDrivers,
   createDeliveryDriver,
   updateDeliveryDriver,
   assignDriverToOrder,

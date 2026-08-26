@@ -30,6 +30,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { AssignDriverDialog } from "@/components/delivery/assign-driver-dialog";
 import { OrderStatus, DiscountStatus, PaymentMethod, CancelReason } from "@prisma/client";
 import { cn } from "@/lib/utils";
 
@@ -141,6 +142,22 @@ export function OrderDetailsModal({
   const [order, setOrder] = useState<OrderDetailData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [assignDriverModalOpen, setAssignDriverModalOpen] = useState(false);
+
+  const fetchOrder = async (id: string) => {
+    try {
+      const res = await fetch(`/api/orders/${id}`);
+      if (!res.ok) {
+        throw new Error(t("detailsModal.error"));
+      }
+      const data = await res.json();
+      setOrder(data);
+      setError(null);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : t("detailsModal.error");
+      setError(msg);
+    }
+  };
 
   useEffect(() => {
     if (!open || !orderId) return;
@@ -272,16 +289,30 @@ export function OrderDetailsModal({
 
               {/* Delivery & Driver */}
               <div className="rounded-xl border bg-muted/20 p-3.5 space-y-1.5">
-                <div className="flex items-center gap-1.5 font-semibold text-foreground">
-                  <Truck className="size-4 text-primary" />
-                  <span>{t("detailsModal.driver")} / {t("detailsModal.deliveryZone")}</span>
+                <div className="flex items-center justify-between font-semibold text-foreground">
+                  <div className="flex items-center gap-1.5">
+                    <Truck className="size-4 text-primary" />
+                    <span>{t("detailsModal.driver")} / {t("detailsModal.deliveryZone")}</span>
+                  </div>
+                  {order.status !== OrderStatus.DELIVERED &&
+                    order.status !== OrderStatus.CANCELLED && (
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setAssignDriverModalOpen(true)}
+                        className="h-6 text-[11px] px-2 text-primary hover:text-primary hover:bg-primary/10"
+                      >
+                        {order.driver ? t("actions.reassignDriver") : t("actions.assignDriver")}
+                      </Button>
+                    )}
                 </div>
                 <div className="text-xs space-y-1">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">{t("detailsModal.deliveryZone")}:</span>
                     <span className="font-medium">{order.zone?.name || t("noZone")}</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between items-center">
                     <span className="text-muted-foreground">{t("detailsModal.driver")}:</span>
                     <span className="font-medium">
                       {order.driver ? (
@@ -501,6 +532,25 @@ export function OrderDetailsModal({
           </div>
         )}
       </DialogContent>
+
+      {/* Driver Assignment Dialog */}
+      <AssignDriverDialog
+        order={
+          order
+            ? {
+                id: order.id,
+                orderNumber: order.orderNumber,
+                status: order.status,
+                driver: order.driver,
+              }
+            : null
+        }
+        open={assignDriverModalOpen}
+        onOpenChange={setAssignDriverModalOpen}
+        onSuccess={() => {
+          if (orderId) fetchOrder(orderId);
+        }}
+      />
     </Dialog>
   );
 }

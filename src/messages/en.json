@@ -203,7 +203,9 @@
       "deliver": "Delivered",
       "cancel": "Cancel Order",
       "details": "Details",
-      "decideDiscount": "Decide Discount"
+      "decideDiscount": "Decide Discount",
+      "assignDriver": "Assign Driver",
+      "reassignDriver": "Change Driver"
     },
     "cancelDialog": {
       "title": "Cancel Order",
@@ -333,6 +335,23 @@
       "cancel": "Cancel",
       "edit": "Edit",
       "search": "Search"
+    },
+    "assignDialog": {
+      "title": "Assign Delivery Driver",
+      "description": "Select a driver to handle order #{orderNumber}.",
+      "selectDriver": "Select Driver",
+      "searchPlaceholder": "Search drivers by name...",
+      "noDrivers": "No active drivers found",
+      "noDriversDesc": "Please add or activate drivers in the Delivery management section first.",
+      "currentDriver": "Current Driver",
+      "unassigned": "Unassigned",
+      "dispatchCheckbox": "Immediately dispatch order (Advance to Out for Delivery)",
+      "confirm": "Assign Driver",
+      "confirmAndDispatch": "Assign & Dispatch",
+      "assigning": "Assigning driver...",
+      "success": "Driver assigned to order #{orderNumber} successfully",
+      "successAndDispatched": "Driver assigned and order #{orderNumber} is now Out for Delivery",
+      "error": "Failed to assign driver"
     },
     "error": "An error occurred — please try again"
   }
