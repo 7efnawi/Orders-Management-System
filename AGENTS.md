@@ -1,0 +1,52 @@
+# AGENTS.md — Order Control System
+
+نظام ويب لإدارة طلبات dark kitchen سوشي (4 براندات × 5 منصات). Next.js 16 + React 19 + Tailwind v4 + shadcn/ui + Prisma 7 + Supabase (Postgres + Auth). عربي RTL افتراضي + إنجليزي.
+
+## الأوامر
+
+- `npm run dev` — سيرفر التطوير (port 3000)
+- `npm run typecheck` — **البوابة الإجبارية** — `tsc --noEmit` لازم يعدّي قبل أي commit (الـ build بيشغله تلقائيًا كذلك)
+- `npm run lint` — ESLint (flat config)
+- `npm run build` — إنتاج (Turbopack) — بيفشل لو typecheck فشل
+- `npx prisma migrate dev --name <x>` — تطبيق تغييرات الـ schema (بيستخدم `DIRECT_URL` من `prisma.config.ts`)
+- لا يوجد test runner لسه — التحقق الوظيفي عبر اختبارات متصفح Playwright يدوية (Python + `with_server.py`)
+
+## قواعد المشروع الملزمة (من ENGINEERING_DIRECTIVES.md)
+
+1. **`PROJECT_LOG.md` في الجذر يتحدث في نفس الـ commit** مع أي: تعديل schema، قرار معماري، ميزة جديدة، إجابة عميل — مش "بعدين"
+2. منطق الأعمال في `src/lib/` (حسابات، قواعد) و`src/services/` (الكتابة على الداتابيز) — **ممنوع منطق في الـ UI**
+3. **Single Source of Truth:**
+   - انتقالات الأوردر → `src/lib/orderStateMachine.ts`
+   - الـ Audit → `src/lib/audit.ts` يُستدعى من `src/services/` فقط، داخل نفس transaction
+   - الصلاحيات → `src/lib/auth.ts` (`requireRole`) في أول سطر من كل API route
+4. **No Hard Delete** لأي أوردر — إلغاء بسبب إجباري فقط. الـ Lookup tables بـ `isActive=false`
+5. أي كتابة على Order تمر من `src/services/orders.ts` — ممنوع Prisma مباشر من الصفحات/الراوتات
+
+## فخاخ تقنية (اتدفع ثمنها قبل كده — اقراها)
+
+- **PowerShell يتعامل مع `[locale]` كـ wildcard!** أي عملية ملفات على مسارات `src/app/[locale]/` لازم `-LiteralPath`. حذف بدون LiteralPath فشل بصمت مرة وخرب البناء (صفحة قديمة فضلت تترندر)
+- **`src/proxy.ts`** هو الـ middleware في Next 16 (مش `middleware.ts`). الـ matcher **لازم يستثني `api`** — لو اتشال، الـ i18n middleware بيرد 404 على كل API routes
+- **Prisma 7:** الـ connection URLs في `prisma.config.ts` مش في الـ schema. الـ client بيتعمل بـ adapter: `new PrismaClient({ adapter: new PrismaPg({...}) })` — شوف `src/lib/prisma.ts`
+- **الـ i18n:** استخدم `usePathname` من `@/i18n/navigation` (بتشيل locale prefix) — نسخة `next/navigation` بتضاعفه (`/ar/en`)
+- **تبديل اللغة:** مكوّن `src/components/language-switcher.tsx` — يعيد استخدام مش لينكات ثابتة على `/login`
+- سيرفرات يتيمة من اختبارات Playwright بتفضل ماسكة البورتات — قبل ما تحكم إن في bug، اتأكد إن مفيش `node.exe` قديم (`Get-CimInstance Win32_Process -Filter "Name='node.exe'"`)
+
+## قاعدة البيانات (Supabase)
+
+- الاتصال: `DATABASE_URL` (pooler :6543) للـ runtime، `DIRECT_URL` (:5432) للـ migrations — الاتنين في `.env` (غير مرفوع، المرجع `.env.example`)
+- **RLS مفعّل deny-all على كل الجداول** — التطبيق بيتصل كـ postgres owner مباشرة. لو احتجنا Supabase APIs مستقبلًا: أضف policies، متفكرش الـ RLS
+- Bootstrap أول Owner: أول login بيتسجل تلقائيًا Owner (بشرط `OWNER_EMAIL` لو متاحة) — باقي المستخدمين من UI الأونر (Phase 10)
+- الجداول بأسماء الـ models كما هي (PascalCase، بدون `@@map`) — استعلام SQL يدوي يحتاج quotes: `"User"`
+
+## التدفق
+
+- كل المحتوى ديناميكي من الداتابيز — مفيش hardcoded copy في الشاشات
+- الترجمة: `src/messages/ar.json` + `en.json` — أي نص UI جديد في الاتنين
+- المسارات: `src/app/[locale]/(dashboard)/...` — راوت جديد فوق أي catch-all، والحماية في الـ layout عبر `requirePageUser()`
+- الـ API: `src/app/api/...` — بره `[locale]`، بترجع أخطاء `{ code, message }`
+
+## المراجع
+
+- المواصفة: `docs/specs/2026-08-25-data-model-design.md` (المخطط الملزم)
+- المتطلبات: `docs/SRS.md` • حالات الاستخدام: `docs/USE_CASES.md` • NFR: `docs/NON_FUNCTIONAL_REQUIREMENTS.md`
+- خطط التنفيذ: `docs/plans/`
