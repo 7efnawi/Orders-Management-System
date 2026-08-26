@@ -853,12 +853,12 @@ git commit -m "feat(orders): fast POS order creation UI for cashiers"
 - Consumes: `/api/orders`, `/api/orders/[id]/status`, `/api/orders/[id]/discount/decide`.
 - Produces: Live order feed with single-click next status buttons, cancel dialogs, and discount resolution.
 
-- [ ] **Step 1: Build `cancel-dialog.tsx` (enforcing mandatory CancelReason dropdown)**
-- [ ] **Step 2: Build `discount-dialog.tsx` (Manager decision modal for pending discounts)**
-- [ ] **Step 3: Build `order-details-modal.tsx` (Viewing full items snapshot, timeline, customer info)**
-- [ ] **Step 4: Build `orders-table.tsx` with live filters (All, Preparing, Ready, Out, Delivered, Cancelled)**
-- [ ] **Step 5: Create page `src/app/[locale]/(dashboard)/orders/page.tsx`**
-- [ ] **Step 6: Commit**
+- [x] **Step 1: Build `cancel-dialog.tsx` (enforcing mandatory CancelReason dropdown)**
+- [x] **Step 2: Build `discount-dialog.tsx` (Manager decision modal for pending discounts)**
+- [x] **Step 3: Build `order-details-modal.tsx` (Viewing full items snapshot, timeline, customer info)**
+- [x] **Step 4: Build `orders-table.tsx` with live filters (All, Preparing, Ready, Out, Delivered, Cancelled)**
+- [x] **Step 5: Create page `src/app/[locale]/(dashboard)/orders/page.tsx`**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/components/orders/ src/app/[locale]/(dashboard)/orders/page.tsx

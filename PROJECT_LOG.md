@@ -11,6 +11,30 @@
 | هيكل المنيو / Variants (عينات الرسيتات) | ⏳ منتظرين العميل | Product / OrderItem |
 | القائمة النهائية للمنصات | ⏳ العيل يظبطها من UI | Platform seed |
 
+## [2026-08-26] المرحلة 4 — لوحة متابعة الطلبات الحية ومودالات سير العمل (Live Orders Dashboard & Modal Workflows)
+**النوع:** Feature / UI
+**اللي اتعمل:** بناء شاشات ومودالات متابعة الطلبات الحية مع التفاعل الفوري وترقية الحالات:
+1. `src/components/orders/orders-table.tsx`:
+   - لوحة تفاعلية متجاوبة (جدول للشاشات الكبيرة + بطاقات للشاشات الصغيرة والتابلت) لمتابعة الطلبات وتحديثها لحظيًا.
+   - تبويبات سريعة للحالات (الكل، النشطة، تم التسليم، الملغاة) مع عدادات أوردرات حية.
+   - تصفية متعددة بالبراند، المنصة، التاريخ، والبحث النصي برقم الطلب والهاتف واسم العميل.
+   - زر بنقرة واحدة (1-click action) للانتقال للحالة التالية الشرعية (`NEW` -> `CONFIRMED` -> `PREPARING` -> `READY` -> `OUT_FOR_DELIVERY` -> `DELIVERED`).
+   - تنبيه فوري ومميز للخصومات المعلقة `PENDING` مع زر مخصص للمدير/المالك لفتح نافذة الاعتماد.
+   - دعم التحديث التلقائي الدوري (Polling كل 15 ثانية) وإمكانية التحديث اليدوي الفوري.
+2. `src/components/orders/cancel-dialog.tsx`:
+   - مودال إجباري لاختيار سبب الإلغاء `CancelReason` من الخيارات المعتمدة وتأكيد الإلغاء عبر `PATCH /api/orders/[id]/status`.
+3. `src/components/orders/discount-dialog.tsx`:
+   - مودال مخصص للمدير/المالك لاتخاذ قرار اعتماد أو رفض الخصم `APPROVED` / `REJECTED` عبر `POST /api/orders/[id]/discount/decide`.
+4. `src/components/orders/order-details-modal.tsx`:
+   - مودال تفصيلي لعرض الطلب، الخط الزمني للتوقيتات، لقطة الأصناف بالأسعار الثابتة، والبيانات المالية وملاحظات العميل والمطبخ.
+5. `src/app/[locale]/(dashboard)/orders/page.tsx`:
+   - صفحة لوحة متابعة الطلبات المحمية والمربوطة بالخدمات والصلاحيات وزر إنشاء طلب جديد.
+6. `src/messages/ar.json` و `src/messages/en.json`:
+   - إضافة كافة مفاتيح الترجمة للوحة والمودالات باللغتين العربية والإنجليزية.
+**السبب:** تحقيق متطلبات إدارة ومتابعة الطلبات المباشرة وسير العمل للمطبخ والطيارين واعتماد الخصومات (FR-ORD-02, FR-ORD-03, FR-ORD-05, UC-02, UC-03, UC-04, UC-05).
+**الملفات المتأثرة:** `src/components/orders/orders-table.tsx`, `src/components/orders/cancel-dialog.tsx`, `src/components/orders/discount-dialog.tsx`, `src/components/orders/order-details-modal.tsx`, `src/app/[locale]/(dashboard)/orders/page.tsx`, `src/messages/ar.json`, `src/messages/en.json`, `PROJECT_LOG.md`
+**تأثير على أجزاء تانية:** اكتمال واجهات المرحلة 4 والجاهزية لاختبارات التحقق الشاملة (Task 6).
+
 ## [2026-08-26] المرحلة 4 — واجهة نقطة البيع (POS) السريعة لإنشاء الطلبات للكاشير
 **النوع:** Feature / UI
 **اللي اتعمل:** بناء واجهة نقطة البيع السريعة `OrderForm` المتوافقة مع أجهزة التابلت والشاشات التي تعمل باللمس ودعم كامل لـ RTL/LTR:
