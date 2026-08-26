@@ -5,8 +5,6 @@ import {
   calculateOrderTotals,
   getStatusTimestampField,
   nextAllowedStatuses,
-  ALLOWED_TRANSITIONS,
-  TERMINAL_STATUSES,
 } from "../src/lib/orderStateMachine";
 import { CancelReason, DriverType } from "@prisma/client";
 
