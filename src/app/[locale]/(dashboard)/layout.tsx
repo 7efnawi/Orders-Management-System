@@ -31,6 +31,7 @@ export default async function DashboardLayout({
             {user.role !== "CASHIER" && (
               <Link href="/delivery" className="truncate text-sm text-muted-foreground hover:underline">{tNav("delivery")}</Link>
             )}
+            <Link href="/expenses" className="truncate text-sm text-muted-foreground hover:underline">{tNav("expenses")}</Link>
             <Badge variant="secondary">{t(user.role)}</Badge>
             <span className="truncate text-sm text-muted-foreground">{user.name}</span>
           </div>

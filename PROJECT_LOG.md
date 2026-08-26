@@ -8,8 +8,70 @@
 ## Open Questions
 | السؤال | الحالة | مؤثر على |
 |---|---|---|
-| هيكل المنيو / Variants (عينات الرسيتات) | ⏳ منتظرين العميل | Product / OrderItem |
 | القائمة النهائية للمنصات | ⏳ العيل يظبطها من UI | Platform seed |
+
+---
+
+## [2026-08-26] المرحلة 6 — واجهة إدارة وتسجيل وتتبع المصروفات وتصنيفاتها (Phase 6 Expense Management UI)
+**النوع:** Feature / UI & Dashboard
+**اللي اتعمل:**
+1. إضافة ترجمات مساحة أسماء المصروفات `expenses` في ملفات اللغات `src/messages/ar.json` و`src/messages/en.json` (العناوين، كروت المؤشرات، خيارات الفلاتر والتواريخ، أعمدة الجدول، شاشات الحوار، رسائل التحقق والإشعارات).
+2. بناء مكون نافذة إضافة وتعديل المصروف `src/components/expenses/expense-dialog.tsx`:
+   - اختيار نوع المصروف من القائمة المتاحة مع زر سريع لإضافة فئة جديدة للمديرين/المالك.
+   - حقول الإدخال: البيان (الوصف)، الكمية (افتراضي 1)، القيمة النقدية (> 0)، وتاريخ المصروف (افتراضي اليوم).
+   - التحقق من المدخلات عبر Zod ومعالجة الإرسال عبر `POST /api/expenses` أو `PATCH /api/expenses/[id]` مع إشعارات toast الفورية.
+3. بناء مكون نافذة إنشاء نوع مصروف مخصص `src/components/expenses/expense-type-dialog.tsx`:
+   - متاح للمديرين والمالك لإنشاء تصنيفات مخصصة إضافية.
+   - التحقق ومعالجة الإرسال عبر `POST /api/expenses/types` وتحديث القوائم ديناميكيًا.
+4. بناء مكون العميل التفاعلي لإدارة المصروفات `src/components/expenses/expenses-client.tsx`:
+   - شريط التحكم العلوي وأزرار تسجيل المصروف وإضافة الأنواع والتحديث.
+   - كروت المؤشرات المالية الحية (KPI Cards): إجمالي قيمة المصروفات (مُنسقة بالعملة)، عدد القيود المسجلة، ومتوسط قيمة المصروف.
+   - شريط الفلاتر السريعة للفترات الزمنية (اليوم، أمس، آخر 7 أيام، هذا الشهر، كل الأوقات)، وتصنيف المصروفات، والبحث النصي في الوصف، وزر مسح الفلاتر.
+   - جدول متجاوب للشاشات الكبيرة وكروت مخصصة لشاشات الموبايل تعرض التاريخ، الشارة، البيان، الكمية، القيمة، المسجل، وأزرار التعديل والحذف مع نافذة تأكيد الحذف.
+5. إنشاء صفحة السيرفر `/expenses` في `src/app/[locale]/(dashboard)/expenses/page.tsx` مع حماية الصلاحيات بـ `requirePageUser()` وتمرير البيانات المبدئية للشهر الحالي.
+6. إضافة رابط المصروفات `/expenses` في شريط التنقل الرئيسي `src/app/[locale]/(dashboard)/layout.tsx`.
+7. اجتياز الفحص الصارم لـ TypeScript (`npm run typecheck`) والـ Linting (`npm run lint`).
+**السبب:** تمكين الكاشير والمديرين والمالك من تسجيل ومتابعة كافة المصروفات التشغيلية واليومية ومراقبة المؤشرات المالية مع الحفاظ على تجربة مستخدم سريعة ومتجاوبة وتوثيق كل العمليات في سجل المراقبة (SRS §FR-EXP, USE_CASES UC-12, Directives §2, §3, §8).
+**الملفات المتأثرة:** `src/messages/ar.json`, `src/messages/en.json`, `src/components/expenses/expense-dialog.tsx`, `src/components/expenses/expense-type-dialog.tsx`, `src/components/expenses/expenses-client.tsx`, `src/app/[locale]/(dashboard)/expenses/page.tsx`, `src/app/[locale]/(dashboard)/layout.tsx`, `PROJECT_LOG.md`
+**تأثير على أجزاء تانية:** اكتمال واجهات المصروفات وجاهزيتها للتحقق النهائي المؤتمت للمرحلة 6 (Task 4: Automated Verification Gate).
+
+## [2026-08-26] المرحلة 6 — راوتات الـ API لإدارة وتتبع المصروفات وأنواعها وفرض الصلاحيات (Phase 6 Expenses API Endpoints)
+**النوع:** Feature / API
+**اللي اتعمل:**
+1. إنشاء راوت أنواع المصروفات `src/app/api/expenses/types/route.ts`:
+   - `GET`: متاح لـ (`OWNER`, `MANAGER`, `CASHIER`) لجلب كافة أنواع المصروفات (`listExpenseTypes`).
+   - `POST`: متاح حصرًا لـ (`OWNER`, `MANAGER`) مع رفض الكاشير بـ 403، والتحقق عبر Zod (`name: min(1).max(100)`).
+2. إنشاء راوت قائمة وتسجيل المصروفات `src/app/api/expenses/route.ts`:
+   - `GET`: متاح لـ (`OWNER`, `MANAGER`, `CASHIER`) لاستخراج معاملات الفلترة (`startDate`, `endDate`, `date`, `expenseTypeId`, `createdBy`, `search`, `limit`, `offset`) وجلب النتائج مع الإجمالي المالي والعدد.
+   - `POST`: متاح لـ (`OWNER`, `MANAGER`, `CASHIER`) لتسجيل مصروف جديد بعد التحقق الصارم عبر Zod من `expenseTypeId` كـ UUID و`value` موجبة و`quantity` كعدد صحيح موجب و`description`.
+3. إنشاء راوت تفاصيل وتعديل وحذف المصروف `src/app/api/expenses/[id]/route.ts`:
+   - `GET`: متاح لـ (`OWNER`, `MANAGER`, `CASHIER`) لجلب تفاصيل مصروف محدد (`getExpenseById`) والرد بـ 404 عند عدم الوجود.
+   - `PATCH`: متاح لـ (`OWNER`, `MANAGER`) فقط لتعديل بيانات المصروف بعد التحقق عبر Zod.
+   - `DELETE`: متاح لـ (`OWNER`, `MANAGER`) فقط لحذف المصروف مع توثيق الـ AuditLog.
+4. تغليف كافة المعالجات بـ `wrapApi` وتوحيد استجابات الأخطاء `{ code, message }` وترقية `wrapApi` في `src/lib/api.ts` لدعم أخطاء تكرار الأسماء `DUPLICATE_`.
+5. إنشاء سكريبت فحص واختبار مخططات التحقق `scripts/test-expenses-api-schemas.ts`.
+**السبب:** توفير واجهات برمجية آمنة ومحمية بالصلاحيات تفصل منطق الأعمال وتسمح للواجهات الأمامية بتسجيل وحصر وتعديل المصروفات والأنواع بسلاسة (SRS §FR-EXP, USE_CASES UC-12, Directives §2, §3, §8).
+**الملفات المتأثرة:** `src/app/api/expenses/types/route.ts`, `src/app/api/expenses/route.ts`, `src/app/api/expenses/[id]/route.ts`, `src/lib/api.ts`, `scripts/test-expenses-api-schemas.ts`, `PROJECT_LOG.md`
+**تأثير على أجزاء تانية:** جاهزية الـ Endpoints لبناء واجهات إدارة المصروفات (Task 3: Expense Management UI).
+
+## [2026-08-26] المرحلة 6 — بناء طبقة خدمات المصروفات والتسجيل الذري مع الـ Audit (Phase 6 Expenses Service Layer)
+**النوع:** Feature / Service Layer
+**اللي اتعمل:**
+1. إنشاء طبقة خدمات المصروفات `src/services/expenses.ts`:
+   - تعريف القائمة المسبقة للـ 20 نوع مصروف افتراضي `DEFAULT_EXPENSE_TYPES` المستخرجة من شيت الإكسيل التشغيلي.
+   - دالة `seedDefaultExpenseTypes()` لبذر الأنواع العشرين الافتراضية مع وسم `isDefault = true` بشكل ذري وتجنب التكرار (`skipDuplicates`).
+   - دالة `listExpenseTypes()` لجلب أنواع المصروفات مرتبة بالافتراضي أولاً ثم أبجديًا بعد ضمان بذرها.
+   - دالة `createExpenseType(userId, name)` لإنشاء أنواع مصروفات مخصصة (`isDefault = false`) مع منع التكرار وتسجيل AuditLog بنوع `CREATE`.
+   - دالة `createExpense(userId, input)` للتحقق من صحة القيمة والكمية والتاريخ ووجود الفئة، وإنشاء سجل المصروف وتسجيل AuditLog بنوع `CREATE` داخل transaction واحدة.
+   - دالة `updateExpense(userId, expenseId, data)` للتحقق والتعديل الذري مع تسجيل القيم القديمة والجديدة في الـ AuditLog بنوع `UPDATE`.
+   - دالة `deleteExpense(userId, expenseId)` لحذف سجل المصروف وتسجيل AuditLog بنوع `CANCEL`.
+   - دالة `listExpenses(filters)` لدعم الفلترة المرنة بالتاريخ، النطاق الزمني، نوع المصروف، منشئ السجل، والبحث النصي في الوصف، مع حساب الإجمالي المالي `totalAmount` والعدد الكلي `totalCount`.
+   - دالة `getExpenseById(id)` لجلب تفاصيل مصروف محدد.
+2. إنشاء سكريبت اختبارات التحقق الشامل `scripts/test-expenses-service.ts` لاختبار كافة سيناريوهات التحقق والعمليات والـ Audit.
+**السبب:** تأسيس طبقة الخدمات الحاكمة لإدارة وتتبع المصروفات التشغيلية للمطعم وفق قواعد العمل الصارمة (SRS §FR-EXP, USE_CASES UC-12, Directives §2, §3).
+**الملفات المتأثرة:** `src/services/expenses.ts`, `scripts/test-expenses-service.ts`, `PROJECT_LOG.md`
+**تأثير على أجزاء تانية:** جاهزية طبقة الخدمات لبناء راوتات الـ API المحمية في Task 2.
+
 
 ## [2026-08-26] المرحلة 5 — اكتمال وبوابة التحقق المؤتمتة لنظام إدارة التوصيل والمناديب والمناطق (Phase 5 Delivery Subsystem Verification & Completion)
 **النوع:** Verification / Milestone Completion

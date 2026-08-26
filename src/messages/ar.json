@@ -354,5 +354,90 @@
       "error": "تعذر تعيين المندوب"
     },
     "error": "حدث خطأ — برجاء المحاولة مرة أخرى"
+  },
+  "expenses": {
+    "title": "إدارة المصروفات",
+    "subtitle": "تسجيل ومتابعة المصروفات التشغيلية واليومية وتصنيفاتها",
+    "recordExpense": "تسجيل مصروف",
+    "addCategory": "إضافة نوع مصروف",
+    "editExpense": "تعديل المصروف",
+    "deleteExpense": "حذف المصروف",
+    "currency": "ج.م",
+    "summary": {
+      "totalAmount": "إجمالي المصروفات",
+      "totalCount": "عدد المصروفات",
+      "averageValue": "متوسط المصروف",
+      "countUnit": "مصروف"
+    },
+    "filters": {
+      "quickDate": "الفترة الزمنية",
+      "today": "اليوم",
+      "yesterday": "أمس",
+      "last7Days": "آخر 7 أيام",
+      "thisMonth": "هذا الشهر",
+      "allDates": "كل الأوقات",
+      "category": "نوع المصروف",
+      "allCategories": "جميع الأنواع",
+      "searchPlaceholder": "بحث في الوصف...",
+      "clearFilters": "مسح الفلاتر"
+    },
+    "table": {
+      "date": "التاريخ",
+      "category": "النوع",
+      "description": "بيان المصروف",
+      "quantity": "الكمية",
+      "value": "القيمة",
+      "recordedBy": "المسجل",
+      "actions": "الإجراءات",
+      "emptyTitle": "لا توجد مصروفات مسجلة",
+      "emptyDesc": "لم يتم العثور على أي مصروفات مطابقة للبحث أو الفلتر المحدد.",
+      "defaultBadge": "افتراضي",
+      "customBadge": "مخصص"
+    },
+    "dialog": {
+      "recordTitle": "تسجيل مصروف جديد",
+      "recordDesc": "أدخل تفاصيل المصروف بدقة للتسجيل في السجلات وسجل المراقبة.",
+      "editTitle": "تعديل المصروف",
+      "editDesc": "تعديل بيانات المصروف المسجل مع توثيق التعديل في سجل المراقبة.",
+      "categoryLabel": "نوع المصروف",
+      "selectCategory": "اختر نوع المصروف...",
+      "descriptionLabel": "بيان المصروف (الوصف)",
+      "descriptionPlaceholder": "مثال: شراء أدوات نظافة، صيانة ثلاجة...",
+      "quantityLabel": "الكمية",
+      "valueLabel": "القيمة (ج.م)",
+      "valuePlaceholder": "0.00",
+      "dateLabel": "تاريخ المصروف",
+      "save": "حفظ المصروف",
+      "saving": "جارٍ الحفظ...",
+      "createdSuccess": "تم تسجيل المصروف بنجاح",
+      "updatedSuccess": "تم تحديث المصروف بنجاح",
+      "error": "تعذر حفظ المصروف — يرجى التأكد من البيانات والمحاولة مجددًا"
+    },
+    "typeDialog": {
+      "title": "إضافة نوع مصروف جديد",
+      "description": "إنشاء نوع مصروف مخصص إضافي لتصنيف المصروفات بسهولة.",
+      "nameLabel": "اسم نوع المصروف",
+      "namePlaceholder": "مثال: مصاريف نقل خاصة، مستلزمات طوارئ...",
+      "save": "إضافة النوع",
+      "saving": "جارٍ الإضافة...",
+      "createdSuccess": "تمت إضافة نوع المصروف بنجاح",
+      "error": "تعذر إضافة نوع المصروف — قد يكون الاسم مكررًا"
+    },
+    "deleteDialog": {
+      "title": "حذف المصروف",
+      "description": "هل أنت متأكد من حذف هذا المصروف بقيمة {value} ج.م؟ لا يمكن التراجع عن هذا الإجراء وسيتم توثيقه في سجل المراقبة.",
+      "confirm": "تأكيد الحذف",
+      "deleting": "جارٍ الحذف...",
+      "success": "تم حذف المصروف بنجاح",
+      "error": "تعذر حذف المصروف"
+    },
+    "validation": {
+      "categoryRequired": "يرجى اختيار نوع المصروف",
+      "descriptionRequired": "بيان المصروف مطلوب",
+      "valuePositive": "يجب أن تكون القيمة أكبر من صفر",
+      "quantityPositive": "يجب أن تكون الكمية رقمًا صحيحًا موجبًا (1 على الأقل)",
+      "dateRequired": "تاريخ المصروف مطلوب",
+      "typeNameRequired": "اسم نوع المصروف مطلوب"
+    }
   }
 }

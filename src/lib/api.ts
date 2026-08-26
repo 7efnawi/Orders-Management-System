@@ -54,7 +54,8 @@ export function wrapApi(handler: () => Promise<NextResponse>): Promise<NextRespo
         err.message.startsWith("TERMINAL_STATUS") ||
         err.message.startsWith("EMPTY_ORDER") ||
         err.message.startsWith("DRIVER_INACTIVE") ||
-        err.message.startsWith("DISCOUNT_REASON_REQUIRED")
+        err.message.startsWith("DISCOUNT_REASON_REQUIRED") ||
+        err.message.startsWith("DUPLICATE_")
       ) {
         const colonIdx = err.message.indexOf(":");
         const code = colonIdx > -1 ? err.message.slice(0, colonIdx).trim() : err.message;
