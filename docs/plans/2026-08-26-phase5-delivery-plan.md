@@ -91,12 +91,12 @@ src/
 - Consumes: `requireApiRole`, `wrapApi`, `services/delivery.ts`.
 - Produces: JSON HTTP Endpoints validating input via Zod.
 
-- [ ] **Step 1: Implement Zone endpoints (GET / POST / PATCH)**
-- [ ] **Step 2: Implement Driver endpoints (GET / POST / PATCH)**
-- [ ] **Step 3: Implement Order Driver Assignment endpoint (PATCH `/api/orders/[id]/driver`)**
-- [ ] **Step 4: Create and run test script `scripts/test-delivery-api.ts`**
-- [ ] **Step 5: Run `npm run typecheck` & `npm run lint`**
-- [ ] **Step 6: Update `PROJECT_LOG.md` and commit**
+- [x] **Step 1: Implement Zone endpoints (GET / POST / PATCH)**
+- [x] **Step 2: Implement Driver endpoints (GET / POST / PATCH)**
+- [x] **Step 3: Implement Order Driver Assignment endpoint (PATCH `/api/orders/[id]/driver`)**
+- [x] **Step 4: Create and run test script `scripts/test-delivery-api.ts` / `scripts/test-delivery-api-schemas.ts`**
+- [x] **Step 5: Run `npm run typecheck` & `npm run lint`**
+- [x] **Step 6: Update `PROJECT_LOG.md` and commit**
 
 ---
 
@@ -113,12 +113,12 @@ src/
 - Consumes: `/api/delivery/zones`, `/api/delivery/drivers`.
 - Produces: Interactive management dashboard for Zones & Drivers.
 
-- [ ] **Step 1: Add translations to `src/messages/ar.json` & `en.json`**
-- [ ] **Step 2: Build `zone-dialog.tsx` and `driver-dialog.tsx`**
-- [ ] **Step 3: Build `delivery-client.tsx` with tabs, tables, status switches, and quick filters**
-- [ ] **Step 4: Build page wrapper `src/app/[locale]/(dashboard)/delivery/page.tsx`**
-- [ ] **Step 5: Run `npm run typecheck` & `npm run lint`**
-- [ ] **Step 6: Update `PROJECT_LOG.md` and commit**
+- [x] **Step 1: Add translations to `src/messages/ar.json` & `en.json`**
+- [x] **Step 2: Build `zone-dialog.tsx` and `driver-dialog.tsx`**
+- [x] **Step 3: Build `delivery-client.tsx` with tabs, tables, status switches, and quick filters**
+- [x] **Step 4: Build page wrapper `src/app/[locale]/(dashboard)/delivery/page.tsx`**
+- [x] **Step 5: Run `npm run typecheck` & `npm run lint`**
+- [x] **Step 6: Update `PROJECT_LOG.md` and commit**
 
 ---
 

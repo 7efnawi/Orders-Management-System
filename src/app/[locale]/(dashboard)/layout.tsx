@@ -28,6 +28,9 @@ export default async function DashboardLayout({
           <div className="flex min-w-0 items-center gap-3">
             <Link href="/" className="truncate text-sm font-semibold hover:underline">{tCommon("appName")}</Link>
             <Link href="/menu" className="truncate text-sm text-muted-foreground hover:underline">{tNav("menu")}</Link>
+            {user.role !== "CASHIER" && (
+              <Link href="/delivery" className="truncate text-sm text-muted-foreground hover:underline">{tNav("delivery")}</Link>
+            )}
             <Badge variant="secondary">{t(user.role)}</Badge>
             <span className="truncate text-sm text-muted-foreground">{user.name}</span>
           </div>

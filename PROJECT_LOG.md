@@ -11,6 +11,60 @@
 | هيكل المنيو / Variants (عينات الرسيتات) | ⏳ منتظرين العميل | Product / OrderItem |
 | القائمة النهائية للمنصات | ⏳ العيل يظبطها من UI | Platform seed |
 
+## [2026-08-26] المرحلة 5 — واجهات إدارة التوصيل والمناطق والمناديب ثنائية اللغة (Delivery Management UI)
+**النوع:** Feature / UI
+**اللي اتعمل:** بناء واجهات متكاملة وتفاعلية لإدارة التوصيل والمناطق والمناديب مع الدعم الكامل للغتين العربية والإنجليزية:
+1. ترجمة ثنائية كاملة في `src/messages/ar.json` و `src/messages/en.json` تحت namespace `delivery`:
+   - التبويبات، رؤوس الجداول، رسائل النماذج، التحقق، أنواع المناديب (`OWN`, `APP`, `EXTERNAL`, `PICKUP`)، وإشعارات Sonner.
+2. بناء مودال إدارة مناطق التوصيل `src/components/delivery/zone-dialog.tsx`:
+   - إضافة وتعديل المناطق مع التحقق عبر Zod من الاسم والرسوم (`fee >= 0`).
+   - الاتصال بـ `POST /api/delivery/zones` و `PATCH /api/delivery/zones/[id]`.
+3. بناء مودال إدارة المناديب `src/components/delivery/driver-dialog.tsx`:
+   - إضافة وتعديل المناديب مع التحقق عبر Zod واختيار أسطول المندوب.
+   - الاتصال بـ `POST /api/delivery/drivers` و `PATCH /api/delivery/drivers/[id]`.
+4. بناء مكوّن لوحة إدارة التوصيل الرئيسي `src/components/delivery/delivery-client.tsx`:
+   - تبويبات سريعة للمناطق والمناديب مع عدادات حية.
+   - بحث فوري وفلاتر نوع الأسطول وحالة التفعيل (الكل / النشط / الموقوف).
+   - جداول وبطاقات متجاوبة (Responsive Table + Mobile Cards) مع مفاتيح التفعيل الفوري (Optimistic Status Switch) وأزرار التعديل.
+   - ألوان مميزة لكل نوع أسطول ومؤشرات للحالات الموقوفة.
+5. صفحة التوصيل المحمية `src/app/[locale]/(dashboard)/delivery/page.tsx`:
+   - قصر الوصول على `OWNER` و `MANAGER` وتوجيه الكاشير تلقائيًا للرئيسية.
+   - جلب البيانات الأولية من طبقة الخدمات وتمريرها للواجهة.
+6. إضافة رابط التوصيل في شريط التنقل الرئيسي `src/app/[locale]/(dashboard)/layout.tsx` للمدير والمالك.
+**السبب:** توفير تجربة مستخدم سلسة واستجابة فورية للمديرين وأصحاب المطعم لإدارة مناطق التوصيل والمناديب بسهولة (SRS §FR-DEL, USE_CASES UC-09, UC-11).
+**الملفات المتأثرة:** `src/messages/ar.json`, `src/messages/en.json`, `src/components/delivery/zone-dialog.tsx`, `src/components/delivery/driver-dialog.tsx`, `src/components/delivery/delivery-client.tsx`, `src/app/[locale]/(dashboard)/delivery/page.tsx`, `src/app/[locale]/(dashboard)/layout.tsx`, `PROJECT_LOG.md`
+**تأثير على أجزاء تانية:** اكتمال الواجهات المخصصة لإدارة التوصيل، والتمهيد لمودال إسناد السائق في جدول الطلبات (Task 4).
+
+## [2026-08-26] المرحلة 5 — راوتات الـ API لإدارة التوصيل والمناطق والمناديب وإسناد الطلبات (Delivery API Endpoints)
+**النوع:** Feature / API
+**اللي اتعمل:** بناء وتأمين راوتات الـ API الخاصة بنظام التوصيل مع الفحص والتحقق الصارم عبر Zod والصلاحيات:
+1. `GET /api/delivery/zones`:
+   - متاح لـ (`OWNER`, `MANAGER`, `CASHIER`).
+   - استرجاع مناطق التوصيل مع دعم معامل `includeInactive`.
+2. `POST /api/delivery/zones`:
+   - متاح لـ (`OWNER`, `MANAGER`) فقط ورفض الكاشير بـ 403.
+   - التحقق من البيانات عبر Zod (`name: min(1)`, `fee: nonnegative()`) وإنشاء المنطقة وتسجيل الـ Audit.
+3. `PATCH /api/delivery/zones/[id]`:
+   - متاح لـ (`OWNER`, `MANAGER`) فقط.
+   - تعديل المنطقة (`name`, `fee`, `isActive`) مع التحقق عبر Zod وتسجيل الـ Audit.
+4. `GET /api/delivery/drivers`:
+   - متاح لـ (`OWNER`, `MANAGER`, `CASHIER`).
+   - استرجاع المناديب مع دعم معاملات `includeInactive` ونوع المندوب `type` (`OWN`, `APP`, `EXTERNAL`, `PICKUP`).
+5. `POST /api/delivery/drivers`:
+   - متاح لـ (`OWNER`, `MANAGER`) فقط.
+   - التحقق من البيانات عبر Zod (`name: min(1)`, `type: DriverType`) وإنشاء المندوب وتسجيل الـ Audit.
+6. `PATCH /api/delivery/drivers/[id]`:
+   - متاح لـ (`OWNER`, `MANAGER`) فقط.
+   - تعديل بيانات المندوب (`name`, `type`, `isActive`) مع التحقق عبر Zod وتسجيل الـ Audit.
+7. `PATCH /api/orders/[id]/driver`:
+   - متاح لـ (`OWNER`, `MANAGER`, `CASHIER`).
+   - إسناد مندوب للطلب مع التحقق من صحة `driverId` كـ UUID وإعادة احتساب رسوم التوصيل تلقائيًا وتوثيق الـ AuditLog.
+8. ترقية معالج الأخطاء الموحّد `wrapApi` في `src/lib/api.ts` للتعامل تلقائيًا مع أخطاء التوصيل ونطاق العمليات (`*_NOT_FOUND`, `INVALID_*`, `DRIVER_INACTIVE`).
+9. إنشاء سكريبت فحص واختبار مخططات التحقق `scripts/test-delivery-api-schemas.ts`.
+**السبب:** توفير واجهات برمجية آمنة ومحمية للصلاحيات تفصل منطق الأعمال وتسمح للواجهات الأمامية بإدارة التوصيل وإسناد المناديب بسلاسة (Directives §2, §3, §5).
+**الملفات المتأثرة:** `src/app/api/delivery/zones/route.ts`, `src/app/api/delivery/zones/[id]/route.ts`, `src/app/api/delivery/drivers/route.ts`, `src/app/api/delivery/drivers/[id]/route.ts`, `src/app/api/orders/[id]/driver/route.ts`, `src/lib/api.ts`, `scripts/test-delivery-api-schemas.ts`, `PROJECT_LOG.md`
+**تأثير على أجزاء تانية:** تمهيد لواجهات إدارة التوصيل (Task 3: Delivery Management UI) ومودال إسناد المناديب في شاشات الطلبات (Task 4).
+
 ## [2026-08-26] المرحلة 5 — طبقة خدمات التوصيل والمناطق والمناديب وسجل التدقيق الذري (Delivery Service Layer)
 **النوع:** Feature / Service
 **اللي اتعمل:** بناء طبقة خدمات التوصيل `src/services/delivery.ts` لإدارة مناطق التوصيل والمناديب وتعيين المناديب للطلبات:

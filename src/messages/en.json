@@ -270,5 +270,70 @@
       "error": "Failed to load order details",
       "close": "Close"
     }
+  },
+  "delivery": {
+    "title": "Delivery Management",
+    "subtitle": "Manage delivery zones, fees, and fleet drivers",
+    "tabs": {
+      "zones": "Delivery Zones",
+      "drivers": "Delivery Drivers"
+    },
+    "zones": {
+      "title": "Delivery Zones",
+      "add": "Add Zone",
+      "edit": "Edit Zone",
+      "name": "Zone Name",
+      "namePlaceholder": "e.g. Maadi, New Cairo...",
+      "fee": "Delivery Fee",
+      "feePlaceholder": "0.00",
+      "currency": "EGP",
+      "search": "Search zones...",
+      "empty": "No delivery zones found",
+      "emptyDesc": "Start by adding delivery zones to configure automatic fees for orders.",
+      "createdSuccess": "Delivery zone created successfully",
+      "updatedSuccess": "Delivery zone updated successfully"
+    },
+    "drivers": {
+      "title": "Delivery Drivers",
+      "add": "Add Driver",
+      "edit": "Edit Driver",
+      "name": "Driver Name",
+      "namePlaceholder": "Driver name...",
+      "type": "Driver Fleet / Type",
+      "search": "Search drivers...",
+      "empty": "No delivery drivers found",
+      "emptyDesc": "Start by adding drivers to assign them during order delivery.",
+      "createdSuccess": "Delivery driver created successfully",
+      "updatedSuccess": "Delivery driver updated successfully",
+      "types": {
+        "OWN": "Own Fleet",
+        "APP": "App Fleet",
+        "EXTERNAL": "External Courier",
+        "PICKUP": "Customer Pickup"
+      },
+      "filterAllTypes": "All Driver Types"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "filterAll": "All",
+      "filterActive": "Active Only",
+      "filterInactive": "Inactive Only",
+      "toggleActive": "Toggle Active",
+      "updatedSuccess": "Status updated successfully"
+    },
+    "validation": {
+      "nameRequired": "Name is required",
+      "feeRequired": "Fee must be a number greater than or equal to 0",
+      "typeRequired": "Driver type is required"
+    },
+    "actions": {
+      "save": "Save",
+      "saving": "Saving...",
+      "cancel": "Cancel",
+      "edit": "Edit",
+      "search": "Search"
+    },
+    "error": "An error occurred — please try again"
   }
 }

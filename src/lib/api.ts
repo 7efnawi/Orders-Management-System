@@ -39,23 +39,22 @@ export function wrapApi(handler: () => Promise<NextResponse>): Promise<NextRespo
       return apiError(err.code, err.code, err.code === "FORBIDDEN" ? 403 : 401);
     }
     if (err instanceof Error) {
-      if (err.message === "NOT_FOUND" || err.message.startsWith("NOT_FOUND")) {
-        return apiError("NOT_FOUND", err.message.replace(/^NOT_FOUND:?\s*/, "") || "Entity not found", 404);
+      if (err.message === "NOT_FOUND" || err.message.startsWith("NOT_FOUND") || err.message.includes("NOT_FOUND")) {
+        const colonIdx = err.message.indexOf(":");
+        const code = colonIdx > -1 ? err.message.slice(0, colonIdx).trim() : (err.message.startsWith("NOT_FOUND") ? "NOT_FOUND" : err.message);
+        const message = colonIdx > -1 ? err.message.slice(colonIdx + 1).trim() : "Entity not found";
+        return apiError(code, message, 404);
       }
       if (err.message.startsWith("FORBIDDEN")) {
         return apiError("FORBIDDEN", err.message.replace(/^FORBIDDEN:?\s*/, "") || "Insufficient role", 403);
       }
       if (
-        err.message.startsWith("INVALID_TRANSITION") ||
+        err.message.startsWith("INVALID_") ||
         err.message.startsWith("CANCEL_REASON_REQUIRED") ||
         err.message.startsWith("TERMINAL_STATUS") ||
         err.message.startsWith("EMPTY_ORDER") ||
-        err.message.startsWith("INVALID_PRODUCTS") ||
-        err.message.startsWith("INVALID_QUANTITY") ||
-        err.message.startsWith("INVALID_STATE") ||
-        err.message.startsWith("DISCOUNT_REASON_REQUIRED") ||
-        err.message.startsWith("INVALID_DISCOUNT") ||
-        err.message.startsWith("INVALID_PRICE")
+        err.message.startsWith("DRIVER_INACTIVE") ||
+        err.message.startsWith("DISCOUNT_REASON_REQUIRED")
       ) {
         const colonIdx = err.message.indexOf(":");
         const code = colonIdx > -1 ? err.message.slice(0, colonIdx).trim() : err.message;
