@@ -144,6 +144,105 @@ export async function createExpenseType(userId: string, name: string) {
 }
 
 /**
+ * تعديل اسم نوع المصروف مع التحقق وتسجيل الـ Audit ذرّيًا
+ */
+export async function updateExpenseType(userId: string, typeId: string, name: string) {
+  const trimmedName = name?.trim();
+  if (!trimmedName) {
+    throw new Error("INVALID_NAME: Expense type name is required");
+  }
+  if (!typeId?.trim()) {
+    throw new Error("INVALID_TYPE_ID: Expense type ID is required");
+  }
+
+  const existing = await prisma.expenseType.findUnique({
+    where: { id: typeId },
+  });
+  if (!existing) {
+    throw new Error("NOT_FOUND: Expense type not found");
+  }
+
+  const duplicate = await prisma.expenseType.findFirst({
+    where: {
+      name: trimmedName,
+      NOT: { id: typeId },
+    },
+  });
+  if (duplicate) {
+    throw new Error("DUPLICATE_NAME: An expense type with this name already exists");
+  }
+
+  return prisma.$transaction(async (tx) => {
+    const updated = await tx.expenseType.update({
+      where: { id: typeId },
+      data: { name: trimmedName },
+      include: {
+        user: {
+          select: { id: true, name: true, role: true },
+        },
+      },
+    });
+
+    await audit(tx, {
+      userId,
+      action: "UPDATE",
+      entityType: "ExpenseType",
+      entityId: typeId,
+      oldValue: { name: existing.name },
+      newValue: { name: trimmedName },
+    });
+
+    return updated;
+  });
+}
+
+/**
+ * حذف نوع المصروف مع التحقق من عدم وجود مصروفات مرتبطة وتسجيل الـ Audit ذرّيًا
+ */
+export async function deleteExpenseType(userId: string, typeId: string) {
+  if (!typeId?.trim()) {
+    throw new Error("INVALID_TYPE_ID: Expense type ID is required");
+  }
+
+  const existing = await prisma.expenseType.findUnique({
+    where: { id: typeId },
+    include: {
+      _count: {
+        select: { expenses: true },
+      },
+    },
+  });
+  if (!existing) {
+    throw new Error("NOT_FOUND: Expense type not found");
+  }
+
+  if (existing._count.expenses > 0) {
+    throw new Error(
+      `CANNOT_DELETE_EXPENSE_TYPE_IN_USE: Cannot delete expense type with ${existing._count.expenses} associated expenses.`
+    );
+  }
+
+  return prisma.$transaction(async (tx) => {
+    await tx.expenseType.delete({
+      where: { id: typeId },
+    });
+
+    await audit(tx, {
+      userId,
+      action: "CANCEL",
+      entityType: "ExpenseType",
+      entityId: typeId,
+      oldValue: {
+        name: existing.name,
+        isDefault: existing.isDefault,
+      },
+    });
+
+    return { success: true, deletedId: typeId, name: existing.name };
+  });
+}
+
+/**
  * تسجيل مصروف جديد مع التحقق وتسجيل الـ Audit ذرّيًا
  */
 export async function createExpense(userId: string, input: CreateExpenseInput) {

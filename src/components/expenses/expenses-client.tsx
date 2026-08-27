@@ -7,12 +7,12 @@ import {
   Calculator,
   Calendar as CalendarIcon,
   Edit2,
+  FolderCog,
   Loader2,
   Plus,
   Receipt,
   RefreshCw,
   Search,
-  Tag,
   Trash2,
   Wallet,
   X,
@@ -52,6 +52,7 @@ import {
   ExpenseTypeDialog,
   type ExpenseTypeOption,
 } from "./expense-type-dialog";
+import { ManageExpenseTypesDialog } from "./manage-expense-types-dialog";
 
 export interface ExpenseItem {
   id: string;
@@ -155,6 +156,7 @@ export function ExpensesClient({
     { mode: "create" } | { mode: "edit"; expense: ExpenseDialogItem } | null
   >(null);
   const [typeDialogOpen, setTypeDialogOpen] = useState(false);
+  const [manageTypesDialogOpen, setManageTypesDialogOpen] = useState(false);
   const [deletingExpense, setDeletingExpense] = useState<ExpenseItem | null>(null);
   const [deleting, setDeleting] = useState(false);
 
@@ -341,11 +343,11 @@ export function ExpensesClient({
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setTypeDialogOpen(true)}
+              onClick={() => setManageTypesDialogOpen(true)}
               className="h-9 gap-1.5"
             >
-              <Tag className="h-4 w-4" />
-              <span>{t("addCategory")}</span>
+              <FolderCog className="h-4 w-4" />
+              <span>{t("manageCategories") || "إدارة أنواع المصاريف"}</span>
             </Button>
           )}
 
@@ -763,6 +765,19 @@ export function ExpensesClient({
             if (newType) {
               setExpenseTypes((prev) => [...prev, newType]);
             }
+          }}
+        />
+      )}
+
+      {/* Manage Expense Types Dialog */}
+      {canManageTypes && (
+        <ManageExpenseTypesDialog
+          types={expenseTypes}
+          open={manageTypesDialogOpen}
+          onClose={() => setManageTypesDialogOpen(false)}
+          onTypesUpdated={() => {
+            refreshExpenseTypes();
+            fetchData();
           }}
         />
       )}
