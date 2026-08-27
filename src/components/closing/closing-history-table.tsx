@@ -34,6 +34,8 @@ export type QuickDatePreset = "today" | "yesterday" | "last7days" | "thisMonth" 
 export interface ClosingHistoryTableProps {
   initialClosings: ClosingDetailsItem[];
   initialTotalCount: number;
+  userRole?: string;
+  onShiftReopened?: () => void;
 }
 
 function formatDateToIso(d: Date): string {
@@ -77,6 +79,8 @@ function getDateRangeForPreset(preset: QuickDatePreset): {
 export function ClosingHistoryTable({
   initialClosings,
   initialTotalCount,
+  userRole,
+  onShiftReopened,
 }: ClosingHistoryTableProps) {
   const t = useTranslations("closing");
   const tHistory = useTranslations("closing.historyTable");
@@ -451,6 +455,17 @@ export function ClosingHistoryTable({
         closing={selectedClosing}
         open={selectedClosing !== null}
         onClose={() => setSelectedClosing(null)}
+        userRole={userRole}
+        onReopenSuccess={() => {
+          fetchData(quickDate);
+          onShiftReopened?.();
+        }}
+        onNotesUpdated={(newNotes) => {
+          if (selectedClosing) {
+            setSelectedClosing({ ...selectedClosing, notes: newNotes });
+          }
+          fetchData(quickDate);
+        }}
       />
     </div>
   );

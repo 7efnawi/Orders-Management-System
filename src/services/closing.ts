@@ -422,3 +422,135 @@ export async function getDailyClosingById(closingId: string) {
     },
   });
 }
+
+/**
+ * إعادة فتح شيفت مغلق بواسطة Owner أو Manager
+ * يقوم بإلغاء سجل DailyClosing وتصفير closedAt مع توثيق الـ Audit ذرّيًا
+ */
+export async function reopenShift(userId: string, shiftId: string, reason?: string | null) {
+  const trimmedUserId = userId?.trim();
+  const trimmedShiftId = shiftId?.trim();
+
+  if (!trimmedUserId) {
+    throw new Error("INVALID_USER_ID: User ID is required");
+  }
+  if (!trimmedShiftId) {
+    throw new Error("INVALID_SHIFT_ID: Shift ID is required");
+  }
+
+  const shift = await prisma.shift.findUnique({
+    where: { id: trimmedShiftId },
+    include: {
+      closing: true,
+      cashier: {
+        select: { id: true, name: true, role: true },
+      },
+    },
+  });
+
+  if (!shift) {
+    throw new Error("NOT_FOUND: Shift not found");
+  }
+
+  if (shift.closedAt === null) {
+    throw new Error("SHIFT_NOT_CLOSED: Shift is currently open and cannot be reopened");
+  }
+
+  const previousClosedAt = shift.closedAt;
+
+  return prisma.$transaction(async (tx) => {
+    // 1. حذف سجل الإغلاق السابق المرتبط بالشيفت للسماح باستئناف الحسابات
+    if (shift.closing) {
+      await tx.dailyClosing.delete({
+        where: { id: shift.closing.id },
+      });
+    }
+
+    // 2. تحديث الشيفت ليكون مفتوحًا
+    const reopenedShift = await tx.shift.update({
+      where: { id: trimmedShiftId },
+      data: { closedAt: null },
+      include: {
+        cashier: {
+          select: { id: true, name: true, email: true, role: true },
+        },
+      },
+    });
+
+    // 3. توثيق العملية ذرّيًا في سجل المراقبة
+    await audit(tx, {
+      userId: trimmedUserId,
+      action: "UPDATE",
+      entityType: "Shift",
+      entityId: shift.id,
+      oldValue: {
+        closedAt: previousClosedAt ? previousClosedAt.toISOString() : null,
+        closingId: shift.closing?.id ?? null,
+      },
+      newValue: {
+        closedAt: null,
+        reopenedBy: trimmedUserId,
+        reason: reason?.trim() || "Shift reopened by manager/owner",
+      },
+    });
+
+    return reopenedShift;
+  });
+}
+
+/**
+ * تعديل ملاحظات الإغلاق اليومي بواسطة Owner أو Manager
+ */
+export async function updateDailyClosing(
+  userId: string,
+  closingId: string,
+  data: { notes?: string | null }
+) {
+  const trimmedUserId = userId?.trim();
+  const trimmedClosingId = closingId?.trim();
+
+  if (!trimmedUserId) {
+    throw new Error("INVALID_USER_ID: User ID is required");
+  }
+  if (!trimmedClosingId) {
+    throw new Error("INVALID_CLOSING_ID: Closing ID is required");
+  }
+
+  const closing = await prisma.dailyClosing.findUnique({
+    where: { id: trimmedClosingId },
+  });
+
+  if (!closing) {
+    throw new Error("NOT_FOUND: Daily closing not found");
+  }
+
+  const oldNotes = closing.notes;
+  const newNotes = data.notes !== undefined ? data.notes?.trim() || null : oldNotes;
+
+  return prisma.$transaction(async (tx) => {
+    const updated = await tx.dailyClosing.update({
+      where: { id: trimmedClosingId },
+      data: { notes: newNotes },
+      include: {
+        shift: {
+          include: {
+            cashier: {
+              select: { id: true, name: true, role: true },
+            },
+          },
+        },
+      },
+    });
+
+    await audit(tx, {
+      userId: trimmedUserId,
+      action: "UPDATE",
+      entityType: "DailyClosing",
+      entityId: closing.id,
+      oldValue: { notes: oldNotes },
+      newValue: { notes: newNotes },
+    });
+
+    return updated;
+  });
+}

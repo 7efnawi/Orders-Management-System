@@ -177,6 +177,11 @@ export function ClosingClient({
         <ClosingHistoryTable
           initialClosings={initialClosings}
           initialTotalCount={initialTotalClosingsCount}
+          userRole={currentUser.role}
+          onShiftReopened={async () => {
+            await refreshCurrentShift();
+            setActiveTab("activeShift");
+          }}
         />
       )}
     </div>

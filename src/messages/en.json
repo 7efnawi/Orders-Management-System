@@ -608,6 +608,17 @@
       "noNotes": "No notes recorded for this closing.",
       "close": "Close",
       "print": "Print Report"
-    }
+    },
+    "reopenShift": "Reopen Shift",
+    "editNotes": "Edit Notes",
+    "reopenShiftTitle": "Reopen Closed Shift",
+    "reopenShiftDesc": "This will void the previous closing snapshot and restore the shift to OPEN status, allowing orders and expenses to be adjusted.",
+    "reopenReasonLabel": "Reason for Reopening (Optional)",
+    "reopenReasonPlaceholder": "e.g., drawer discrepancy review, late order adjustment...",
+    "confirmReopen": "Confirm Reopen",
+    "reopenSuccess": "Shift reopened successfully. Cashier can resume order entries.",
+    "editNotesTitle": "Edit Closing Notes",
+    "editNotesDesc": "Manager or Owner can adjust reconciliation notes and discrepancy details for this closing.",
+    "notesUpdatedSuccess": "Closing notes updated successfully"
   }
 }

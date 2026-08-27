@@ -1,12 +1,14 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import {
   Clock,
   CreditCard,
+  Edit,
   FileText,
   Globe,
+  LockOpen,
   Printer,
   Receipt,
   Truck,
@@ -23,6 +25,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { ReopenShiftDialog } from "./reopen-shift-dialog";
+import { EditClosingNotesDialog } from "./edit-closing-notes-dialog";
 import { Card, CardContent } from "@/components/ui/card";
 
 export interface ClosingDetailsItem {
@@ -56,17 +60,26 @@ export interface ClosingDetailsModalProps {
   closing: ClosingDetailsItem | null;
   open: boolean;
   onClose: () => void;
+  userRole?: string;
+  onReopenSuccess?: () => void;
+  onNotesUpdated?: (newNotes: string) => void;
 }
 
 export function ClosingDetailsModal({
   closing,
   open,
   onClose,
+  userRole,
+  onReopenSuccess,
+  onNotesUpdated,
 }: ClosingDetailsModalProps) {
   const t = useTranslations("closing");
   const tModal = useTranslations("closing.detailsModal");
   const tRoles = useTranslations("roles");
   const locale = useLocale();
+
+  const [reopenOpen, setReopenOpen] = useState(false);
+  const [editNotesOpen, setEditNotesOpen] = useState(false);
 
   // Currency Formatter
   const formatCurrency = useCallback(
@@ -296,29 +309,80 @@ export function ClosingDetailsModal({
           </div>
         </div>
 
-        <DialogFooter className="flex-row items-center justify-between sm:justify-between pt-2">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => window.print()}
-            className="gap-1.5 text-xs"
-          >
-            <Printer className="h-3.5 w-3.5" />
-            <span>{tModal("print")}</span>
-          </Button>
+        <DialogFooter className="flex-col sm:flex-row items-center justify-between gap-2 pt-2">
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => window.print()}
+              className="gap-1.5 text-xs"
+            >
+              <Printer className="size-3.5" />
+              <span>{tModal("print")}</span>
+            </Button>
+
+            {(userRole === "OWNER" || userRole === "MANAGER") && (
+              <>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setEditNotesOpen(true)}
+                  className="gap-1.5 text-xs"
+                >
+                  <Edit className="size-3.5" />
+                  <span>{t("editNotes") || "تعديل الملاحظات"}</span>
+                </Button>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setReopenOpen(true)}
+                  className="gap-1.5 text-xs text-amber-600 dark:text-amber-400 border-amber-500/30 hover:bg-amber-500/10"
+                >
+                  <LockOpen className="size-3.5" />
+                  <span>{t("reopenShift") || "إعادة فتح الشيفت"}</span>
+                </Button>
+              </>
+            )}
+          </div>
 
           <Button
             type="button"
             variant="secondary"
             size="sm"
             onClick={onClose}
-            className="text-xs"
+            className="text-xs w-full sm:w-auto"
           >
             {tModal("close")}
           </Button>
         </DialogFooter>
       </DialogContent>
+
+      {/* Reopen Shift Dialog */}
+      <ReopenShiftDialog
+        shiftId={closing.shiftId}
+        cashierName={closing.shift.cashier.name}
+        open={reopenOpen}
+        onClose={() => setReopenOpen(false)}
+        onSuccess={() => {
+          onClose();
+          onReopenSuccess?.();
+        }}
+      />
+
+      {/* Edit Closing Notes Dialog */}
+      <EditClosingNotesDialog
+        closingId={closing.id}
+        initialNotes={closing.notes}
+        open={editNotesOpen}
+        onClose={() => setEditNotesOpen(false)}
+        onSuccess={(newNotes) => {
+          onNotesUpdated?.(newNotes);
+        }}
+      />
     </Dialog>
   );
 }
