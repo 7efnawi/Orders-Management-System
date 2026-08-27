@@ -156,7 +156,37 @@
     "paymentMethods": {
       "CASH": "Cash",
       "VISA": "Visa / Card",
-      "ONLINE": "Online (Prepaid)"
+      "ONLINE": "Online (Prepaid)",
+      "cashDesc": "Cash on delivery or at counter",
+      "visaDesc": "POS card terminal payment",
+      "onlineDesc": "Prepaid online via app / wallet"
+    },
+    "receipt": {
+      "thermalReceipt": "Thermal POS Receipt",
+      "printReceipt": "Print Receipt",
+      "copyReceipt": "Copy Receipt",
+      "receiptCopied": "Receipt text copied to clipboard!",
+      "previewTitle": "POS Receipt Ticket Preview",
+      "livePreview": "Live Preview",
+      "dateTime": "Date & Time",
+      "cashier": "Cashier",
+      "item": "Item",
+      "qty": "Qty",
+      "unitPrice": "Unit Price",
+      "amount": "Amount",
+      "emptyReceiptNotice": "Add items to cart to preview the thermal receipt",
+      "thankYouAr": "Thank you for choosing Sushi Dark Kitchen 🍣",
+      "thankYouEn": "Thank you for dining with us! 🍣",
+      "togglePreview": "Receipt Preview",
+      "backToCart": "Back to Cart",
+      "viewThermalReceipt": "View Thermal Receipt"
+    },
+    "loyalty": {
+      "newGuest": "New Guest 🆕",
+      "regular": "Regular Customer 🍣",
+      "vip": "Gold VIP 👑",
+      "legend": "Platinum Legend 💎",
+      "ordersCount": "{count} previous orders"
     },
     "cancelReasons": {
       "CUSTOMER_CHANGED_MIND": "Customer changed mind",

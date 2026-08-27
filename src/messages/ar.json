@@ -156,7 +156,37 @@
     "paymentMethods": {
       "CASH": "كاش (نقدي)",
       "VISA": "فيزا / بطاقة",
-      "ONLINE": "أونلاين (مدفوع مسبقًا)"
+      "ONLINE": "أونلاين (مدفوع مسبقًا)",
+      "cashDesc": "دفع نقدي عند الاستلام أو الكاشير",
+      "visaDesc": "دفع عبر جهاز نقاط البيع / ماكينة الفيزا",
+      "onlineDesc": "مدفوع مسبقًا عبر التطبيق أو المحفظة"
+    },
+    "receipt": {
+      "thermalReceipt": "إيصال حراري (POS)",
+      "printReceipt": "طباعة الإيصال",
+      "copyReceipt": "نسخ نص الإيصال",
+      "receiptCopied": "تم نسخ نص الإيصال بنجاح!",
+      "previewTitle": "معاينة إيصال الكاشير",
+      "livePreview": "معاينة حية",
+      "dateTime": "التاريخ والوقت",
+      "cashier": "الكاشير",
+      "item": "الصنف",
+      "qty": "الكمية",
+      "unitPrice": "سعر الوحدة",
+      "amount": "المبلغ",
+      "emptyReceiptNotice": "أضف أصنافًا للسلة لمعاينة الإيصال الحراري",
+      "thankYouAr": "شكراً لاختياركم سوشي دارك كيتشن 🍣",
+      "thankYouEn": "Thank you for dining with us! 🍣",
+      "togglePreview": "معاينة الإيصال",
+      "backToCart": "الرجوع للسلة",
+      "viewThermalReceipt": "عرض الإيصال الحراري"
+    },
+    "loyalty": {
+      "newGuest": "ضيف جديد 🆕",
+      "regular": "عميل دائم 🍣",
+      "vip": "عميل ذهبي VIP 👑",
+      "legend": "أسطورة بلاتيني 💎",
+      "ordersCount": "{count} طلب سابق"
     },
     "cancelReasons": {
       "CUSTOMER_CHANGED_MIND": "العميل غير رأيه",
