@@ -633,5 +633,59 @@
     "editNotesTitle": "Edit Closing Notes",
     "editNotesDesc": "Manager or Owner can adjust reconciliation notes and discrepancy details for this closing.",
     "notesUpdatedSuccess": "Closing notes updated successfully"
+  },
+  "dashboard": {
+    "title": "Main Dashboard",
+    "subtitle": "Sushi Dark Kitchen Operations Hub — Orders, Revenue, and Shift Tracking",
+    "greeting": "Welcome, {name} 👋",
+    "activeShift": "Shift Active",
+    "noActiveShift": "No active shift open",
+    "shiftStartedAt": "Started at {time}",
+    "newOrderBtn": "New Order",
+    "liveOrdersBtn": "Live Orders & Kitchen",
+    "closingBtn": "Vault & Shift",
+    "kpi": {
+      "activeOrders": "Active Orders",
+      "activeOrdersDesc": "Orders in prep or out for delivery",
+      "todayDelivered": "Delivered Orders",
+      "todayDeliveredDesc": "Successfully completed orders",
+      "shiftRevenue": "Shift Total Revenue",
+      "shiftRevenueDesc": "Cash + Visa + Online collected",
+      "netCash": "Vault Net Cash",
+      "netCashDesc": "Drawer cash after shift expenses",
+      "shiftExpenses": "Shift Expenses",
+      "shiftExpensesDesc": "Total expenses logged in shift",
+      "totalOrders": "Total Orders"
+    },
+    "recentOrders": {
+      "title": "Recent Shift Orders",
+      "viewAll": "View All Orders",
+      "orderNum": "Order #",
+      "brand": "Brand",
+      "platform": "Platform",
+      "customer": "Customer",
+      "status": "Status",
+      "total": "Total",
+      "action": "Details",
+      "empty": "No orders recorded in the current shift yet.",
+      "emptyCta": "Record First Order"
+    },
+    "quickLinks": {
+      "title": "Quick Operations",
+      "newOrder": "Create New Order",
+      "newOrderDesc": "Fast POS entry for cashier",
+      "kitchenBoard": "Live Kitchen Board",
+      "kitchenBoardDesc": "Track sushi prep stages and kanban",
+      "shiftClosing": "Shift Closing & Drawer",
+      "shiftClosingDesc": "Reconcile cash and hand over shift",
+      "expenses": "Expense Management",
+      "expensesDesc": "Track daily purchases and outflows",
+      "delivery": "Drivers & Delivery Zones",
+      "deliveryDesc": "Manage driver fleet and zone fees",
+      "menu": "Menu & Products",
+      "menuDesc": "Manage sushi categories and dishes"
+    },
+    "brandsTitle": "Sushi Brands Portfolio",
+    "platformsTitle": "Connected Platforms"
   }
 }

@@ -439,3 +439,230 @@ export async function getOrderById(orderId: string) {
     },
   });
 }
+
+export interface DashboardOverview {
+  activeShift: {
+    id: string;
+    openedAt: Date;
+    cashierName: string;
+  } | null;
+  shiftSummary: {
+    totalOrders: number;
+    activeOrders: number;
+    deliveredOrders: number;
+    cancelledOrders: number;
+    totalRevenue: number;
+    totalCash: number;
+    totalVisa: number;
+    totalOnline: number;
+    totalExpenses: number;
+    netCash: number;
+  };
+  statusCounts: Record<OrderStatus, number>;
+  recentOrders: Array<{
+    id: string;
+    orderNumber: string;
+    status: OrderStatus;
+    totalPrice: number;
+    paymentMethod: PaymentMethod;
+    createdAt: Date;
+    brand: { id: string; name: string };
+    platform: { id: string; name: string };
+    customer: { id: string; name: string; phone: string };
+    driver?: { id: string; name: string } | null;
+  }>;
+  brandCounts: Array<{ id: string; name: string; count: number }>;
+  platformCounts: Array<{ id: string; name: string; count: number }>;
+}
+
+/**
+ * Fetches centralized live operational KPIs and overview metrics for the main dashboard.
+ */
+export async function getDashboardOverview(userId: string, role: Role): Promise<DashboardOverview> {
+  // 1. Locate active open shift
+  let activeShift = await prisma.shift.findFirst({
+    where: role === "CASHIER" ? { cashierId: userId, closedAt: null } : { closedAt: null },
+    orderBy: { openedAt: "desc" },
+    include: {
+      cashier: { select: { id: true, name: true, role: true } },
+    },
+  });
+
+  if (!activeShift && role === "CASHIER") {
+    activeShift = await prisma.shift.findFirst({
+      where: { closedAt: null },
+      orderBy: { openedAt: "desc" },
+      include: {
+        cashier: { select: { id: true, name: true, role: true } },
+      },
+    });
+  }
+
+  // 2. Define timeframe: shift window or start of today
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+
+  const timeFilter: Prisma.DateTimeFilter = activeShift
+    ? { gte: activeShift.openedAt }
+    : { gte: todayStart };
+
+  // 3. Parallel fetch of required datasets
+  const [
+    ordersInPeriod,
+    expensesInPeriod,
+    recentOrdersRaw,
+    brands,
+    platforms,
+  ] = await Promise.all([
+    prisma.order.findMany({
+      where: { createdAt: timeFilter },
+      select: {
+        id: true,
+        status: true,
+        paymentMethod: true,
+        subtotal: true,
+        discount: true,
+        discountStatus: true,
+        deliveryFee: true,
+        brandId: true,
+        platformId: true,
+      },
+    }),
+    prisma.expense.findMany({
+      where: {
+        OR: [
+          { createdAt: timeFilter },
+          { date: timeFilter },
+        ],
+      },
+      select: {
+        value: true,
+        quantity: true,
+      },
+    }),
+    prisma.order.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 6,
+      include: {
+        brand: { select: { id: true, name: true } },
+        platform: { select: { id: true, name: true } },
+        customer: { select: { id: true, name: true, phone: true } },
+        driver: { select: { id: true, name: true, type: true } },
+      },
+    }),
+    prisma.brand.findMany({
+      where: { isActive: true },
+      select: { id: true, name: true },
+      orderBy: { name: "asc" },
+    }),
+    prisma.platform.findMany({
+      where: { isActive: true },
+      select: { id: true, name: true },
+      orderBy: { name: "asc" },
+    }),
+  ]);
+
+  let totalCash = 0;
+  let totalVisa = 0;
+  let totalOnline = 0;
+  let totalRevenue = 0;
+
+  const statusCounts: Record<OrderStatus, number> = {
+    NEW: 0,
+    CONFIRMED: 0,
+    PREPARING: 0,
+    READY: 0,
+    OUT_FOR_DELIVERY: 0,
+    DELIVERED: 0,
+    CANCELLED: 0,
+  };
+
+  const brandCountMap = new Map<string, number>();
+  const platformCountMap = new Map<string, number>();
+
+  for (const o of ordersInPeriod) {
+    statusCounts[o.status] = (statusCounts[o.status] || 0) + 1;
+    brandCountMap.set(o.brandId, (brandCountMap.get(o.brandId) || 0) + 1);
+    platformCountMap.set(o.platformId, (platformCountMap.get(o.platformId) || 0) + 1);
+
+    if (o.status !== "CANCELLED") {
+      const subtotal = Number(o.subtotal);
+      const discount = o.discountStatus === "REJECTED" ? 0 : Number(o.discount);
+      const fee = Number(o.deliveryFee);
+      const total = Math.max(0, subtotal - discount + fee);
+
+      totalRevenue += total;
+      if (o.paymentMethod === "CASH") totalCash += total;
+      else if (o.paymentMethod === "VISA") totalVisa += total;
+      else if (o.paymentMethod === "ONLINE") totalOnline += total;
+    }
+  }
+
+  let totalExpenses = 0;
+  for (const exp of expensesInPeriod) {
+    totalExpenses += Number(exp.value) * (exp.quantity || 1);
+  }
+
+  const netCash = totalCash - totalExpenses;
+
+  const activeOrdersCount =
+    statusCounts.NEW +
+    statusCounts.CONFIRMED +
+    statusCounts.PREPARING +
+    statusCounts.READY +
+    statusCounts.OUT_FOR_DELIVERY;
+
+  const recentOrders = recentOrdersRaw.map((o) => {
+    const subtotal = Number(o.subtotal);
+    const discount = o.discountStatus === "REJECTED" ? 0 : Number(o.discount);
+    const fee = Number(o.deliveryFee);
+    const total = Math.max(0, subtotal - discount + fee);
+
+    return {
+      id: o.id,
+      orderNumber: o.orderNumber,
+      status: o.status,
+      paymentMethod: o.paymentMethod,
+      totalPrice: total,
+      createdAt: o.createdAt,
+      brand: o.brand,
+      platform: o.platform,
+      customer: o.customer,
+      driver: o.driver,
+    };
+  });
+
+  return {
+    activeShift: activeShift
+      ? {
+          id: activeShift.id,
+          openedAt: activeShift.openedAt,
+          cashierName: activeShift.cashier.name,
+        }
+      : null,
+    shiftSummary: {
+      totalOrders: ordersInPeriod.length,
+      activeOrders: activeOrdersCount,
+      deliveredOrders: statusCounts.DELIVERED,
+      cancelledOrders: statusCounts.CANCELLED,
+      totalRevenue,
+      totalCash,
+      totalVisa,
+      totalOnline,
+      totalExpenses,
+      netCash,
+    },
+    statusCounts,
+    recentOrders,
+    brandCounts: brands.map((b) => ({
+      id: b.id,
+      name: b.name,
+      count: brandCountMap.get(b.id) || 0,
+    })),
+    platformCounts: platforms.map((p) => ({
+      id: p.id,
+      name: p.name,
+      count: platformCountMap.get(p.id) || 0,
+    })),
+  };
+}

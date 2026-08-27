@@ -1,17 +1,28 @@
-import { getTranslations, setRequestLocale } from "next-intl/server";
+import { setRequestLocale } from "next-intl/server";
 import { requirePageUser } from "@/lib/auth";
+import { getDashboardOverview } from "@/services/orders";
+import { DashboardOverviewClient } from "@/components/dashboard/dashboard-overview";
 
-export default async function DashboardPage({ params }: { params: Promise<{ locale: string }> }) {
+export default async function DashboardPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
   const { locale } = await params;
   setRequestLocale(locale);
 
   const user = await requirePageUser();
-  const t = await getTranslations({ locale, namespace: "auth" });
+  const overview = await getDashboardOverview(user.id, user.role);
 
   return (
-    <main className="flex flex-1 flex-col items-center justify-center gap-2 p-8 text-center">
-      <h1 className="text-2xl font-bold">{t("welcome", { name: user.name })}</h1>
-      <p className="text-muted-foreground">Phase 2 — Authentication &amp; Roles ✓</p>
-    </main>
+    <DashboardOverviewClient
+      user={{
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      }}
+      overview={overview}
+    />
   );
 }
