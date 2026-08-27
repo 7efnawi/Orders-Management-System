@@ -24,9 +24,9 @@ export function PlatformBadge({
   const token = getPlatformToken(platformName);
 
   const sizeStyles = {
-    sm: "text-[10px] px-2 py-0.5 gap-1.5",
-    md: "text-xs px-2.5 py-1 gap-1.5",
-    lg: "text-sm px-3 py-1.5 gap-2",
+    sm: "text-xs h-6 px-2 gap-1.5",
+    md: "text-xs h-7 px-2.5 gap-2",
+    lg: "text-sm h-8 px-3 gap-2.5",
   };
 
   const dotSizes = {
@@ -51,7 +51,7 @@ export function PlatformBadge({
       data-slot="platform-badge"
       data-platform={token.name}
       className={cn(
-        "inline-flex items-center rounded-full font-medium border transition-colors select-none",
+        "inline-flex items-center rounded-full font-medium border transition-colors select-none shrink-0",
         sizeStyles[size],
         variantStyles[variant],
         className
@@ -62,7 +62,7 @@ export function PlatformBadge({
       {showLogo && (
         <PlatformLogo
           platformName={token.name}
-          size={size === "lg" ? "md" : "sm"}
+          size={size === "lg" ? "sm" : "xs"}
           className="shrink-0"
         />
       )}

@@ -46,11 +46,13 @@
    - اجتياز اختبارات محاكاة المراحل: `verify-phase4.ts`, `verify-phase5.ts`, `verify-phase6.ts`, `verify-phase7.ts` بنسبة 100%.
    - اجتياز `npm run typecheck` و `npm run lint` بدون أي خطأ أو تحذير (0 errors, 0 warnings).
    - اجتياز بناء الإنتاج الكامل `npm run build` لـ 35 مساراً.
-9. تصحيحات وإصلاحات الأخطاء (Bugfixes):
-   - إصلاح خطأ `MISSING_MESSAGE: Could not resolve common.close` بإضافة مفتاح `close` لملفات الترجمة.
-   - إصلاح مشكلة عدم ظهور شعارات المنصات ذات العرض المستطيل بتبديل `sizeClasses` الثابتة إلى `heightClasses` مع `w-auto` لتأخذ عرضها الطبيعي.
+10. توحيد مقاسات وأشكال أيقونات المنصات وحذف بوكس رقم الطلب الخارجي (Platform Logo Standardization & External ID Box Removal):
+    - توحيد مكوّن `PlatformLogo` ليعرض أيقونات تطبيقات مربعة قياسية موحدة الأبعاد (`size-5` / `size-6` مع `rounded-md` وظلال متناسقة) لكافة المنصات الست (طلبات، المنيوز، إنستاشوب، هاري آب، فيسبوك، هاتف)، مستخرجة من أصول المتجهات الرسمية بدون أي تشوه أو تكرار للنصوص.
+    - ضبط ارتفاعات وشارات `PlatformBadge` لتكون متناسقة ومتطابقة رأسياً وأفقياً بجميع البطاقات.
+    - إعادة تصميم قائمة اختيار المنصة في شاشة إنشاء الطلب `/orders/new` لتعرض صفوفاً أنيقة ونظيفة وموحدة بدلاً من الحبوب العائمة غير المتناسقة.
+    - حذف بوكس رقم الطلب الخارجي المساعد (`externalIdPlaceholder`) نهائياً بجوار اختيار التطبيق استجابة لتوجيه المستخدم.
 **السبب:** تلبية الملاحظات والتعديلات التشغيلية والواجهية التي طلبها المستخدم مع الالتزام بأعلى معايير الأداء والتبسيط المعماري وسجل التدقيق (Directives §0, §2, §3).
-**الملفات المتأثرة:** `src/services/expenses.ts`, `src/app/api/expenses/types/[id]/route.ts`, `src/components/expenses/manage-expense-types-dialog.tsx`, `src/components/expenses/expenses-client.tsx`, `src/lib/search.ts`, `src/components/ui/searchable-select.tsx`, `src/components/orders/order-form.tsx`, `src/components/delivery/assign-driver-dialog.tsx`, `src/components/orders/kitchen-kanban.tsx`, `src/components/orders/orders-table.tsx`, `src/components/ui/platform-logo.tsx`, `src/components/theme-switcher.tsx`, `src/components/theme-provider.tsx`, `src/app/globals.css`, `src/messages/ar.json`, `src/messages/en.json`, `PROJECT_LOG.md`
+**الملفات المتأثرة:** `src/components/ui/platform-logo.tsx`, `src/components/ui/platform-badge.tsx`, `src/components/orders/order-form.tsx`, `src/lib/visualTokens.ts`, `PROJECT_LOG.md`
 **تأثير على أجزاء تانية:** تحسين ملحوظ في سرعة وسلاسة الاستخدام، وجاهزية النظام بالكامل للتشغيل الفعلي.
 
 ---

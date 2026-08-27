@@ -23,7 +23,7 @@ import {
   User,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { PlatformBadge } from "@/components/ui/platform-badge";
+import { PlatformLogo } from "@/components/ui/platform-logo";
 import { LoyaltyTierBadge } from "@/components/ui/loyalty-badge";
 import { SearchableSelect } from "@/components/ui/searchable-select";
 import { ReceiptTicketPreview } from "@/components/orders/receipt-ticket-preview";
@@ -596,41 +596,34 @@ export function OrderForm({
               value={selectedPlatformId}
               onValueChange={setSelectedPlatformId}
             >
-              <SelectTrigger className="w-44 h-11">
+              <SelectTrigger className="w-52 h-11 bg-background hover:bg-muted/40 transition-colors">
                 <SelectValue placeholder={t("selectPlatform")}>
                   {(() => {
                     const activeP = platforms.find(
                       (p) => p.id === selectedPlatformId
                     );
                     return activeP ? (
-                      <PlatformBadge
-                        platformName={activeP.name}
-                        size="sm"
-                      />
+                      <div className="flex items-center gap-2.5">
+                        <PlatformLogo platformName={activeP.name} size="sm" />
+                        <span className="font-semibold text-sm">{activeP.name}</span>
+                      </div>
                     ) : (
-                      t("selectPlatform")
+                      <span className="text-muted-foreground text-sm">{t("selectPlatform")}</span>
                     );
                   })()}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {platforms.map((p) => (
-                  <SelectItem key={p.id} value={p.id}>
-                    <PlatformBadge platformName={p.name} size="sm" />
+                  <SelectItem key={p.id} value={p.id} className="py-2 px-2.5 cursor-pointer">
+                    <div className="flex items-center gap-2.5 w-full">
+                      <PlatformLogo platformName={p.name} size="sm" />
+                      <span className="font-medium text-sm">{p.name}</span>
+                    </div>
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-          </div>
-
-          {/* External ID */}
-          <div className="flex items-center gap-1.5">
-            <Input
-              value={externalId}
-              onChange={(e) => setExternalId(e.target.value)}
-              placeholder={t("externalIdPlaceholder")}
-              className="h-11 w-40 text-xs font-mono tabular-nums"
-            />
           </div>
         </div>
       </div>
