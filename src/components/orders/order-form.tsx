@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { toast } from "sonner";
 import {
@@ -25,6 +25,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { PlatformBadge } from "@/components/ui/platform-badge";
 import { LoyaltyTierBadge } from "@/components/ui/loyalty-badge";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import { ReceiptTicketPreview } from "@/components/orders/receipt-ticket-preview";
 import { getBrandToken } from "@/lib/visualTokens";
 import { Button } from "@/components/ui/button";
@@ -135,6 +136,7 @@ export function OrderForm({
   initialDrivers,
 }: OrderFormProps) {
   const t = useTranslations("orders");
+  const locale = useLocale();
   const router = useRouter();
 
   // ────────────────────────── State ──────────────────────────
@@ -359,6 +361,37 @@ export function OrderForm({
   const grandTotal = useMemo(() => {
     return Math.max(0, subtotal - numericDiscount + netDeliveryFee);
   }, [subtotal, numericDiscount, netDeliveryFee]);
+
+  const zoneSelectItems = useMemo(
+    () =>
+      zones.map((z) => ({
+        id: z.id,
+        label: z.name,
+        sublabel: `${z.fee.toFixed(0)} ${t("currency")}`,
+        keywords: [z.fee, `${z.fee}`],
+      })),
+    [zones, t]
+  );
+
+  const driverSelectItems = useMemo(
+    () =>
+      drivers.map((d) => ({
+        id: d.id,
+        label: d.name,
+        badge: d.type,
+        keywords: [
+          d.type,
+          d.type === "OWN"
+            ? "داخلي خاص"
+            : d.type === "APP"
+            ? "تطبيق شركة"
+            : d.type === "EXTERNAL"
+            ? "خارجي حر"
+            : "استلام عميل",
+        ],
+      })),
+    [drivers]
+  );
 
   // ────────────────────────── Product Filtering ──────────────────────────
   const displayedProducts = useMemo(() => {
@@ -972,44 +1005,28 @@ export function OrderForm({
                     <Label className="text-xs font-semibold mb-1 block">
                       {t("deliveryZone")}
                     </Label>
-                    <Select
-                      value={selectedZoneId || "NONE"}
-                      onValueChange={(val) => setSelectedZoneId(val === "NONE" ? "" : val)}
-                    >
-                      <SelectTrigger className="h-10 text-xs">
-                        <SelectValue placeholder={t("selectZone")} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="NONE">{t("noZone")}</SelectItem>
-                        {zones.map((z) => (
-                          <SelectItem key={z.id} value={z.id}>
-                            {z.name} ({z.fee.toFixed(0)} {t("currency")})
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <SearchableSelect
+                      items={zoneSelectItems}
+                      value={selectedZoneId}
+                      onChange={(val) => setSelectedZoneId(val)}
+                      placeholder={t("selectZone")}
+                      searchPlaceholder={locale === "ar" ? "ابحث باسم المنطقة أو السعر..." : "Search zone name or fee..."}
+                      allowClear
+                    />
                   </div>
 
                   <div>
                     <Label className="text-xs font-semibold mb-1 block">
                       {t("driver")}
                     </Label>
-                    <Select
-                      value={selectedDriverId || "NONE"}
-                      onValueChange={(val) => setSelectedDriverId(val === "NONE" ? "" : val)}
-                    >
-                      <SelectTrigger className="h-10 text-xs">
-                        <SelectValue placeholder={t("selectDriver")} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="NONE">{t("noDriver")}</SelectItem>
-                        {drivers.map((d) => (
-                          <SelectItem key={d.id} value={d.id}>
-                            {d.name} ({d.type})
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <SearchableSelect
+                      items={driverSelectItems}
+                      value={selectedDriverId}
+                      onChange={(val) => setSelectedDriverId(val)}
+                      placeholder={t("selectDriver")}
+                      searchPlaceholder={locale === "ar" ? "ابحث باسم المندوب أو نوعه..." : "Search driver name or fleet..."}
+                      allowClear
+                    />
                   </div>
                 </div>
 

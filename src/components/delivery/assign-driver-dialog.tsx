@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { matchesMultiToken } from "@/lib/search";
 import {
   Dialog,
   DialogContent,
@@ -173,10 +174,15 @@ function AssignDriverForm({
   }, [t]);
 
   const filteredDrivers = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    if (!q) return drivers;
-    return drivers.filter((d) => d.name.toLowerCase().includes(q));
-  }, [drivers, search]);
+    if (!search.trim()) return drivers;
+    return drivers.filter((d) =>
+      matchesMultiToken(search, [
+        d.name,
+        d.type,
+        t(DRIVER_TYPE_BADGES[d.type]?.labelKey || ""),
+      ])
+    );
+  }, [drivers, search, t]);
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
