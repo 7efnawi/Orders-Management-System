@@ -221,6 +221,29 @@
       "delivered": "تم التسليم",
       "cancelled": "الملغاة"
     },
+    "viewSwitcher": {
+      "table": "جدول الطلبات",
+      "kanban": "لوحة المطبخ الحية",
+      "toggle": "تبديل طريقة العرض"
+    },
+    "prepTimer": {
+      "elapsed": "الوقت المنقضي",
+      "delayed": "تأخير تحضير (>15 دقيقة)",
+      "delayedShort": "تأخير"
+    },
+    "kanban": {
+      "columns": {
+        "newAndConfirmed": "جديد ومؤكد",
+        "preparing": "قيد التحضير",
+        "ready": "جاهز للتسليم",
+        "outForDelivery": "في الطريق",
+        "delivered": "تم التسليم"
+      },
+      "emptyColumn": "لا توجد طلبات في هذه المرحلة",
+      "moreItems": "+{count} أصناف إضافية",
+      "noDriverAssigned": "بدون مندوب توصيل",
+      "delayedAlert": "تأخير في المطبخ"
+    },
     "table": {
       "orderNumber": "رقم الطلب",
       "brand": "البراند",

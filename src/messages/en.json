@@ -221,6 +221,29 @@
       "delivered": "Delivered",
       "cancelled": "Cancelled"
     },
+    "viewSwitcher": {
+      "table": "Table View",
+      "kanban": "Live Kitchen Board",
+      "toggle": "Switch View"
+    },
+    "prepTimer": {
+      "elapsed": "Elapsed Time",
+      "delayed": "Prep Delayed (>15 min)",
+      "delayedShort": "Delayed"
+    },
+    "kanban": {
+      "columns": {
+        "newAndConfirmed": "New & Confirmed",
+        "preparing": "Preparing",
+        "ready": "Ready for Delivery",
+        "outForDelivery": "Out for Delivery",
+        "delivered": "Delivered"
+      },
+      "emptyColumn": "No orders in this stage",
+      "moreItems": "+{count} more items",
+      "noDriverAssigned": "No driver assigned",
+      "delayedAlert": "Kitchen Delay"
+    },
     "table": {
       "orderNumber": "Order #",
       "brand": "Brand",

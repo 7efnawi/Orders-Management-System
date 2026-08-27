@@ -12,6 +12,39 @@
 
 ---
 
+## [2026-08-27] المرحلة 8 (Milestone 4) — لوحة المطبخ الحية، نظام كانبان الطلبات، محول طرق العرض، ومؤقتات التحضير مع تنبيهات التأخير (Live Kitchen Kanban Board, Orders View Switcher, & Prep Timers with Delay Alerts)
+**النوع:** Feature / Live Kitchen Kanban & Prep Timer
+**اللي اتعمل:**
+1. إنشاء خطاف ومكوّن مؤقت التحضير الحي `src/hooks/use-prep-timer.ts` و`src/components/orders/prep-timer-badge.tsx`:
+   - حساب الوقت المنقضي الفعلي بالأمتار الثوانية والدقائق بتحديث حي كل ثانية وبشكل متوافق تمامًا مع بيئة العرض المزدوج وتجنب ومضات الهيدريشن.
+   - تفعيل وضع الحرجية `isCritical = true` وشارة التأخير الحمراء النابضة (`animate-pulse` و`animate-ping`) مع أيقونة الشعلة عند تجاوز الطلب 15 دقيقة (>= 900 ثانية) في مراحل التحضير (`PREPARING` / `NEW` / `CONFIRMED`).
+   - عرض الوقت بصيغة رقمية أحادية العرض `tabular-nums font-mono` (`MM:SS`) مع دعم أحجام مختلفة وأنماط هادئة وتحذيرية.
+2. إنشاء لوحة المطبخ الحية الخماسية `src/components/orders/kitchen-kanban.tsx`:
+   - 5 أعمدة تفاعلية لمراحل تدفق الطلبات في المطبخ:
+     1. `جديد ومؤكد` (`NEW` / `CONFIRMED`)
+     2. `قيد التحضير` (`PREPARING`) — مزود بـ `PrepTimerBadge` البارزة وتنبيهات التأخير المتوهجة.
+     3. `جاهز للتسليم` (`READY`)
+     4. `في الطريق` (`OUT_FOR_DELIVERY`) — يعرض المندوب المكلف ومنطقة التوصيل وزر تعيين الطيار السريع.
+     5. `تم التسليم` (`DELIVERED`)
+   - بطاقات الطلبات داخل الأعمدة:
+     - الترويسة: رقم الطلب الأحادي العرض، شارة البراند بالكانجي، شارة المنصة، ومؤقت التحضير الحي.
+     - جسم البطاقة: اسم وهاتف العميل، ملخص كميات وأسماء الأصناف، شريط تنبيهات الحساسية وملاحظات المطبخ، ومنطقة التوصيل.
+     - التذييل: الإجمالي المالي مع طريقة الدفع وشارة المندوب والخصومات المعلقة.
+     - إجراءات النقرة الواحدة للتقدم بالحالة (1-click State Advancement) وفقًا لـ `orderStateMachine.ts` مع استدعاء تلقائي لنافذة تعيين الطيار `AssignDriverDialog` عند الانتقال إلى `OUT_FOR_DELIVERY`.
+     - أزرار سريعة لإلغاء الطلب `CancelDialog` وعرض التفاصيل `OrderDetailsModal`.
+3. ترقية شاشة الطلبات وإضافة محول طرق العرض `src/components/orders/orders-table.tsx`:
+   - إضافة محول العرض الثنائي في الشريط العلوي `[ Table View ⊞ ]` ⟷ `[ Kitchen Kanban ▤ ]`.
+   - الاحتفاظ الكامل بكافة خيارات البحث والتصفية (البراند، المنصة، التاريخ، البحث النصي، والتبويبات) ومشاركتها بسلاسة عبر كلا العرضين.
+   - إدماج `PrepTimerBadge` الحية في جدول الطلبات وبطاقات الموبايل.
+4. تحديث ملفات الترجمة `src/messages/ar.json` و`src/messages/en.json` بإضافة فضاءات أسماء `viewSwitcher`، `prepTimer`، و`kanban`.
+5. اجتياز الفحص المكتبي الصارم لـ TypeScript (`npm run typecheck`) بدون أي أخطاء.
+6. اجتياز الفحص النحوي (`npm run lint`) بنجاح تام 0 أخطاء و 0 تحذيرات.
+**السبب:** تنفيذ متطلبات Milestone 4 (R4: Features 10, 11, 12) لتمكين طاقم المطبخ والإدارة من المتابعة الحية للطلبات والتحكم السريع في حالاتها ومراقبة أوقات وتأخيرات التحضير (ENGINEERING_DIRECTIVES.md §0, §2).
+**الملفات المتأثرة:** `src/hooks/use-prep-timer.ts`, `src/components/orders/prep-timer-badge.tsx`, `src/components/orders/kitchen-kanban.tsx`, `src/components/orders/orders-table.tsx`, `src/messages/ar.json`, `src/messages/en.json`, `PROJECT_LOG.md`
+**تأثير على أجزاء تانية:** اكتمال Milestone 4 بنجاح وجاهزية النظام لتنفيذ Milestone 5 (حزمة الاختبارات الشاملة والتثبت النهائي).
+
+---
+
 ## [2026-08-27] المرحلة 8 (Milestone 3) — شاشة نقطة البيع السريعة، محاكاة الإيصال الحراري POS، بطاقات الدفع المريحة باللمس، وشارات ولاء العملاء (Fast POS Order Creation Screen, Receipt Ticket Preview, Touch Payment Selectors, & Customer Loyalty Badges)
 **النوع:** Feature / POS UI & Ergonomics
 **اللي اتعمل:**

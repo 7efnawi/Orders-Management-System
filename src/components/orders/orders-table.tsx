@@ -8,6 +8,8 @@ import {
   ChevronRight,
   Clock,
   Eye,
+  Kanban,
+  LayoutGrid,
   Loader2,
   Package,
   Percent,
@@ -43,6 +45,8 @@ import { CancelDialog } from "./cancel-dialog";
 import { DiscountDialog, type PendingDiscountOrder } from "./discount-dialog";
 import { OrderDetailsModal } from "./order-details-modal";
 import { AssignDriverDialog, type AssignDriverOrder } from "@/components/delivery/assign-driver-dialog";
+import { KitchenKanban } from "./kitchen-kanban";
+import { PrepTimerBadge } from "./prep-timer-badge";
 import { OrderStatus, DiscountStatus, PaymentMethod, Role, CancelReason } from "@prisma/client";
 import { cn } from "@/lib/utils";
 
@@ -154,6 +158,9 @@ export function OrdersTable({
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [debouncedSearch, setDebouncedSearch] = useState<string>("");
+
+  // View mode state (Table vs Kitchen Kanban)
+  const [viewMode, setViewMode] = useState<"table" | "kanban">("table");
 
   // Orders data state
   const [orders, setOrders] = useState<OrderRowItem[]>([]);
@@ -361,6 +368,40 @@ export function OrdersTable({
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          {/* View Switcher: Table vs Kitchen Kanban */}
+          <div className="flex items-center rounded-lg border bg-muted/40 p-0.5 shadow-2xs">
+            <Button
+              type="button"
+              variant={viewMode === "table" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setViewMode("table")}
+              className={cn(
+                "h-7 px-2.5 text-xs font-semibold gap-1.5 rounded-md transition-all",
+                viewMode === "table"
+                  ? "bg-background text-foreground shadow-xs dark:bg-muted dark:text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <LayoutGrid className="size-3.5" />
+              <span>{t("viewSwitcher.table")}</span>
+            </Button>
+            <Button
+              type="button"
+              variant={viewMode === "kanban" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setViewMode("kanban")}
+              className={cn(
+                "h-7 px-2.5 text-xs font-semibold gap-1.5 rounded-md transition-all",
+                viewMode === "kanban"
+                  ? "bg-background text-foreground shadow-xs dark:bg-muted dark:text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <Kanban className="size-3.5" />
+              <span>{t("viewSwitcher.kanban")}</span>
+            </Button>
+          </div>
+
           {/* Auto Refresh Toggle */}
           <Button
             type="button"
@@ -555,7 +596,7 @@ export function OrdersTable({
         </div>
       </div>
 
-      {/* Orders List / Table */}
+      {/* Orders List / Kanban */}
       {loading ? (
         <div className="flex h-64 flex-col items-center justify-center gap-3 rounded-2xl border bg-card text-muted-foreground">
           <Loader2 className="size-8 animate-spin text-primary" />
@@ -569,6 +610,30 @@ export function OrdersTable({
             {t("table.noOrdersDesc")}
           </p>
         </div>
+      ) : viewMode === "kanban" ? (
+        <KitchenKanban
+          orders={filteredOrders}
+          userRole={userRole}
+          advancingOrderId={advancingOrderId}
+          onAdvanceStatus={handleAdvanceStatus}
+          onOpenDetails={(id) => {
+            setSelectedOrderForDetails(id);
+            setDetailsModalOpen(true);
+          }}
+          onOpenCancel={(o) => {
+            setSelectedOrderForCancel(o);
+            setCancelModalOpen(true);
+          }}
+          onOpenDriver={(o, dispatch) => {
+            setSelectedOrderForDriver(o);
+            setAdvanceOnDriverAssign(dispatch);
+            setDriverModalOpen(true);
+          }}
+          onOpenDiscount={(o) => {
+            setSelectedOrderForDiscount(o);
+            setDiscountModalOpen(true);
+          }}
+        />
       ) : (
         <div className="rounded-2xl border bg-card shadow-sm overflow-hidden">
           {/* Desktop Table View */}
@@ -638,15 +703,23 @@ export function OrdersTable({
                         </div>
                       </TableCell>
 
-                      {/* Status & Discount Alert */}
+                      {/* Status & Prep Timer & Discount Alert */}
                       <TableCell>
                         <div className="flex flex-col gap-1 items-start">
-                          <Badge
-                            variant="outline"
-                            className={cn("text-[11px] font-semibold", STATUS_COLORS[order.status])}
-                          >
-                            {t(`statuses.${order.status}`)}
-                          </Badge>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <Badge
+                              variant="outline"
+                              className={cn("text-[11px] font-semibold", STATUS_COLORS[order.status])}
+                            >
+                              {t(`statuses.${order.status}`)}
+                            </Badge>
+                            <PrepTimerBadge
+                              startTime={order.createdAt}
+                              status={order.status}
+                              size="sm"
+                              showDelayText={order.status === OrderStatus.PREPARING}
+                            />
+                          </div>
 
                           {order.driver && (
                             <span className="flex items-center gap-1 text-[10px] text-muted-foreground font-medium">
@@ -853,13 +926,21 @@ export function OrdersTable({
                           </span>
                         )}
                       </div>
-                      <div className="text-end">
-                        <Badge
-                          variant="outline"
-                          className={cn("text-xs font-semibold", STATUS_COLORS[order.status])}
-                        >
-                          {t(`statuses.${order.status}`)}
-                        </Badge>
+                      <div className="text-end flex flex-col items-end gap-1">
+                        <div className="flex items-center gap-1">
+                          <Badge
+                            variant="outline"
+                            className={cn("text-xs font-semibold", STATUS_COLORS[order.status])}
+                          >
+                            {t(`statuses.${order.status}`)}
+                          </Badge>
+                          <PrepTimerBadge
+                            startTime={order.createdAt}
+                            status={order.status}
+                            size="sm"
+                            showDelayText={order.status === OrderStatus.PREPARING}
+                          />
+                        </div>
                         <span className="block text-[10px] text-muted-foreground font-mono mt-0.5">
                           {formatOrderTime(order.createdAt)}
                         </span>

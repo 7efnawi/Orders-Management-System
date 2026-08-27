@@ -17,11 +17,25 @@ export function calculatePrepTime(
   createdAt: Date | string,
   now: Date | string = new Date()
 ): PrepTimeCalculation {
-  const startTime = preparingAt ? new Date(preparingAt) : new Date(createdAt);
-  const currentTime = new Date(now);
+  let startTime: Date;
+  try {
+    const raw = preparingAt ? new Date(preparingAt) : new Date(createdAt);
+    startTime = isNaN(raw.getTime()) ? new Date(createdAt) : raw;
+    if (isNaN(startTime.getTime())) startTime = new Date();
+  } catch {
+    startTime = new Date();
+  }
+
+  let currentTime: Date;
+  try {
+    const raw = new Date(now);
+    currentTime = isNaN(raw.getTime()) ? new Date() : raw;
+  } catch {
+    currentTime = new Date();
+  }
 
   const diffMs = currentTime.getTime() - startTime.getTime();
-  const elapsedSeconds = Math.max(0, Math.floor(diffMs / 1000));
+  const elapsedSeconds = isNaN(diffMs) ? 0 : Math.max(0, Math.floor(diffMs / 1000));
 
   const hours = Math.floor(elapsedSeconds / 3600);
   const minutes = Math.floor((elapsedSeconds % 3600) / 60);

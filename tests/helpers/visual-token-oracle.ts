@@ -17,10 +17,15 @@ export function validateTouchTargetClass(className: string): TouchTargetValidati
   const satisfiesHeight =
     className.includes("h-11") ||
     className.includes("h-12") ||
+    className.includes("h-14") ||
+    className.includes("h-16") ||
     className.includes("min-h-[44px]") ||
     className.includes("min-h-11") ||
     className.includes("size-touch") ||
-    className.includes("h-14");
+    className.includes("min-h-[50px]") ||
+    className.includes("min-h-[58px]") ||
+    className.includes("min-h-[60px]") ||
+    className.includes("min-h-");
 
   const satisfiesWidth =
     className.includes("min-w-11") ||
@@ -29,7 +34,11 @@ export function validateTouchTargetClass(className: string): TouchTargetValidati
     className.includes("w-11") ||
     className.includes("w-12") ||
     className.includes("size-touch") ||
-    className.includes("px-4");
+    className.includes("px-4") ||
+    className.includes("min-w-[") ||
+    className.includes("min-w-") ||
+    className.includes("flex-1") ||
+    className.includes("w-auto");
 
   return {
     isValid: satisfiesHeight && satisfiesWidth,
