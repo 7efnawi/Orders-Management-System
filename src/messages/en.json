@@ -55,6 +55,13 @@
     "MANAGER": "Manager",
     "CASHIER": "Cashier"
   },
+  "theme": {
+    "title": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "kitchen": "Kitchen Night-Shift",
+    "system": "System"
+  },
   "nav": {
     "dashboard": "Dashboard",
     "orders": "Orders",
@@ -64,7 +71,13 @@
     "closing": "Daily Closing",
     "reports": "Reports",
     "audit": "Audit Log",
-    "users": "Users"
+    "users": "Users",
+    "newOrderCTA": "+ New Order",
+    "brandTag": "4 SUSHI BRANDS · DARK KITCHEN",
+    "mobileMenu": "Main Menu",
+    "userProfile": "User Profile",
+    "openNavigation": "Open navigation",
+    "closeNavigation": "Close navigation"
   },
   "orders": {
     "title": "Create New Order",

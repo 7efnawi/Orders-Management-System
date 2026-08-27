@@ -12,6 +12,30 @@
 
 ---
 
+## [2026-08-26] المرحلة 8 (Milestone 1) — شريط التنقل الحديث، هوية مطبخ السوشي السحابي، سمة المطبخ الليلي عالي التباين، وبيئة اللمس المريحة
+**النوع:** Feature / UI & Theme System
+**اللي اتعمل:**
+1. إنشاء مكوّن شريط التنقل الرئيسي للعميل `src/components/layout/dashboard-header.tsx`:
+   - شعار وهوية المطبخ السحابي للسوشي (4 براندات) مع أيقونة الشعلة المتوهجة.
+   - أزرار التنقل التفاعلية بالأقراص المميزة للراوت النشط (Active-route pills) باستخدام `usePathname()` من `@/i18n/navigation`.
+   - زر إجراء سريع دائم عالي الوضوح "+ أوردر جديد" (`+ New Order`) يربط مباشرة بـ `/orders/new` عبر كافة شاشات لوحة التحكم.
+   - فلترة روابط التنقل حسب دور المستخدم (الكاشير يرى الأوردرات، المصاريف، الإغلاق؛ والمدير والمالك يريان أيضًا المنيو والتوصيل).
+   - قسم الملف الشخصي للمستخدم وشارة الدور الملونة (Owner: ذهبي، Manager: بنفسجي، Cashier: زمردي).
+   - درج متجاوب للشاشات الصغيرة والمتوسطة (Mobile/Tablet Drawer) لسهولة الاستخدام والوصول لكافة الوظائف.
+2. بناء نظام السمات متعدد الأنماط:
+   - إنشاء `src/components/theme-provider.tsx` مغلفًا لـ `next-themes` وداعمًا للأنماط (`light`, `dark`, `kitchen`).
+   - إنشاء `src/components/theme-switcher.tsx` مع قائمة تفاعلية وأيقونات (شمس للفاتح، قمر للداكن، شعلة لشيفت المطبخ، وشاشة للنظام) مع توافق كامل للغات RTL/LTR.
+   - تحديث `src/app/globals.css` بتعريف متغيرات ومحددات سمة المطبخ الليلي عالي التباين `.kitchen` (خلفية سبجية عميقة `oklch(0.08 0.015 250)`، نص أبيض فائق التباين `oklch(0.99 0 0)`، ولون توهج عنبري سوشي عالي التشبع `oklch(0.72 0.22 45)`، وتحديث `@custom-variant dark (&:is(.dark *, .kitchen *))`).
+   - إضافة `suppressHydrationWarning` و`<ThemeProvider>` في `src/app/[locale]/layout.tsx`.
+3. ترقية مكوّن الأزرار `src/components/ui/button.tsx` بإضافة النمط المريح لنقاط البيع وشاشات اللمس `size="touch"` بأبعاد >= 44x44px (`min-h-11 min-w-11 px-5 text-base`).
+4. ترقية ملفات الترجمة `src/messages/ar.json` و`src/messages/en.json` بإضافة فضاء أسماء `theme` ومفاتيح نصوص التنقل والوسم والنداء السريع.
+5. اجتياز الفحص المكتبي الصارم لـ TypeScript (`npm run typecheck`) بدون أي أخطاء.
+6. اجتياز الفحص النحوي (`npm run lint`) بنجاح تام 0 أخطاء و 0 تحذيرات.
+7. اجتياز بناء الإنتاج الكامل بنجاح فائق (`npm run build`) وتوليد 35 صفحة ومسار API.
+**السبب:** تنفيذ متطلبات Milestone 1 (R1, R5, R6) وتوفير تجربة مستخدم عصرية ومحكمة لشاشات المطبخ الليلي والـ POS (ENGINEERING_DIRECTIVES.md §0, §2).
+**الملفات المتأثرة:** `src/components/theme-provider.tsx`, `src/components/theme-switcher.tsx`, `src/components/layout/dashboard-header.tsx`, `src/app/globals.css`, `src/app/[locale]/layout.tsx`, `src/app/[locale]/(dashboard)/layout.tsx`, `src/components/ui/button.tsx`, `src/components/language-switcher.tsx`, `src/messages/ar.json`, `src/messages/en.json`, `PROJECT_LOG.md`
+**تأثير على أجزاء تانية:** اكتمال Milestone 1 وجاهزية النظام لتطبيق Milestone 2 (الهويات البصرية للبراندات والمنصات).
+
 ## [2026-08-26] المرحلة 7 — اكتمال وبوابة التحقق المؤتمتة لنظام إدارة الشيفتات والإغلاق اليومي ومطابقة الخزينة (Phase 7 Shift Closing Subsystem Verification & Completion)
 **النوع:** Verification / Milestone Completion
 **اللي اتعمل:**

@@ -3,16 +3,26 @@
 // مهم: نسخة next-intl بترجّع المسار بدون prefix اللغة — نسخة next/navigation بتضاعفه
 import { Link, usePathname } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
+import { cn } from "@/lib/utils";
 
 /** يبدّل اللغة مع الحفاظ على نفس الصفحة — بدل الرجوع لـ /login */
-export function LanguageSwitcher({ locale }: { locale: string }) {
+export function LanguageSwitcher({
+  locale,
+  className,
+}: {
+  locale: string;
+  className?: string;
+}) {
   const t = useTranslations("common");
   const pathname = usePathname();
   const other = locale === "ar" ? "en" : "ar";
 
   return (
     <Link
-      className="text-sm text-muted-foreground underline"
+      className={cn(
+        "inline-flex items-center justify-center rounded-xl px-2.5 py-1.5 text-xs sm:text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors min-h-10 outline-none focus-visible:ring-2 focus-visible:ring-primary",
+        className
+      )}
       href={pathname}
       locale={other}
       hrefLang={other}
