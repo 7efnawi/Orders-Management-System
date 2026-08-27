@@ -1,11 +1,13 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { getPlatformToken } from "@/lib/visualTokens";
+import { PlatformLogo } from "@/components/ui/platform-logo";
 
 export interface PlatformBadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   platformName?: string | null;
   size?: "sm" | "md" | "lg";
   variant?: "solid" | "subtle" | "outline";
+  showLogo?: boolean;
   showDot?: boolean;
   className?: string;
 }
@@ -14,16 +16,17 @@ export function PlatformBadge({
   platformName,
   size = "md",
   variant = "subtle",
-  showDot = true,
+  showLogo = true,
+  showDot = false,
   className,
   ...props
 }: PlatformBadgeProps) {
   const token = getPlatformToken(platformName);
 
   const sizeStyles = {
-    sm: "text-[10px] px-1.5 py-0.5 gap-1",
-    md: "text-xs px-2.5 py-0.5 gap-1.5",
-    lg: "text-sm px-3 py-1 gap-2",
+    sm: "text-[10px] px-2 py-0.5 gap-1.5",
+    md: "text-xs px-2.5 py-1 gap-1.5",
+    lg: "text-sm px-3 py-1.5 gap-2",
   };
 
   const dotSizes = {
@@ -56,7 +59,14 @@ export function PlatformBadge({
       style={solidStyle}
       {...props}
     >
-      {showDot && (
+      {showLogo && (
+        <PlatformLogo
+          platformName={token.name}
+          size={size === "lg" ? "md" : "sm"}
+          className="shrink-0"
+        />
+      )}
+      {showDot && !showLogo && (
         <span
           data-slot="platform-dot"
           className={cn("rounded-full shrink-0", dotSizes[size])}

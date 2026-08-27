@@ -121,6 +121,15 @@ export const PLATFORM_TOKENS: Record<string, PlatformVisualToken> = {
     textClass: "text-indigo-600 dark:text-indigo-400",
     borderClass: "border-indigo-300 dark:border-indigo-700",
   },
+  facebook: {
+    name: "Facebook",
+    labelAr: "فيسبوك",
+    labelEn: "Facebook",
+    hex: "#1877f2",
+    bgClass: "bg-blue-500/10 dark:bg-blue-500/20",
+    textClass: "text-blue-600 dark:text-blue-400",
+    borderClass: "border-blue-300 dark:border-blue-700",
+  },
   phone: {
     name: "Phone",
     labelAr: "تليفون مباشر",
@@ -205,6 +214,15 @@ export function getPlatformToken(platformName?: string | null): PlatformVisualTo
     key.includes("harry")
   ) {
     return PLATFORM_TOKENS.harryapp;
+  }
+  if (
+    key.includes("facebook") ||
+    key.includes("فيسبوك") ||
+    key.includes("فيس بوك") ||
+    key.includes("فيس") ||
+    key.includes("fb")
+  ) {
+    return PLATFORM_TOKENS.facebook;
   }
   if (
     key.includes("phone") ||

@@ -20,27 +20,59 @@ export interface DeliveryDriverLookup {
   isActive: boolean;
 }
 
+export const STANDARD_PLATFORMS = [
+  "Talabat",
+  "InstaShop",
+  "Harry App",
+  "Elmenus",
+  "Facebook",
+  "Phone",
+] as const;
+
 export async function listPlatforms(): Promise<PlatformLookup[]> {
-  const platforms = await prisma.platform.findMany({
+  // Ensure all 6 standard platforms exist and are active
+  for (const name of STANDARD_PLATFORMS) {
+    const existing = await prisma.platform.findFirst({
+      where: {
+        OR: [
+          { name: { equals: name, mode: "insensitive" } },
+          { name: { equals: name.replace(/\s+/g, ""), mode: "insensitive" } },
+        ],
+      },
+    });
+    if (!existing) {
+      await prisma.platform.create({
+        data: { name, isActive: true },
+      });
+    } else if (!existing.isActive) {
+      await prisma.platform.update({
+        where: { id: existing.id },
+        data: { isActive: true },
+      });
+    }
+  }
+
+  // Deactivate any platform that is not one of the 6 standard platforms
+  const allPlatforms = await prisma.platform.findMany();
+  for (const p of allPlatforms) {
+    const isStandard = STANDARD_PLATFORMS.some(
+      (s) =>
+        s.toLowerCase() === p.name.toLowerCase() ||
+        s.toLowerCase().replace(/\s+/g, "") === p.name.toLowerCase().replace(/\s+/g, "")
+    );
+    if (!isStandard && p.isActive) {
+      await prisma.platform.update({
+        where: { id: p.id },
+        data: { isActive: false },
+      });
+    }
+  }
+
+  return prisma.platform.findMany({
     where: { isActive: true },
     orderBy: { createdAt: "asc" },
     select: { id: true, name: true, isActive: true },
   });
-
-  if (platforms.length === 0) {
-    const defaultNames = ["Phone", "Talabat", "elmenus", "InstaShop", "HarryApp"];
-    await prisma.platform.createMany({
-      data: defaultNames.map((name) => ({ name })),
-      skipDuplicates: true,
-    });
-    return prisma.platform.findMany({
-      where: { isActive: true },
-      orderBy: { createdAt: "asc" },
-      select: { id: true, name: true, isActive: true },
-    });
-  }
-
-  return platforms;
 }
 
 export async function listDeliveryZones(): Promise<DeliveryZoneLookup[]> {
