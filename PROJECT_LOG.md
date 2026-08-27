@@ -12,6 +12,46 @@
 
 ---
 
+## [2026-08-27] المرحلة 8.6 — التحكم في أنواع المصروفات، بحث المناديب والمناطق الذكي، السحب والإفلات بالمطبخ، وتبسيط الواجهات (Expense Types Management, Multi-Token Search, Kitchen Drag & Drop, Official Logos, & UI De-cluttering)
+**النوع:** Feature & UI/UX / Operational Refinements & Core Usability
+**اللي اتعمل:**
+1. التحكم الكامل في أنواع المصروفات (إضافة، تعديل الاسم، الحذف الآمن) للمالك والمدير:
+   - إضافة دالتي `updateExpenseType` و `deleteExpenseType` في `src/services/expenses.ts` مع توثيق سجل المراقبة الذري `AuditLog`.
+   - مسار الـ API `PATCH` (تعديل الاسم) و `DELETE` في `src/app/api/expenses/types/[id]/route.ts` مع فحص الصلاحيات `requireApiRole("OWNER", "MANAGER")`، وحماية صارمة تمنع حذف أي نوع مرتبط بمصروفات مسجلة في النظام.
+   - بناء نافذة `ManageExpenseTypesDialog` في `src/components/expenses/manage-expense-types-dialog.tsx` تتيح للمدير والمالك تعديل مسميات الأنواع أو حذفها مع تأكيد الحذف وتنبيهات الاستخدام.
+   - دمج زر "إدارة أنواع المصاريف" داخل شاشة المصروفات `src/components/expenses/expenses-client.tsx`.
+2. خوارزمية بحث سريع متعدد الكلمات والتطبيع اللغوي واختيار المناطق والمناديب:
+   - إنشاء محرك التطبيع اللغوي والبحث `src/lib/search.ts` (`normalizeArabic` لإزالة التشكيل، توحيد الهمزات والتاء المربوطة والألف المقصورة، ومطابقة الأسماء المركبة، و `matchesMultiToken` لمطابقة جميع كلمات الاستعلام في أي موضع وترتيب).
+   - بناء مكوّن `SearchableSelect` في `src/components/ui/searchable-select.tsx` كـ Combobox بحث فوري يدعم التركيز التلقائي، الإغلاق بـ Escape، مسح الاختيار، وشارات الأسعار والأسطول.
+   - دمجه في شاشة إنشاء الطلب `/orders/new` لمناطق التوصيل والمناديب.
+   - ترقية البحث في مودال تعيين المندوب `AssignDriverDialog` لدعم المطابقة متعددة الكلمات لنوع الأسطول واسم السائق بالعربية والإنجليزية.
+3. ميزة السحب والإفلات (Drag & Drop) في لوحة المطبخ الحية (Live Kitchen Kanban):
+   - تفعيل السحب على بطاقات الطلبات النشطة في `src/components/orders/kitchen-kanban.tsx` مع إضافة مقبض سحب `GripVertical`.
+   - تفعيل استقبال الإفلات على أعمدة المراحل الخمسة مع مؤشر بصري تفاعلي لمنطقة الإفلات (`dropzone highlight`).
+   - التحقق الصارم من صحة الانتقال عبر `ALLOWED_TRANSITIONS` لحظر الانتقالات غير الشرعية أو العكسية.
+   - التوجيه الذكي: عند سحب طلب إلى مرحلة "في الطريق" (`OUT_FOR_DELIVERY`) دون وجود مندوب مسند، يفتح النظام تلقائيًا مودال تعيين المندوب لإتمام الإسناد فورًا.
+   - إضافة معالج الانتقال المباشر `handleTransitionToStatus` في `src/components/orders/orders-table.tsx`.
+4. تبسيط الواجهات وتقليل التزاحم البصري (De-cluttering):
+   - تخفيف الخطوط الخارجية والظلال الكثيفة في بطاقات الكانبان لتوفير رؤية واضحة ومريحة لعمال المطبخ أثناء ضغط العمل.
+   - تبسيط محددات الدفع والتوصيل في نموذج إنشاء الطلب.
+5. اعتماد شعارات الشركات الرسمية من مجلد `/public`:
+   - استخدام `/Talabat_logo.svg`, `/Elmenus_logo.svg`, `/instashop-logo.svg`, `/HurryApp_logo.jpeg` مع فيكتور فيسبوك والهاتف في `src/components/ui/platform-logo.tsx`.
+6. إزالة ثيم المطبخ الليلي وحل خطأ الكونسول:
+   - حذف كلاس `.kitchen` من `src/app/globals.css` وقصر الثيمات على الفاتح والداكن وتلقائي النظام في `theme-switcher.tsx`.
+   - معالجة خطأ الكونسول الكاذب لـ React 19 المرتبط بوسم script في `theme-provider.tsx` عند التنقل بين اللغات.
+7. تصحيح زر الطلب الجديد وإزالة الزائد المكرر:
+   - تعديل نصوص الترجمة في `ar.json` و `en.json` لتفادي ظهور `++`.
+8. الاختبارات والتحقق الشامل:
+   - إنشاء واجتياز اختبارات السكربتات المخصصة: `test-logos-and-theme.ts`، `test-expense-types-crud.ts`، `test-search-algo.ts`، `test-kanban-dnd.ts` بنسبة 100%.
+   - اجتياز اختبارات محاكاة المراحل: `verify-phase4.ts`, `verify-phase5.ts`, `verify-phase6.ts`, `verify-phase7.ts` بنسبة 100%.
+   - اجتياز `npm run typecheck` و `npm run lint` بدون أي خطأ أو تحذير (0 errors, 0 warnings).
+   - اجتياز بناء الإنتاج الكامل `npm run build` لـ 35 مساراً.
+**السبب:** تلبية الملاحظات والتعديلات التشغيلية والواجهية التي طلبها المستخدم مع الالتزام بأعلى معايير الأداء والتبسيط المعماري وسجل التدقيق (Directives §0, §2, §3).
+**الملفات المتأثرة:** `src/services/expenses.ts`, `src/app/api/expenses/types/[id]/route.ts`, `src/components/expenses/manage-expense-types-dialog.tsx`, `src/components/expenses/expenses-client.tsx`, `src/lib/search.ts`, `src/components/ui/searchable-select.tsx`, `src/components/orders/order-form.tsx`, `src/components/delivery/assign-driver-dialog.tsx`, `src/components/orders/kitchen-kanban.tsx`, `src/components/orders/orders-table.tsx`, `src/components/ui/platform-logo.tsx`, `src/components/theme-switcher.tsx`, `src/components/theme-provider.tsx`, `src/app/globals.css`, `src/messages/ar.json`, `src/messages/en.json`, `PROJECT_LOG.md`
+**تأثير على أجزاء تانية:** تحسين ملحوظ في سرعة وسلاسة الاستخدام، وجاهزية النظام بالكامل للتشغيل الفعلي.
+
+---
+
 ## [2026-08-27] المرحلة 8.5 — المنصات الـ 6 الرسمية بلوجوهات SVG، ضبط المسافات، صلاحيات المصروفات وإعادة فتح الشيفتات (6 Standard Platforms with Vector SVG Logos, Spacing Polish, Expense Full CRUD, & Shift Reopening Workflows)
 **النوع:** Feature & UI/UX / Platforms, Layout, Expenses, & Shift Lifecycle
 **اللي اتعمل:**
