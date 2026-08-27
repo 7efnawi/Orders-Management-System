@@ -58,12 +58,6 @@ export function ThemeSwitcher() {
       colorClass: "text-blue-400",
     },
     {
-      id: "kitchen",
-      label: t("kitchen"),
-      icon: Flame,
-      colorClass: "text-orange-500 dark:text-amber-400",
-    },
-    {
       id: "system",
       label: t("system"),
       icon: Monitor,

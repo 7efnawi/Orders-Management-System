@@ -59,7 +59,6 @@
     "title": "Theme",
     "light": "Light",
     "dark": "Dark",
-    "kitchen": "Kitchen Night-Shift",
     "system": "System"
   },
   "nav": {
@@ -72,7 +71,7 @@
     "reports": "Reports",
     "audit": "Audit Log",
     "users": "Users",
-    "newOrderCTA": "+ New Order",
+    "newOrderCTA": "New Order",
     "brandTag": "4 SUSHI BRANDS · DARK KITCHEN",
     "mobileMenu": "Main Menu",
     "userProfile": "User Profile",
