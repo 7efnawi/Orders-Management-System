@@ -12,6 +12,32 @@
 
 ---
 
+## [2026-08-27] المرحلة 8 (Milestone 2) — الهويات البصرية الموحدة للبراندات الأربعة والمنصات الخمسة ومستويات الولاء (Brand & Platform Visual Signatures & Badges)
+**النوع:** Feature / Visual Design System & Badges
+**اللي اتعمل:**
+1. إنشاء المصدر الموحد للرموز البصرية `src/lib/visualTokens.ts`:
+   - تعريف واجهات الأنواع `BrandVisualToken`, `PlatformVisualToken`, `LoyaltyTierInfo`, و`LoyaltyTier`.
+   - تعريف الرموز البصرية للبراندات الأربعة (Flower Sakura Pink وكانجي 花، Mastery Artisan Gold وكانجي 匠، Niwa Matcha Emerald وكانجي 庭، Tobiko Coral Orange وكانجي 魚子) بالإضافة للرمز الافتراضي السحابي وكانجي 鮨.
+   - تعريف الرموز البصرية لمنصات التوصيل الخمسة (Talabat Orange `#ff5a00`، elmenus Crimson `#e21b1b`، InstaShop Teal `#00a699`، HarryApp Indigo `#4f46e5`، Phone Sky Blue `#0284c7`) والرمز الافتراضي للطلبات المباشرة.
+   - دوال التمييز والتحويل الذكية `getBrandToken` و`getPlatformToken` مع دعم المطابقة غير الحساسة لحالة الأحرف والمطابقة الجزئية باللغتين العربية والإنجليزية ومعالجة الفراغات والقيم الفارغة.
+   - دالة احتساب مستويات ولاء العملاء `getLoyaltyTier` للتمييز الفوري (ضيف جديد، عميل دائم، عميل ذهبي VIP، وأسطورة بلاتيني) مع معالجة الحالات الحدية والسالبة.
+2. إنشاء مكوّن الشارة الموحدة للبراند `src/components/ui/brand-badge.tsx`:
+   - يعرض كبسولة ملونة بهوية البراند مع كانجي ياباني أصيل واسم البراند ودعم كامل للأحجام (`sm`, `md`, `lg`) والأنماط (`subtle`, `solid`, `outline`).
+3. إنشاء مكوّن الشارة الموحدة للمنصة `src/components/ui/platform-badge.tsx`:
+   - يعرض كبسولة المنصة مع نقطة مؤشر ملونة بألوان المنصة الرسمية ودعم الأحجام والأنماط.
+4. دمج الشارات البصرية في واجهات النظام:
+   - `src/components/orders/orders-table.tsx`: استبدال النصوص والشارات العادية بـ `BrandBadge` و`PlatformBadge` في كل من جدول سطح المكتب وبطاقات الموبايل.
+   - `src/components/orders/order-details-modal.tsx`: ترقية ترويسة نافذة تفاصيل الطلب بشارات البراند والمنصة الموحدة.
+   - `src/components/orders/order-form.tsx`: ترقية أزرار اختيار البراند بحروف الكانجي وتأثيرات الإحاطة اللونية النشطة، وترقية قائمة اختيار المنصات بـ `PlatformBadge`.
+5. تحديث `tests/helpers/visual-token-oracle.ts` لإعادة التصدير من `src/lib/visualTokens.ts` كـ Single Source of Truth.
+6. اجتياز الفحص المكتبي الصارم لـ TypeScript (`npm run typecheck`) بدون أي أخطاء.
+7. اجتياز الفحص النحوي (`npm run lint`) بنجاح تام 0 أخطاء و 0 تحذيرات.
+**السبب:** تنفيذ متطلبات Milestone 2 (R2: Features 5 & 6) لتمكين الكاشير وطاقم المطبخ من التمييز البصري الفوري للطلبات بين البراندات والمنصات (ENGINEERING_DIRECTIVES.md §0, §2).
+**الملفات المتأثرة:** `src/lib/visualTokens.ts`, `src/components/ui/brand-badge.tsx`, `src/components/ui/platform-badge.tsx`, `src/components/orders/orders-table.tsx`, `src/components/orders/order-details-modal.tsx`, `src/components/orders/order-form.tsx`, `tests/helpers/visual-token-oracle.ts`, `scripts/verify-challenger-m1.ts`, `tests/stress/m1-adversarial.test.ts`, `PROJECT_LOG.md`
+**تأثير على أجزاء تانية:** اكتمال Milestone 2 بنجاح وجاهزية النظام لتنفيذ Milestone 3 (معاينة إيصال POS، بطاقات الدفع، وشارات الولاء).
+
+---
+
 ## [2026-08-26] المرحلة 8 (Milestone 1) — شريط التنقل الحديث، هوية مطبخ السوشي السحابي، سمة المطبخ الليلي عالي التباين، وبيئة اللمس المريحة
 **النوع:** Feature / UI & Theme System
 **اللي اتعمل:**

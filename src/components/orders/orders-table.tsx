@@ -19,6 +19,8 @@ import {
   XCircle,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { BrandBadge } from "@/components/ui/brand-badge";
+import { PlatformBadge } from "@/components/ui/platform-badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -619,12 +621,8 @@ export function OrdersTable({
                       {/* Brand & Platform */}
                       <TableCell>
                         <div className="flex flex-col gap-1 items-start">
-                          <Badge variant="secondary" className="text-[11px] font-semibold">
-                            {order.brand.name}
-                          </Badge>
-                          <span className="text-[11px] text-muted-foreground">
-                            {order.platform.name}
-                          </span>
+                          <BrandBadge brandName={order.brand.name} size="sm" />
+                          <PlatformBadge platformName={order.platform.name} size="sm" />
                         </div>
                       </TableCell>
 
@@ -872,13 +870,9 @@ export function OrdersTable({
                     <div className="space-y-1 text-xs">
                       <div className="flex justify-between items-center">
                         <span className="text-muted-foreground">{t("table.brand")}:</span>
-                        <div className="flex gap-1">
-                          <Badge variant="secondary" className="text-[10px]">
-                            {order.brand.name}
-                          </Badge>
-                          <Badge variant="outline" className="text-[10px]">
-                            {order.platform.name}
-                          </Badge>
+                        <div className="flex gap-1.5 items-center">
+                          <BrandBadge brandName={order.brand.name} size="sm" />
+                          <PlatformBadge platformName={order.platform.name} size="sm" />
                         </div>
                       </div>
 

@@ -20,6 +20,8 @@ import {
   User,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { PlatformBadge } from "@/components/ui/platform-badge";
+import { getBrandToken } from "@/lib/visualTokens";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -465,19 +467,14 @@ export function OrderForm({
           <span className="text-sm font-semibold text-muted-foreground me-2">
             {t("brand")}:
           </span>
-          <div className="flex flex-wrap gap-1.5">
+          <div className="flex flex-wrap gap-2">
             {brands.map((b) => {
               const isSelected = b.id === selectedBrandId;
+              const token = getBrandToken(b.name);
               return (
-                <Button
+                <button
                   key={b.id}
                   type="button"
-                  size="sm"
-                  variant={isSelected ? "default" : "outline"}
-                  className={cn(
-                    "font-medium transition-all",
-                    isSelected && "shadow-xs"
-                  )}
                   onClick={() => {
                     if (b.id !== selectedBrandId) {
                       setIsLoadingMenu(true);
@@ -485,9 +482,25 @@ export function OrderForm({
                       setSelectedCategoryId("ALL");
                     }
                   }}
+                  className={cn(
+                    "inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-semibold border transition-all cursor-pointer min-h-11",
+                    isSelected
+                      ? cn(
+                          token.bgClass,
+                          token.textClass,
+                          token.borderClass,
+                          "ring-2",
+                          token.ringClass,
+                          "shadow-xs"
+                        )
+                      : "bg-background hover:bg-muted text-muted-foreground border-border"
+                  )}
                 >
-                  {b.name}
-                </Button>
+                  <span className="font-bold font-mono text-sm opacity-90 leading-none">
+                    {token.kanji}
+                  </span>
+                  <span>{b.name}</span>
+                </button>
               );
             })}
           </div>
@@ -503,13 +516,27 @@ export function OrderForm({
               value={selectedPlatformId}
               onValueChange={setSelectedPlatformId}
             >
-              <SelectTrigger className="w-36 h-9">
-                <SelectValue placeholder={t("selectPlatform")} />
+              <SelectTrigger className="w-44 h-11">
+                <SelectValue placeholder={t("selectPlatform")}>
+                  {(() => {
+                    const activeP = platforms.find(
+                      (p) => p.id === selectedPlatformId
+                    );
+                    return activeP ? (
+                      <PlatformBadge
+                        platformName={activeP.name}
+                        size="sm"
+                      />
+                    ) : (
+                      t("selectPlatform")
+                    );
+                  })()}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {platforms.map((p) => (
                   <SelectItem key={p.id} value={p.id}>
-                    {p.name}
+                    <PlatformBadge platformName={p.name} size="sm" />
                   </SelectItem>
                 ))}
               </SelectContent>

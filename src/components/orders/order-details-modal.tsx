@@ -21,6 +21,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { BrandBadge } from "@/components/ui/brand-badge";
+import { PlatformBadge } from "@/components/ui/platform-badge";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -229,14 +231,10 @@ export function OrderDetailsModal({
 
             {order && (
               <div className="flex items-center gap-2 text-xs">
-                <Badge variant="secondary" className="font-semibold">
-                  {order.brand.name}
-                </Badge>
-                <Badge variant="outline" className="font-medium">
-                  {order.platform.name}
-                </Badge>
+                <BrandBadge brandName={order.brand.name} size="md" />
+                <PlatformBadge platformName={order.platform.name} size="md" />
                 {order.externalId && (
-                  <Badge variant="outline" className="border-dashed">
+                  <Badge variant="outline" className="border-dashed font-mono">
                     {order.externalId}
                   </Badge>
                 )}
