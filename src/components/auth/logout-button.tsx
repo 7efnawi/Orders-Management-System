@@ -22,7 +22,12 @@ export function LogoutButton() {
   }
 
   return (
-    <Button variant="outline" size="sm" onClick={onLogout} disabled={loading}>
+    <Button
+      variant="outline"
+      className="h-10 text-xs sm:text-sm px-3 rounded-lg"
+      onClick={onLogout}
+      disabled={loading}
+    >
       {loading ? t("signingOut") : t("logout")}
     </Button>
   );

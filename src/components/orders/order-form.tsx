@@ -563,7 +563,7 @@ export function OrderForm({
                     }
                   }}
                   className={cn(
-                    "inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-semibold border transition-all cursor-pointer min-h-11 select-none",
+                    "inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-semibold border transition-all cursor-pointer h-10 select-none",
                     isSelected
                       ? cn(
                           token.bgClass,
@@ -596,7 +596,7 @@ export function OrderForm({
               value={selectedPlatformId}
               onValueChange={setSelectedPlatformId}
             >
-              <SelectTrigger className="w-52 h-11 bg-background hover:bg-muted/40 transition-colors">
+              <SelectTrigger className="w-52 h-10 bg-background hover:bg-muted/40 transition-colors">
                 <SelectValue placeholder={t("selectPlatform")}>
                   {(() => {
                     const activeP = platforms.find(
@@ -662,7 +662,7 @@ export function OrderForm({
                     setSelectedCustomerMeta(null);
                   }}
                   placeholder={t("phonePlaceholder")}
-                  className="h-11 text-sm font-mono ps-9 tabular-nums"
+                  className="h-10 text-sm font-mono ps-9 tabular-nums"
                   autoComplete="off"
                 />
                 <div className="absolute start-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">
@@ -729,7 +729,7 @@ export function OrderForm({
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
                 placeholder={t("customerNamePlaceholder")}
-                className="h-11 text-sm"
+                className="h-10 text-sm"
               />
             </div>
 
@@ -742,7 +742,7 @@ export function OrderForm({
                 value={customerAddress}
                 onChange={(e) => setCustomerAddress(e.target.value)}
                 placeholder={t("customerAddressPlaceholder")}
-                className="h-11 text-sm"
+                className="h-10 text-sm"
               />
             </div>
           </div>
@@ -761,7 +761,7 @@ export function OrderForm({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={t("searchProducts")}
-                className="h-11 ps-9 text-sm"
+                className="h-10 ps-9 text-sm"
               />
               <Search className="absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
             </div>
@@ -1096,9 +1096,9 @@ export function OrderForm({
                           value={discountAmount}
                           onChange={(e) => setDiscountAmount(e.target.value)}
                           placeholder="0"
-                          className="h-9 text-xs font-mono tabular-nums ps-7"
+                          className="h-10 text-sm font-mono tabular-nums ps-7"
                         />
-                        <Percent className="absolute start-2 top-1/2 size-3 -translate-y-1/2 text-muted-foreground" />
+                        <Percent className="absolute start-2 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
                       </div>
                     </div>
 
@@ -1111,7 +1111,7 @@ export function OrderForm({
                           value={discountReason}
                           onChange={(e) => setDiscountReason(e.target.value)}
                           placeholder={t("discountReasonPlaceholder")}
-                          className="h-9 text-xs"
+                          className="h-10 text-sm"
                           required
                         />
                       </div>

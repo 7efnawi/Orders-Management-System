@@ -571,7 +571,7 @@ export function OrdersTable({
               placeholder={t("searchOrders")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="ps-9 h-9 text-xs"
+              className="ps-9 h-10 text-sm"
             />
             {searchQuery && (
               <button
@@ -579,14 +579,14 @@ export function OrdersTable({
                 onClick={() => setSearchQuery("")}
                 className="absolute end-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
               >
-                <X className="size-3.5" />
+                <X className="size-4" />
               </button>
             )}
           </div>
 
           {/* Brand Filter */}
           <Select value={selectedBrandId} onValueChange={setSelectedBrandId}>
-            <SelectTrigger className="h-9 text-xs">
+            <SelectTrigger className="h-10 text-sm">
               <SelectValue placeholder={t("filterBrand")} />
             </SelectTrigger>
             <SelectContent>
@@ -601,7 +601,7 @@ export function OrdersTable({
 
           {/* Platform Filter */}
           <Select value={selectedPlatformId} onValueChange={setSelectedPlatformId}>
-            <SelectTrigger className="h-9 text-xs">
+            <SelectTrigger className="h-10 text-sm">
               <SelectValue placeholder={t("filterPlatform")} />
             </SelectTrigger>
             <SelectContent>
@@ -620,7 +620,7 @@ export function OrdersTable({
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="h-9 text-xs flex-1"
+              className="h-10 text-sm flex-1"
             />
             {selectedDate && (
               <Button
@@ -628,7 +628,7 @@ export function OrdersTable({
                 variant="ghost"
                 size="sm"
                 onClick={() => setSelectedDate("")}
-                className="h-9 px-2 text-xs"
+                className="h-10 px-3 text-xs"
               >
                 {t("allDates")}
               </Button>

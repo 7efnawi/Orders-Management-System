@@ -70,11 +70,11 @@ export function ThemeSwitcher() {
       <Button
         variant="ghost"
         size="icon"
-        className="h-10 w-10 min-h-11 min-w-11 rounded-lg text-muted-foreground"
+        className="size-10 rounded-lg text-muted-foreground"
         aria-label="Theme switcher placeholder"
         disabled
       >
-        <Sun className="size-5 animate-pulse" />
+        <Sun className="size-4.5 animate-pulse" />
       </Button>
     );
   }
@@ -88,8 +88,8 @@ export function ThemeSwitcher() {
         variant="ghost"
         size="icon"
         className={cn(
-          "h-10 w-10 min-h-11 min-w-11 rounded-lg transition-colors",
-          "hover:bg-muted/80 focus-visible:ring-2 focus-visible:ring-primary/40",
+          "size-10 rounded-lg transition-colors text-muted-foreground",
+          "hover:bg-muted/80 hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary/40",
           isOpen && "bg-muted text-foreground"
         )}
         onClick={() => setIsOpen((prev) => !prev)}

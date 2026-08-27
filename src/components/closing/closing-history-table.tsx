@@ -253,18 +253,18 @@ export function ClosingHistoryTable({
             {/* Cashier Search & Refresh */}
             <div className="flex flex-wrap items-center gap-2">
               <div className="relative flex-1 sm:w-60">
-                <Search className="absolute start-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+                <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   value={cashierSearch}
                   onChange={(e) => setCashierSearch(e.target.value)}
                   placeholder={tHistory("searchPlaceholder")}
-                  className="h-8 ps-8 text-xs"
+                  className="h-10 ps-9 text-sm"
                 />
                 {cashierSearch && (
                   <button
                     type="button"
                     onClick={() => setCashierSearch("")}
-                    className="absolute end-2 top-2 text-muted-foreground hover:text-foreground"
+                    className="absolute end-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                   >
                     <X className="h-3.5 w-3.5" />
                   </button>
@@ -276,13 +276,13 @@ export function ClosingHistoryTable({
                 size="sm"
                 onClick={() => fetchData()}
                 disabled={loading}
-                className="h-8 px-3 text-xs gap-1.5"
+                className="h-10 px-3.5 text-xs sm:text-sm font-medium gap-1.5"
               >
-                <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
+                <RefreshCw className={`size-4 ${loading ? "animate-spin" : ""}`} />
                 <span>{locale === "ar" ? "تحديث" : "Refresh"}</span>
               </Button>
 
-              <Badge variant="secondary" className="h-8 px-2.5 text-xs font-mono">
+              <Badge variant="secondary" className="h-10 px-3 text-xs font-mono">
                 {tHistory("totalRecords")}: {totalCount}
               </Badge>
             </div>

@@ -20,7 +20,7 @@ export default async function OrdersPage({
   ]);
 
   return (
-    <div className="flex flex-1 flex-col p-4 sm:p-6 lg:p-8">
+    <div className="mx-auto flex w-full max-w-[1440px] flex-1 flex-col p-4 sm:p-6 lg:p-8">
       <OrdersTable
         userRole={user.role}
         initialBrands={brands}

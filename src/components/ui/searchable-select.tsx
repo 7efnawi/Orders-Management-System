@@ -101,8 +101,9 @@ export function SearchableSelect({
         disabled={disabled}
         onClick={() => !disabled && (open ? handleClose() : setOpen(true))}
         className={cn(
-          "w-full justify-between font-normal text-xs h-9 px-3 bg-background",
-          !selectedItem && "text-muted-foreground"
+          "w-full justify-between font-normal text-sm h-10 px-3 bg-background rounded-lg border border-input transition-colors hover:bg-muted/30 focus-visible:ring-2 focus-visible:ring-ring/50",
+          !selectedItem && "text-muted-foreground",
+          className
         )}
       >
         <div className="flex items-center gap-2 truncate text-start">

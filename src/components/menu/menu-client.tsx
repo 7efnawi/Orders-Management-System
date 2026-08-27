@@ -169,12 +169,12 @@ export function MenuClient({ brands: initialBrands, canEdit }: { brands: Brand[]
   }
 
   return (
-    <div className="mx-auto w-full max-w-6xl p-4">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <h1 className="text-xl font-bold">{t("title")}</h1>
+    <div className="mx-auto w-full max-w-[1440px] flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{t("title")}</h1>
           <Select value={brandId} onValueChange={setBrandId}>
-            <SelectTrigger className="w-44" aria-label={t("brand")}>
+            <SelectTrigger className="w-48 h-10" aria-label={t("brand")}>
               <SelectValue placeholder={t("brand")} />
             </SelectTrigger>
             <SelectContent>
@@ -186,14 +186,24 @@ export function MenuClient({ brands: initialBrands, canEdit }: { brands: Brand[]
             </SelectContent>
           </Select>
           {canEdit && (
-            <Button variant="outline" size="sm" onClick={() => setShowAddBrand((v) => !v)} data-testid="add-brand-btn">
+            <Button
+              variant="outline"
+              size="icon"
+              className="size-10 rounded-lg"
+              onClick={() => setShowAddBrand((v) => !v)}
+              data-testid="add-brand-btn"
+            >
               <Plus className="size-4" />
             </Button>
           )}
         </div>
         {canEdit && (
-          <Button onClick={() => setCategoryDialog({ mode: "create" })} disabled={!brandId}>
-            <Plus className="size-4" /> {t("addCategory")}
+          <Button
+            className="h-10 px-4 font-semibold text-sm shadow-xs"
+            onClick={() => setCategoryDialog({ mode: "create" })}
+            disabled={!brandId}
+          >
+            <Plus className="size-4 me-1.5" /> {t("addCategory")}
           </Button>
         )}
       </div>

@@ -316,11 +316,11 @@ export function ExpensesClient({
   }, [totalAmount, totalCount]);
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 p-4 md:p-6">
+    <div className="mx-auto flex w-full max-w-[1440px] flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-8">
       {/* Top Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">{t("title")}</h1>
+          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{t("title")}</h1>
           <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
         </div>
 
@@ -330,7 +330,7 @@ export function ExpensesClient({
             size="sm"
             onClick={() => fetchData()}
             disabled={loading}
-            className="h-9 gap-1.5"
+            className="h-10 gap-1.5 text-xs sm:text-sm font-medium"
             title={tCommon("loading")}
           >
             <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
@@ -344,7 +344,7 @@ export function ExpensesClient({
               variant="outline"
               size="sm"
               onClick={() => setManageTypesDialogOpen(true)}
-              className="h-9 gap-1.5"
+              className="h-10 gap-1.5 text-xs sm:text-sm font-medium"
             >
               <FolderCog className="h-4 w-4" />
               <span>{t("manageCategories") || "إدارة أنواع المصاريف"}</span>
@@ -354,7 +354,7 @@ export function ExpensesClient({
           <Button
             size="sm"
             onClick={() => setExpenseDialogState({ mode: "create" })}
-            className="h-9 gap-1.5 font-medium"
+            className="h-10 gap-1.5 text-xs sm:text-sm font-semibold shadow-xs"
           >
             <Plus className="h-4 w-4" />
             <span>{t("recordExpense")}</span>
@@ -466,7 +466,7 @@ export function ExpensesClient({
               {/* Category Selector */}
               <div className="w-full sm:w-48">
                 <Select value={selectedType} onValueChange={handleTypeChange}>
-                  <SelectTrigger className="h-8 text-xs">
+                  <SelectTrigger className="h-10 text-sm">
                     <SelectValue placeholder={t("filters.allCategories")} />
                   </SelectTrigger>
                   <SelectContent className="max-h-60">
@@ -488,12 +488,12 @@ export function ExpensesClient({
                 className="flex flex-1 sm:w-60 items-center gap-1"
               >
                 <div className="relative flex-1">
-                  <Search className="absolute start-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+                  <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     value={searchQuery}
                     onChange={(e) => handleSearchChange(e.target.value)}
                     placeholder={t("filters.searchPlaceholder")}
-                    className="h-8 ps-8 text-xs"
+                    className="h-10 ps-9 text-sm"
                   />
                   {searchQuery && (
                     <button

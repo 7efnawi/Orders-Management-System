@@ -211,7 +211,7 @@ export function DeliveryClient({
   }, [drivers, driverSearch, statusFilter, driverTypeFilter]);
 
   return (
-    <div className="mx-auto w-full max-w-6xl space-y-6 p-4">
+    <div className="mx-auto w-full max-w-[1440px] flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
       {/* Top Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -228,10 +228,10 @@ export function DeliveryClient({
             size="sm"
             onClick={() => void handleRefresh()}
             disabled={refreshing}
-            className="text-xs"
+            className="h-10 text-xs sm:text-sm font-medium"
           >
             <RefreshCw
-              className={cn("me-1.5 size-3.5", refreshing && "animate-spin")}
+              className={cn("me-1.5 size-4", refreshing && "animate-spin")}
             />
             {t("actions.search")}
           </Button>
@@ -240,7 +240,7 @@ export function DeliveryClient({
             <Button
               size="sm"
               onClick={() => setZoneDialog({ mode: "create" })}
-              className="font-semibold shadow-sm"
+              className="h-10 font-semibold shadow-xs text-xs sm:text-sm"
             >
               <Plus className="me-1.5 size-4" />
               {t("zones.add")}
@@ -251,7 +251,7 @@ export function DeliveryClient({
             <Button
               size="sm"
               onClick={() => setDriverDialog({ mode: "create" })}
-              className="font-semibold shadow-sm"
+              className="h-10 font-semibold shadow-xs text-xs sm:text-sm"
             >
               <Plus className="me-1.5 size-4" />
               {t("drivers.add")}
@@ -319,7 +319,7 @@ export function DeliveryClient({
                   placeholder={t("zones.search")}
                   value={zoneSearch}
                   onChange={(e) => setZoneSearch(e.target.value)}
-                  className="ps-9 h-9 text-xs"
+                  className="ps-9 h-10 text-sm"
                 />
                 {zoneSearch && (
                   <button
@@ -550,7 +550,7 @@ export function DeliveryClient({
                   placeholder={t("drivers.search")}
                   value={driverSearch}
                   onChange={(e) => setDriverSearch(e.target.value)}
-                  className="ps-9 h-9 text-xs"
+                  className="ps-9 h-10 text-sm"
                 />
                 {driverSearch && (
                   <button

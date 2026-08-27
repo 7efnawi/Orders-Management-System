@@ -79,11 +79,11 @@ export function ClosingClient({
   const hasActiveShift = shiftPreview !== null && shiftPreview.shift.closedAt === null;
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 p-4 md:p-6">
+    <div className="mx-auto flex w-full max-w-[1440px] flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-8">
       {/* Top Page Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">{t("title")}</h1>
+          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{t("title")}</h1>
           <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
         </div>
 
@@ -93,9 +93,9 @@ export function ClosingClient({
             size="sm"
             onClick={refreshCurrentShift}
             disabled={refreshing}
-            className="h-9 gap-1.5 text-xs"
+            className="h-10 gap-1.5 text-xs sm:text-sm font-medium"
           >
-            <RefreshCw className={cn("h-3.5 w-3.5", refreshing && "animate-spin")} />
+            <RefreshCw className={cn("size-4", refreshing && "animate-spin")} />
             <span>{tCommon("loading")}</span>
           </Button>
         </div>

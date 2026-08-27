@@ -61,8 +61,22 @@
       - شريط مراحل تحضير السوشي (جديد، قيد التحضير، جاهز، في الطريق، تم التسليم).
       - محور العمليات السريعة للوصول لإنشاء الطلبات، لوحة المطبخ، إغلاق الشيفت، المصروفات، المناديب، والمنيو.
       - بطاقات مراقبة براندات السوشي الأربعة (Flower, Mastery, Niwa, Tobiko) والمنصات الست.
+12. توحيد مقاسات وأبعاد العناصر وتناسق حاويات الصفحات على مستوى التطبيق بالكامل (System-Wide UI Sizing, Alignment, & Container Standardization):
+    - توحيد المكوّنات الأساسية (Primitives) في `src/components/ui/`:
+      - زر `Button`: اعتماد مقياس متناسق (`default: h-10 px-4 text-sm rounded-lg`, `sm: h-8 px-3 text-xs rounded-md`, `lg: h-11 px-5 font-semibold rounded-xl`, `icon: size-10 rounded-lg`, `icon-sm: size-8 rounded-md`).
+      - حقل الإدخال `Input`: توحيد الارتفاع الأساسي على `h-10 text-sm px-3 py-2 rounded-lg` ليتطابق مع الأزرار والقوائم في كل النماذج والمودالات.
+      - القائمة المنسدلة `SelectTrigger`: ضبط القياس الافتراضي ليكون `h-10 text-sm px-3 rounded-lg` مع دعم `sm: h-8`.
+      - البحث الفوري `SearchableSelect`: توحيد زر التفعيل ليكون `h-10 text-sm px-3 rounded-lg` متطابقاً هندسياً مع حقول الإدخال المجاورة.
+    - ضبط ترويسة النظام `DashboardHeader`:
+      - ضبط ارتفاع شريط النافبار على `h-16` (64px) ثابت بدون أي تذبذب.
+      - إضافة رابط "الرئيسية" مع أيقونة `Home` وتفعيل مؤشر المسار النشط وتوجيه شعار البراند إليها مباشرة.
+      - توحيد ارتفاع كافة العناصر التفاعلية في الترويسة (حبوب التبويب، زر "+ طلب جديد"، محول الثيم `size-10`، محول اللغة `h-10`، شارة البروفايل، وزر تسجيل الخروج `h-10`) لتحقيق التناغم البصري الكامل.
+    - توحيد أبعاد حقول شاشة إنشاء الطلب `/orders/new`:
+      - توحيد أزرار البراندات وقائمة المنصة وحقول الهاتف والاسم والعنوان وبحث المنتجات والخصم على مقاس `h-10` (40px) بدون أي حواف متعرجة.
+    - توحيد حاويات الصفحات (Page Containers) بالكامل:
+      - توحيد عرض وتجاوب وهوامش جميع الصفحات (`/`, `/orders`, `/menu`, `/delivery`, `/expenses`, `/closing`) على `max-w-[1440px] flex flex-col gap-6 p-4 sm:p-6 lg:p-8 mx-auto` للقضاء التام على أي قفزة أو اهتزاز عند التنقل بين الشاشات.
 **السبب:** تلبية الملاحظات والتعديلات التشغيلية والواجهية التي طلبها المستخدم مع الالتزام بأعلى معايير الأداء والتبسيط المعماري وسجل التدقيق (Directives §0, §2, §3).
-**الملفات المتأثرة:** `src/app/[locale]/(dashboard)/page.tsx`, `src/components/dashboard/dashboard-overview.tsx`, `src/services/orders.ts`, `src/components/ui/platform-logo.tsx`, `src/components/ui/platform-badge.tsx`, `src/components/orders/order-form.tsx`, `src/lib/visualTokens.ts`, `src/messages/ar.json`, `src/messages/en.json`, `PROJECT_LOG.md`
+**الملفات المتأثرة:** `src/components/ui/button.tsx`, `src/components/ui/input.tsx`, `src/components/ui/select.tsx`, `src/components/ui/searchable-select.tsx`, `src/components/layout/dashboard-header.tsx`, `src/components/theme-switcher.tsx`, `src/components/language-switcher.tsx`, `src/components/auth/logout-button.tsx`, `src/components/orders/order-form.tsx`, `src/components/orders/orders-table.tsx`, `src/components/delivery/delivery-client.tsx`, `src/components/closing/closing-client.tsx`, `src/components/closing/closing-history-table.tsx`, `src/components/expenses/expenses-client.tsx`, `src/components/menu/menu-client.tsx`, `src/app/[locale]/(dashboard)/orders/page.tsx`, `PROJECT_LOG.md`
 **تأثير على أجزاء تانية:** تحسين ملحوظ في سرعة وسلاسة الاستخدام، وجاهزية النظام بالكامل للتشغيل الفعلي.
 
 ---
