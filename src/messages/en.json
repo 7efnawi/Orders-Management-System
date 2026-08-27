@@ -241,7 +241,9 @@
       "emptyColumn": "No orders in this stage",
       "moreItems": "+{count} more items",
       "noDriverAssigned": "No driver assigned",
-      "delayedAlert": "Kitchen Delay"
+      "delayedAlert": "Kitchen Delay",
+      "assignDriverFirst": "Please assign a delivery driver first",
+      "invalidTransition": "Cannot transition this order directly to this status"
     },
     "table": {
       "orderNumber": "Order #",

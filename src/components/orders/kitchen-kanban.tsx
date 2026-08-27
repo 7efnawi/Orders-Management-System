@@ -1,13 +1,15 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
+import { toast } from "sonner";
 import {
   AlertCircle,
   Bike,
   CheckCircle2,
   ChevronRight,
   Eye,
+  GripVertical,
   Inbox,
   Loader2,
   MapPin,
@@ -28,6 +30,7 @@ import { AssignDriverOrder } from "@/components/delivery/assign-driver-dialog";
 import { PendingDiscountOrder } from "./discount-dialog";
 import { OrderRowItem } from "./orders-table";
 import { OrderStatus, DiscountStatus, Role } from "@prisma/client";
+import { ALLOWED_TRANSITIONS } from "@/lib/orderStateMachine";
 import { cn } from "@/lib/utils";
 
 export interface KitchenKanbanProps {
@@ -35,6 +38,7 @@ export interface KitchenKanbanProps {
   userRole: Role;
   advancingOrderId?: string | null;
   onAdvanceStatus: (order: OrderRowItem) => void;
+  onTransitionStatus?: (order: OrderRowItem, targetStatus: OrderStatus) => void;
   onOpenDetails: (orderId: string) => void;
   onOpenCancel: (order: { id: string; orderNumber: string }) => void;
   onOpenDriver: (order: AssignDriverOrder, defaultDispatch: boolean) => void;
@@ -160,6 +164,7 @@ export function KitchenKanban({
   userRole,
   advancingOrderId,
   onAdvanceStatus,
+  onTransitionStatus,
   onOpenDetails,
   onOpenCancel,
   onOpenDriver,
@@ -167,6 +172,67 @@ export function KitchenKanban({
 }: KitchenKanbanProps) {
   const t = useTranslations("orders");
   const isManagerOrOwner = userRole === Role.OWNER || userRole === Role.MANAGER;
+
+  const [draggingOrderId, setDraggingOrderId] = useState<string | null>(null);
+  const [dragOverColumnId, setDragOverColumnId] = useState<KanbanColumnId | null>(null);
+
+  const COLUMN_TARGET_STATUS: Record<KanbanColumnId, OrderStatus> = {
+    new_confirmed: OrderStatus.CONFIRMED,
+    preparing: OrderStatus.PREPARING,
+    ready: OrderStatus.READY,
+    out_for_delivery: OrderStatus.OUT_FOR_DELIVERY,
+    delivered: OrderStatus.DELIVERED,
+  };
+
+  const handleDropOrder = (orderId: string, targetColId: KanbanColumnId) => {
+    const order = orders.find((o) => o.id === orderId);
+    if (!order) return;
+
+    const currentStatus = order.status;
+    const targetStatus = COLUMN_TARGET_STATUS[targetColId];
+
+    // Check if already in this column
+    if (
+      currentStatus === targetStatus ||
+      ((currentStatus === OrderStatus.NEW || currentStatus === OrderStatus.CONFIRMED) &&
+        targetColId === "new_confirmed")
+    ) {
+      return;
+    }
+
+    // Direct transition or NEW -> PREPARING
+    const isDirectAllowed = ALLOWED_TRANSITIONS[currentStatus]?.includes(targetStatus);
+    const isNewToPreparing =
+      currentStatus === OrderStatus.NEW && targetStatus === OrderStatus.PREPARING;
+
+    if (!isDirectAllowed && !isNewToPreparing) {
+      toast.error(t("kanban.invalidTransition") || "لا يمكن نقل هذا الطلب لهذه الحالة مباشرة");
+      return;
+    }
+
+    // If moving to OUT_FOR_DELIVERY without a driver assigned
+    if (targetStatus === OrderStatus.OUT_FOR_DELIVERY && !order.driver) {
+      onOpenDriver(
+        {
+          id: order.id,
+          orderNumber: order.orderNumber,
+          status: order.status,
+          driver: null,
+        },
+        true
+      );
+      toast.info(
+        t("kanban.assignDriverFirst") || "يرجى اختيار وتعيين مندوب التوصيل للطلب أولاً"
+      );
+      return;
+    }
+
+    if (onTransitionStatus) {
+      onTransitionStatus(order, targetStatus);
+    } else {
+      onAdvanceStatus(order);
+    }
+  };
 
   // Group orders into columns
   const columnOrders = useMemo(() => {
@@ -202,13 +268,35 @@ export function KitchenKanban({
         {KANBAN_COLUMNS.map((col) => {
           const colList = columnOrders[col.id] || [];
           const Icon = col.icon;
+          const isDragOver = dragOverColumnId === col.id;
 
           return (
             <div
               key={col.id}
+              onDragOver={(e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = "move";
+                if (dragOverColumnId !== col.id) {
+                  setDragOverColumnId(col.id);
+                }
+              }}
+              onDragLeave={(e) => {
+                if (e.currentTarget.contains(e.relatedTarget as Node)) return;
+                setDragOverColumnId(null);
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                setDragOverColumnId(null);
+                const orderId = e.dataTransfer.getData("text/plain");
+                if (orderId) {
+                  handleDropOrder(orderId, col.id);
+                }
+              }}
               className={cn(
-                "flex flex-col rounded-2xl border bg-card/60 shadow-xs transition-all",
+                "flex flex-col rounded-2xl border bg-card/50 shadow-2xs transition-all",
                 col.borderColorClass,
+                isDragOver &&
+                  "border-2 border-dashed border-primary bg-primary/10 ring-2 ring-primary/20 scale-[1.01]",
                 "min-h-[500px] max-h-[calc(100vh-210px)] overflow-hidden"
               )}
             >
@@ -247,7 +335,7 @@ export function KitchenKanban({
               </div>
 
               {/* Column Cards Container */}
-              <div className="flex-1 overflow-y-auto p-2.5 space-y-3">
+              <div className="flex-1 overflow-y-auto p-2.5 space-y-2.5">
                 {colList.length === 0 ? (
                   <div className="flex h-40 flex-col items-center justify-center rounded-xl border border-dashed border-border/70 p-4 text-center">
                     <Package className="size-6 text-muted-foreground/40 mb-1.5" />
@@ -263,33 +351,55 @@ export function KitchenKanban({
                     const total = Math.max(0, subtotal - discount + deliveryFee);
                     const nextConfig = NEXT_STATUS_MAP[order.status];
                     const isAdvancing = advancingOrderId === order.id;
+                    const isCardDragging = draggingOrderId === order.id;
+                    const canDrag =
+                      !isAdvancing &&
+                      order.status !== OrderStatus.DELIVERED &&
+                      order.status !== OrderStatus.CANCELLED;
 
                     return (
                       <Card
                         key={order.id}
+                        draggable={canDrag}
+                        onDragStart={(e) => {
+                          e.dataTransfer.setData("text/plain", order.id);
+                          e.dataTransfer.effectAllowed = "move";
+                          setDraggingOrderId(order.id);
+                        }}
+                        onDragEnd={() => {
+                          setDraggingOrderId(null);
+                          setDragOverColumnId(null);
+                        }}
                         className={cn(
-                          "group relative overflow-hidden border shadow-xs hover:shadow-md transition-all rounded-xl bg-card",
+                          "group relative overflow-hidden border shadow-2xs hover:shadow-sm transition-all rounded-xl bg-card",
                           order.status === OrderStatus.PREPARING
                             ? "border-amber-500/40 hover:border-amber-500"
-                            : "hover:border-primary/40"
+                            : "hover:border-primary/40",
+                          isCardDragging && "opacity-40 scale-95 border-dashed",
+                          canDrag && "cursor-grab active:cursor-grabbing"
                         )}
                       >
                         <CardContent className="p-3 space-y-2.5">
-                          {/* Card Header: Order #, Badges, Prep Timer */}
+                          {/* Card Header: Drag Handle, Order #, Badges, Prep Timer */}
                           <div className="flex items-start justify-between gap-2 border-b pb-2">
-                            <div className="flex flex-col">
-                              <button
-                                type="button"
-                                onClick={() => onOpenDetails(order.id)}
-                                className="text-start font-mono text-xs font-bold text-primary hover:underline"
-                              >
-                                #{order.orderNumber}
-                              </button>
-                              {order.externalId && (
-                                <span className="text-[10px] text-muted-foreground font-mono">
-                                  {order.externalId}
-                                </span>
+                            <div className="flex items-center gap-1 min-w-0">
+                              {canDrag && (
+                                <GripVertical className="size-3 text-muted-foreground/30 group-hover:text-muted-foreground/70 shrink-0" />
                               )}
+                              <div className="flex flex-col">
+                                <button
+                                  type="button"
+                                  onClick={() => onOpenDetails(order.id)}
+                                  className="text-start font-mono text-xs font-bold text-primary hover:underline"
+                                >
+                                  #{order.orderNumber}
+                                </button>
+                                {order.externalId && (
+                                  <span className="text-[10px] text-muted-foreground font-mono truncate max-w-[90px]">
+                                    {order.externalId}
+                                  </span>
+                                )}
+                              </div>
                             </div>
 
                             <div className="flex flex-col items-end gap-1">

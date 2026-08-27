@@ -352,6 +352,47 @@ export function OrdersTable({
     }
   };
 
+  // Arbitrary status transition handler (e.g. for drag and drop)
+  const handleTransitionToStatus = async (order: OrderRowItem, targetStatus: OrderStatus) => {
+    if (order.status === targetStatus) return;
+
+    if (targetStatus === OrderStatus.OUT_FOR_DELIVERY && !order.driver) {
+      setSelectedOrderForDriver({
+        id: order.id,
+        orderNumber: order.orderNumber,
+        status: order.status,
+        driver: order.driver,
+      });
+      setAdvanceOnDriverAssign(true);
+      setDriverModalOpen(true);
+      return;
+    }
+
+    setAdvancingOrderId(order.id);
+    try {
+      const res = await fetch(`/api/orders/${order.id}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: targetStatus }),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || "Failed to update status");
+      }
+
+      toast.success(
+        `${t(`statuses.${targetStatus}`)} — #${order.orderNumber}`
+      );
+      handleRefresh();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Error updating status";
+      toast.error(msg);
+    } finally {
+      setAdvancingOrderId(null);
+    }
+  };
+
   const isManagerOrOwner = userRole === Role.OWNER || userRole === Role.MANAGER;
 
   return (
@@ -616,6 +657,7 @@ export function OrdersTable({
           userRole={userRole}
           advancingOrderId={advancingOrderId}
           onAdvanceStatus={handleAdvanceStatus}
+          onTransitionStatus={handleTransitionToStatus}
           onOpenDetails={(id) => {
             setSelectedOrderForDetails(id);
             setDetailsModalOpen(true);

@@ -241,7 +241,9 @@
       "emptyColumn": "لا توجد طلبات في هذه المرحلة",
       "moreItems": "+{count} أصناف إضافية",
       "noDriverAssigned": "بدون مندوب توصيل",
-      "delayedAlert": "تأخير في المطبخ"
+      "delayedAlert": "تأخير في المطبخ",
+      "assignDriverFirst": "يرجى اختيار وتعيين مندوب التوصيل للطلب أولاً",
+      "invalidTransition": "لا يمكن نقل هذا الطلب لهذه الحالة مباشرة"
     },
     "table": {
       "orderNumber": "رقم الطلب",
