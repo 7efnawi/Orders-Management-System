@@ -23,7 +23,7 @@ export async function runTier3Tests(): Promise<TestRunner> {
 
   const themes = ["light", "dark", "kitchen"];
   const brands = ["Flower", "Mastery", "Niwa", "Tobiko"];
-  const platforms = ["Talabat", "elmenus", "InstaShop", "HarryApp", "Phone"];
+  const platforms = ["Talabat", "elmenus", "InstaShop", "HarryApp", "Facebook", "Phone"];
 
   for (const theme of themes) {
     for (const brand of brands) {

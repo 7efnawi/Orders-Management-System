@@ -8,7 +8,39 @@
 ## Open Questions
 | السؤال | الحالة | مؤثر على |
 |---|---|---|
-| القائمة النهائية للمنصات | ⏳ العيل يظبطها من UI | Platform seed |
+| القائمة النهائية للمنصات | ✅ حُسمت (Talabat, InstaShop, Harry App, Elmenus, Facebook, Phone) | Platform seed & Visual Tokens |
+
+---
+
+## [2026-08-27] المرحلة 8.5 — المنصات الـ 6 الرسمية بلوجوهات SVG، ضبط المسافات، صلاحيات المصروفات وإعادة فتح الشيفتات (6 Standard Platforms with Vector SVG Logos, Spacing Polish, Expense Full CRUD, & Shift Reopening Workflows)
+**النوع:** Feature & UI/UX / Platforms, Layout, Expenses, & Shift Lifecycle
+**اللي اتعمل:**
+1. حصر المنصات الـ 6 القياسية واعتماد لوجوهات فيكتور رسمية:
+   - تحديث `src/services/lookups.ts` و `src/lib/visualTokens.ts` لضبط المنصات الرسمية الست: `Talabat`، `InstaShop`، `Harry App`، `Elmenus`، `Facebook`، `Phone`.
+   - إنشاء مكوّن لوجوهات الفيكتور `src/components/ui/platform-logo.tsx` لتوليد SVG أصيل لكل منصة مع التباين اللوني الصحيح.
+   - دمج `PlatformLogo` داخل `PlatformBadge` وشاشات إنشاء الطلبات وعرضها.
+2. تحسين وضبط المسافات والتنفس البصري (Spacing Polish):
+   - إعادة ضبط ترويسة النظام `src/components/layout/dashboard-header.tsx`: توسيع الهيدر لارتفاع مريح `h-17`، زيادة الحشو الأفقي `px-4 sm:px-6 lg:px-8` مع أقصى عرض `max-w-[1440px]`.
+   - تباعد متزن بين شعار البراند وقوائم التنقل `gap-5 lg:gap-7` ومسافات أوسع لأزرار التنقل `px-4 py-2` وفواصل واضحة لمنطقة المستخدم.
+   - تحسين أبعاد وتجاوب القائمة الجانبية للشاشات المحمولة.
+3. تمكين الـ Owner والـ Manager من التحكم الكامل في المصروفات (Full CRUD):
+   - دعم التعديل والحذف والإضافة مع أزرار بارزة ومودال تأكيد في `src/components/expenses/expenses-client.tsx`.
+   - حماية المسارات برمجياً عبر `requireApiRole("OWNER", "MANAGER")` في `src/app/api/expenses/[id]/route.ts`.
+4. تمكين الـ Owner والـ Manager من إعادة فتح الشيفت وتعديل ملاحظات الإغلاق:
+   - إنشاء دالة `reopenShift` في `src/services/closing.ts` تقوم بإلغاء سجل `DailyClosing` وتصفير `closedAt` مع تسجيل `AuditLog` ذرياً.
+   - إنشاء دالة `updateDailyClosing` لتعديل الملاحظات وتسويات العجز مع تسجيل `AuditLog`.
+   - إضافة مسار `POST /api/shifts/[id]/reopen` ومسار `PATCH /api/closing/[id]`.
+   - إنشاء نافذة `ReopenShiftDialog` ونافذة `EditClosingNotesDialog` وإدماجهما في شاشة الإغلاق اليومي.
+5. الاختبارات والتحقق:
+   - نجاح اختبار المنصات `scripts/test-platforms.ts`.
+   - نجاح اختبار المصروفات `scripts/test-expenses-crud.ts`.
+   - نجاح اختبار إعادة فتح الشيفت `scripts/test-shift-reopen.ts`.
+   - اجتياز جميع فحوصات الـ E2E الـ 179/179 بنسبة 100%.
+   - اجتياز `npm run typecheck` و `npm run lint` بنجاح تام 0 أخطاء و 0 تحذيرات.
+   - اجتياز بناء الإنتاج الكامل `npm run build` لـ 35 مساراً.
+**السبب:** تلبية الملاحظات الأربعة المباشرة للعميل لدعم تطبيقات التوصيل الستة الفعلية، وتناسق المسافات، ومنح صلاحيات التعديل والحذف وإعادة فتح الشيفتات (Directives §0, §1, §2).
+**الملفات المتأثرة:** `src/lib/visualTokens.ts`, `src/services/lookups.ts`, `src/components/ui/platform-logo.tsx`, `src/components/ui/platform-badge.tsx`, `src/components/layout/dashboard-header.tsx`, `src/services/closing.ts`, `src/app/api/shifts/[id]/reopen/route.ts`, `src/app/api/closing/[id]/route.ts`, `src/components/closing/reopen-shift-dialog.tsx`, `src/components/closing/edit-closing-notes-dialog.tsx`, `src/components/closing/closing-details-modal.tsx`, `src/components/closing/closing-history-table.tsx`, `src/components/closing/closing-client.tsx`, `src/messages/ar.json`, `src/messages/en.json`, `PROJECT_LOG.md`
+**تأثير على أجزاء تانية:** استقرار كامل لعمليات الورديات والمصروفات والمنصات وتحديث كامل للتوثيق الداخلي.
 
 ---
 

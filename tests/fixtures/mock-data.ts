@@ -49,6 +49,7 @@ export const MOCK_PLATFORMS = [
   { id: "p-elmenus", name: "elmenus", color: "#e21b1b" },
   { id: "p-instashop", name: "InstaShop", color: "#00a699" },
   { id: "p-harryapp", name: "HarryApp", color: "#4f46e5" },
+  { id: "p-facebook", name: "Facebook", color: "#1877f2" },
   { id: "p-phone", name: "Phone", color: "#0284c7" },
 ];
 
