@@ -143,15 +143,15 @@ export function DashboardHeader({ user, locale }: DashboardHeaderProps) {
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full border-b border-border/80 bg-background/95 backdrop-blur-md supports-backdrop-filter:bg-background/80 transition-colors">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-2 px-3 sm:px-4 lg:px-6">
+      <header className="sticky top-0 z-40 w-full border-b border-border/70 bg-background/95 backdrop-blur-md supports-backdrop-filter:bg-background/80 transition-colors">
+        <div className="mx-auto flex h-17 max-w-[1440px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
           {/* Left / Brand + Nav Section */}
-          <div className="flex min-w-0 items-center gap-4 lg:gap-6">
+          <div className="flex min-w-0 items-center gap-5 lg:gap-7">
             {/* Mobile Menu Trigger */}
             <Button
               variant="ghost"
               size="icon"
-              className="lg:hidden h-10 w-10 min-h-11 min-w-11 rounded-xl text-foreground"
+              className="lg:hidden h-11 w-11 rounded-xl text-foreground hover:bg-muted/80"
               onClick={() => setMobileMenuOpen(true)}
               aria-label={tNav("openNavigation")}
             >
@@ -161,16 +161,16 @@ export function DashboardHeader({ user, locale }: DashboardHeaderProps) {
             {/* Brand Logo & Title */}
             <Link
               href="/orders"
-              className="group flex items-center gap-2.5 outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl p-1 transition-transform active:scale-[0.98]"
+              className="group flex items-center gap-3 outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl p-1 transition-transform active:scale-[0.98]"
             >
-              <div className="flex size-9 sm:size-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm shadow-primary/30 ring-1 ring-primary/20 group-hover:scale-105 transition-transform">
-                <Flame className="size-5 text-primary-foreground" />
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm shadow-primary/30 ring-1 ring-primary/20 group-hover:scale-105 transition-transform">
+                <Flame className="size-5.5 text-primary-foreground" />
               </div>
               <div className="flex flex-col min-w-0">
-                <span className="truncate text-sm sm:text-base font-bold tracking-tight text-foreground group-hover:text-primary transition-colors">
+                <span className="truncate text-base font-bold tracking-tight text-foreground group-hover:text-primary transition-colors">
                   {tCommon("appName")}
                 </span>
-                <span className="truncate text-[10px] sm:text-[11px] font-semibold text-muted-foreground tracking-wider uppercase">
+                <span className="truncate text-[11px] font-semibold text-muted-foreground tracking-wider uppercase">
                   {tNav("brandTag")}
                 </span>
               </div>
@@ -178,7 +178,7 @@ export function DashboardHeader({ user, locale }: DashboardHeaderProps) {
 
             {/* Desktop Navigation Pills */}
             <nav
-              className="hidden lg:flex items-center gap-1.5 ms-2"
+              className="hidden lg:flex items-center gap-2 ps-3 border-s border-border/60"
               aria-label={tNav("dashboard")}
             >
               {allowedNavItems.map((item) => {
@@ -188,7 +188,7 @@ export function DashboardHeader({ user, locale }: DashboardHeaderProps) {
                     key={item.href}
                     href={item.href}
                     className={cn(
-                      "flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-medium transition-all duration-150 min-h-11 whitespace-nowrap outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                      "flex items-center gap-2.5 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-150 min-h-11 whitespace-nowrap outline-none focus-visible:ring-2 focus-visible:ring-primary",
                       item.isActive
                         ? "bg-primary text-primary-foreground font-semibold shadow-sm shadow-primary/25"
                         : "text-muted-foreground hover:text-foreground hover:bg-muted/80"
@@ -196,7 +196,7 @@ export function DashboardHeader({ user, locale }: DashboardHeaderProps) {
                   >
                     <Icon
                       className={cn(
-                        "size-4 shrink-0",
+                        "size-4.5 shrink-0",
                         item.isActive ? "text-primary-foreground" : "text-muted-foreground"
                       )}
                     />
@@ -208,13 +208,13 @@ export function DashboardHeader({ user, locale }: DashboardHeaderProps) {
           </div>
 
           {/* Right Action & User Controls */}
-          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+          <div className="flex shrink-0 items-center gap-3 sm:gap-4">
             {/* Persistent "+ New Order" CTA Button */}
             <Link href="/orders/new">
               <Button
                 size="touch"
                 className={cn(
-                  "font-semibold shadow-md transition-all duration-150 active:scale-[0.98]",
+                  "font-semibold shadow-md transition-all duration-150 active:scale-[0.98] px-4 py-2 gap-2 text-sm",
                   isNewOrderActive
                     ? "bg-primary/90 ring-2 ring-primary ring-offset-2 ring-offset-background text-primary-foreground"
                     : "bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/25"
@@ -227,21 +227,21 @@ export function DashboardHeader({ user, locale }: DashboardHeaderProps) {
             </Link>
 
             {/* User Profile Pill (Desktop) */}
-            <div className="hidden xl:flex items-center gap-2.5 ps-2 border-s border-border/80">
+            <div className="hidden xl:flex items-center gap-3 ps-3 border-s border-border/80">
               <div
-                className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-muted text-foreground font-bold text-xs border border-border"
+                className="flex size-9.5 shrink-0 items-center justify-center rounded-xl bg-muted text-foreground font-bold text-xs border border-border/80 shadow-xs"
                 title={user.name}
               >
                 {initials}
               </div>
-              <div className="flex flex-col min-w-0 max-w-[120px]">
+              <div className="flex flex-col min-w-0 max-w-[130px] gap-0.5">
                 <span className="truncate text-xs font-semibold text-foreground">
                   {user.name}
                 </span>
                 <Badge
                   variant="outline"
                   className={cn(
-                    "text-[10px] px-1.5 py-0 font-medium w-fit",
+                    "text-[10px] px-2 py-0.5 font-medium w-fit",
                     userRoleStyle.badgeClass
                   )}
                 >
@@ -251,9 +251,9 @@ export function DashboardHeader({ user, locale }: DashboardHeaderProps) {
             </div>
 
             {/* Controls: Language, Theme, Logout */}
-            <div className="flex items-center gap-1 sm:gap-1.5">
+            <div className="flex items-center gap-1.5 sm:gap-2 border-s border-border/80 ps-2 sm:ps-3">
               <ThemeSwitcher />
-              <div className="px-1">
+              <div className="px-0.5">
                 <LanguageSwitcher locale={locale} />
               </div>
               <div className="hidden sm:block">
