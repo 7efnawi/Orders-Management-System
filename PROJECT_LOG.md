@@ -46,6 +46,9 @@
    - اجتياز اختبارات محاكاة المراحل: `verify-phase4.ts`, `verify-phase5.ts`, `verify-phase6.ts`, `verify-phase7.ts` بنسبة 100%.
    - اجتياز `npm run typecheck` و `npm run lint` بدون أي خطأ أو تحذير (0 errors, 0 warnings).
    - اجتياز بناء الإنتاج الكامل `npm run build` لـ 35 مساراً.
+9. تصحيحات وإصلاحات الأخطاء (Bugfixes):
+   - إصلاح خطأ `MISSING_MESSAGE: Could not resolve common.close` بإضافة مفتاح `close` لملفات الترجمة.
+   - إصلاح مشكلة عدم ظهور شعارات المنصات ذات العرض المستطيل بتبديل `sizeClasses` الثابتة إلى `heightClasses` مع `w-auto` لتأخذ عرضها الطبيعي.
 **السبب:** تلبية الملاحظات والتعديلات التشغيلية والواجهية التي طلبها المستخدم مع الالتزام بأعلى معايير الأداء والتبسيط المعماري وسجل التدقيق (Directives §0, §2, §3).
 **الملفات المتأثرة:** `src/services/expenses.ts`, `src/app/api/expenses/types/[id]/route.ts`, `src/components/expenses/manage-expense-types-dialog.tsx`, `src/components/expenses/expenses-client.tsx`, `src/lib/search.ts`, `src/components/ui/searchable-select.tsx`, `src/components/orders/order-form.tsx`, `src/components/delivery/assign-driver-dialog.tsx`, `src/components/orders/kitchen-kanban.tsx`, `src/components/orders/orders-table.tsx`, `src/components/ui/platform-logo.tsx`, `src/components/theme-switcher.tsx`, `src/components/theme-provider.tsx`, `src/app/globals.css`, `src/messages/ar.json`, `src/messages/en.json`, `PROJECT_LOG.md`
 **تأثير على أجزاء تانية:** تحسين ملحوظ في سرعة وسلاسة الاستخدام، وجاهزية النظام بالكامل للتشغيل الفعلي.

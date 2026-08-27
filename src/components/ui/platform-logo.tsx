@@ -19,21 +19,29 @@ export function PlatformLogo({
 }: PlatformLogoProps) {
   const normalized = (platformName || "").toLowerCase().trim().replace(/\s+/g, "");
 
-  const sizeClasses = {
+  const heightClasses = {
+    sm: "h-4",
+    md: "h-5",
+    lg: "h-6",
+    xl: "h-8",
+  };
+
+  const squareClasses = {
     sm: "size-4 min-w-4",
     md: "size-5 min-w-5",
     lg: "size-6 min-w-6",
     xl: "size-8 min-w-8",
   };
 
-  const currentSizeClass = sizeClasses[size];
+  const currentHeightClass = heightClasses[size];
+  const currentSquareClass = squareClasses[size];
 
   // 1. TALABAT (Using uploaded /Talabat_logo.svg)
   if (normalized.includes("talabat") || normalized.includes("طلبات")) {
     return (
       <div
         className={cn(
-          currentSizeClass,
+          currentHeightClass,
           "relative flex items-center justify-center rounded-sm overflow-hidden shrink-0",
           className
         )}
@@ -43,7 +51,7 @@ export function PlatformLogo({
         <img
           src="/Talabat_logo.svg"
           alt="Talabat"
-          className="size-full object-contain"
+          className="h-full w-auto object-contain"
           loading="eager"
         />
       </div>
@@ -55,7 +63,7 @@ export function PlatformLogo({
     return (
       <div
         className={cn(
-          currentSizeClass,
+          currentHeightClass,
           "relative flex items-center justify-center rounded-sm overflow-hidden shrink-0",
           className
         )}
@@ -65,7 +73,7 @@ export function PlatformLogo({
         <img
           src="/Elmenus_logo.svg"
           alt="elmenus"
-          className="size-full object-contain"
+          className="h-full w-auto object-contain"
           loading="eager"
         />
       </div>
@@ -81,7 +89,7 @@ export function PlatformLogo({
     return (
       <div
         className={cn(
-          currentSizeClass,
+          currentHeightClass,
           "relative flex items-center justify-center rounded-sm overflow-hidden shrink-0",
           className
         )}
@@ -91,7 +99,7 @@ export function PlatformLogo({
         <img
           src="/instashop-logo.svg"
           alt="InstaShop"
-          className="size-full object-contain"
+          className="h-full w-auto object-contain"
           loading="eager"
         />
       </div>
@@ -103,7 +111,7 @@ export function PlatformLogo({
     return (
       <div
         className={cn(
-          currentSizeClass,
+          currentHeightClass,
           "relative flex items-center justify-center rounded-md overflow-hidden shrink-0 border border-border/40 shadow-2xs",
           className
         )}
@@ -113,7 +121,7 @@ export function PlatformLogo({
         <img
           src="/HurryApp_logo.jpeg"
           alt="Harry App"
-          className="size-full object-cover"
+          className="h-full w-auto object-cover"
           loading="eager"
         />
       </div>
@@ -125,7 +133,7 @@ export function PlatformLogo({
     return (
       <div
         className={cn(
-          currentSizeClass,
+          currentSquareClass,
           "flex items-center justify-center rounded-md bg-[#1877f2] text-white shrink-0 shadow-2xs",
           className
         )}
@@ -143,7 +151,7 @@ export function PlatformLogo({
   return (
     <div
       className={cn(
-        currentSizeClass,
+        currentSquareClass,
         "flex items-center justify-center rounded-md bg-[#0284c7] text-white shrink-0 shadow-2xs",
         className
       )}
