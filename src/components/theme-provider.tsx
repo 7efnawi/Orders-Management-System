@@ -17,7 +17,7 @@ export function ThemeProvider({
       value={{
         light: "light",
         dark: "dark",
-        kitchen: "dark kitchen",
+        kitchen: "kitchen",
       }}
       {...props}
     >
