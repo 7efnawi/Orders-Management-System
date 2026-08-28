@@ -17,6 +17,15 @@ import {
 } from "../../src/lib/orderStateMachine";
 import { CancelReason, DriverType } from "@prisma/client";
 import {
+  buildDailyBreakdown,
+  calculateDriverCashCollection,
+  calculateSalesSummary,
+  calculateTopProducts,
+  groupSalesByPlatformBrand,
+  type ReportExpenseInput,
+  type ReportOrderInput,
+} from "../../src/lib/reports";
+import {
   MOCK_ORDERS_DATASET,
 } from "../fixtures/mock-data";
 
@@ -288,9 +297,9 @@ export async function runTier1Tests(): Promise<TestRunner> {
     assert.strictEqual(token.labelAr, "إنستاشوب");
   });
 
-  await runner.test("F6.4: HarryApp platform token has Deep Indigo (#4f46e5)", () => {
+  await runner.test("F6.4: HarryApp platform token has Maroon Rose (#be123c)", () => {
     const token = getPlatformToken("HarryApp");
-    assert.strictEqual(token.hex, "#4f46e5");
+    assert.strictEqual(token.hex, "#be123c");
     assert.strictEqual(token.labelAr, "هاري آب");
   });
 
@@ -298,6 +307,12 @@ export async function runTier1Tests(): Promise<TestRunner> {
     const token = getPlatformToken("Phone");
     assert.strictEqual(token.hex, "#0284c7");
     assert.strictEqual(token.labelAr, "تليفون مباشر");
+  });
+
+  await runner.test("F6.6: Facebook platform token has Official Blue (#1877f2)", () => {
+    const token = getPlatformToken("Facebook");
+    assert.strictEqual(token.hex, "#1877f2");
+    assert.strictEqual(token.labelAr, "فيسبوك");
   });
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -716,6 +731,202 @@ export async function runTier1Tests(): Promise<TestRunner> {
     assert.deepStrictEqual(nextAllowedStatuses(OrderStatus.OUT_FOR_DELIVERY), [OrderStatus.DELIVERED]);
     assert.deepStrictEqual(nextAllowedStatuses(OrderStatus.DELIVERED), []);
     assert.deepStrictEqual(nextAllowedStatuses(OrderStatus.CANCELLED), []);
+  });
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // FEATURE 14: Reports & Analytics Dashboard (Phase 8 — FR-RPT)
+  // ═══════════════════════════════════════════════════════════════════════════
+  runner.setContext("F14: Reports & Analytics Dashboard", 1);
+
+  // TZ-safe mock dataset — كل الأوردرات النهارده محليًا، والمصروفات بتاريخ النهارده
+  const now = new Date();
+  const yy = now.getFullYear();
+  const mm = now.getMonth();
+  const dd = now.getDate();
+  const todayKey = `${yy}-${String(mm + 1).padStart(2, "0")}-${String(dd).padStart(2, "0")}`;
+  const tomorrow = new Date(yy, mm, dd + 1);
+  const tomorrowKey = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, "0")}-${String(tomorrow.getDate()).padStart(2, "0")}`;
+  const localNoon = new Date(yy, mm, dd, 12, 0, 0);
+  const expenseToday: Date = new Date(Date.UTC(yy, mm, dd));
+
+  const reportOrders: ReportOrderInput[] = [
+    {
+      id: "rpt-o1",
+      status: OrderStatus.DELIVERED,
+      paymentMethod: "CASH",
+      subtotal: 200,
+      discount: 20,
+      discountStatus: "APPROVED",
+      deliveryFee: 30,
+      createdAt: localNoon,
+      platformName: "Talabat",
+      brandName: "Flower",
+      driverId: "rpt-d1",
+      driverName: "Ahmed",
+      driverType: "OWN",
+      items: [{ productId: "rpt-p1", productName: "Salmon Roll", quantity: 2, totalPrice: 200 }],
+    },
+    {
+      id: "rpt-o2",
+      status: OrderStatus.CONFIRMED,
+      paymentMethod: "VISA",
+      subtotal: 100,
+      discount: 0,
+      deliveryFee: 20,
+      createdAt: localNoon,
+      platformName: "InstaShop",
+      brandName: "Mastery",
+      driverId: "rpt-d1",
+      driverName: "Ahmed",
+      driverType: "OWN",
+      items: [{ productId: "rpt-p2", productName: "Shrimp Roll", quantity: 1, totalPrice: 100 }],
+    },
+    {
+      id: "rpt-o3",
+      status: OrderStatus.READY,
+      paymentMethod: "ONLINE",
+      subtotal: 50,
+      discount: 0,
+      deliveryFee: 0,
+      createdAt: localNoon,
+      platformName: "Phone",
+      brandName: "Flower",
+      driverId: null,
+      driverName: null,
+      driverType: null,
+      items: [{ productId: "rpt-p3", productName: "Tuna Nigiri", quantity: 1, totalPrice: 50 }],
+    },
+    {
+      id: "rpt-o4",
+      status: OrderStatus.CANCELLED,
+      paymentMethod: "CASH",
+      subtotal: 80,
+      discount: 0,
+      deliveryFee: 25,
+      createdAt: localNoon,
+      platformName: "Talabat",
+      brandName: "Niwa",
+      driverId: "rpt-d2",
+      driverName: "Sara",
+      driverType: "APP",
+      items: [{ productId: "rpt-p4", productName: "Cancelled Roll", quantity: 1, totalPrice: 80 }],
+    },
+    {
+      id: "rpt-o5",
+      status: OrderStatus.DELIVERED,
+      paymentMethod: "VISA",
+      subtotal: 100,
+      discount: 30,
+      discountStatus: "REJECTED", // خصم مرفوض → لا يُحسب
+      deliveryFee: 0,
+      createdAt: localNoon,
+      platformName: "Talabat",
+      brandName: "Mastery",
+      driverId: "rpt-d1",
+      driverName: "Ahmed",
+      driverType: "OWN",
+      items: [{ productId: "rpt-p2", productName: "Shrimp Roll", quantity: 1, totalPrice: 100 }],
+    },
+  ];
+
+  const reportExpenses: ReportExpenseInput[] = [
+    { value: 40, quantity: 1, date: expenseToday },
+    { value: 30, quantity: 2, date: expenseToday }, // 30 × 2 = 60
+  ];
+
+  await runner.test("F14.1: Sales summary matches exact figures (cancelled & rejected discount excluded)", () => {
+    const summary = calculateSalesSummary(reportOrders, reportExpenses);
+    assert.strictEqual(summary.totalOrders, 5);
+    assert.strictEqual(summary.cancelledOrders, 1);
+    assert.strictEqual(summary.activeOrders, 4);
+    assert.strictEqual(summary.deliveredOrders, 2);
+    assert.strictEqual(summary.grossSales, 450); // 200 + 100 + 50 + 100 (الملغي مستبعد)
+    assert.strictEqual(summary.totalDiscounts, 20); // خصم O5 المرفوض (30) لا يُحسب
+    assert.strictEqual(summary.totalDeliveryFees, 50); // 30 + 20 + 0 (رسوم الملغي مستبعدة)
+    assert.strictEqual(summary.netRevenue, 480); // 450 - 20 + 50
+    assert.strictEqual(summary.cashTotal, 210); // O1: 200 - 20 + 30
+    assert.strictEqual(summary.visaTotal, 220); // O2: 120 + O5: 100
+    assert.strictEqual(summary.onlineTotal, 50); // O3
+    assert.strictEqual(summary.totalExpenses, 100); // 40 + (30 × 2)
+    assert.strictEqual(summary.netProfit, 380); // 480 - 100
+    assert.strictEqual(summary.aov, 120); // 480 / 4
+  });
+
+  await runner.test("F14.2: Platform×Brand matrix excludes cancelled and sorts by sales desc", () => {
+    const rows = groupSalesByPlatformBrand(reportOrders);
+    assert.strictEqual(rows.length, 4, "Cancelled order (Talabat×Niwa) must be excluded");
+    assert.strictEqual(rows[0].platformName, "Talabat");
+    assert.strictEqual(rows[0].brandName, "Flower");
+    assert.strictEqual(rows[0].orders, 1);
+    assert.strictEqual(rows[0].sales, 210);
+    assert.deepStrictEqual(
+      rows.map((r) => r.sales),
+      [210, 120, 100, 50]
+    );
+  });
+
+  await runner.test("F14.3: Driver cash collection groups correctly with no-driver row last", () => {
+    const rows = calculateDriverCashCollection(reportOrders);
+    assert.strictEqual(rows.length, 2, "Sara has only a cancelled order → no row");
+    const ahmed = rows.find((r) => r.driverId === "rpt-d1");
+    assert.ok(ahmed);
+    assert.strictEqual(ahmed.totalOrders, 3);
+    assert.strictEqual(ahmed.cashOrders, 1);
+    assert.strictEqual(ahmed.cashCollected, 210);
+    const noneRow = rows[rows.length - 1];
+    assert.strictEqual(noneRow.driverId, null, "No-driver row must be last");
+    assert.strictEqual(noneRow.totalOrders, 1);
+    assert.strictEqual(noneRow.cashOrders, 0);
+    assert.strictEqual(noneRow.cashCollected, 0);
+  });
+
+  await runner.test("F14.4: Top products ranked by quantity with order counts", () => {
+    const rows = calculateTopProducts(reportOrders);
+    assert.strictEqual(rows.length, 3, "Product of cancelled order must be excluded");
+    assert.strictEqual(rows[0].productId, "rpt-p1");
+    assert.strictEqual(rows[0].quantity, 2);
+    assert.strictEqual(rows[0].revenue, 200);
+    assert.strictEqual(rows[0].ordersCount, 1);
+    const limited = calculateTopProducts(reportOrders, 1);
+    assert.strictEqual(limited.length, 1);
+    assert.strictEqual(limited[0].productId, "rpt-p1");
+  });
+
+  await runner.test("F14.5: Daily breakdown fills each day in range with exact figures", () => {
+    const single = buildDailyBreakdown(reportOrders, reportExpenses, todayKey, todayKey);
+    assert.strictEqual(single.length, 1);
+    assert.strictEqual(single[0].date, todayKey);
+    assert.strictEqual(single[0].orders, 5);
+    assert.strictEqual(single[0].delivered, 2);
+    assert.strictEqual(single[0].cancelled, 1);
+    assert.strictEqual(single[0].sales, 480);
+    assert.strictEqual(single[0].deliveryFees, 50);
+    assert.strictEqual(single[0].expenses, 100);
+    assert.strictEqual(single[0].net, 380);
+
+    const twoDays = buildDailyBreakdown(reportOrders, reportExpenses, todayKey, tomorrowKey);
+    assert.strictEqual(twoDays.length, 2, "Empty days must be filled with zeros");
+    assert.strictEqual(twoDays[1].date, tomorrowKey);
+    assert.strictEqual(twoDays[1].orders, 0);
+    assert.strictEqual(twoDays[1].sales, 0);
+    assert.strictEqual(twoDays[1].expenses, 0);
+    assert.strictEqual(twoDays[1].net, 0);
+  });
+
+  await runner.test("F14.6: Reports edge cases — empty data and invalid range", () => {
+    const emptySummary = calculateSalesSummary([], []);
+    assert.strictEqual(emptySummary.totalOrders, 0);
+    assert.strictEqual(emptySummary.netRevenue, 0);
+    assert.strictEqual(emptySummary.aov, 0);
+    assert.strictEqual(emptySummary.netProfit, 0);
+    assert.deepStrictEqual(groupSalesByPlatformBrand([]), []);
+    assert.deepStrictEqual(calculateDriverCashCollection([]), []);
+    assert.deepStrictEqual(calculateTopProducts([]), []);
+
+    assert.throws(
+      () => buildDailyBreakdown([], [], "2026-02-10", "2026-02-01"),
+      /INVALID_RANGE/
+    );
   });
 
   return runner;
