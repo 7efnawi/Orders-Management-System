@@ -6,17 +6,10 @@ import {
   BarChart3,
   Calendar,
   Filter,
-  TrendingUp,
-  DollarSign,
-  Receipt,
   Truck,
-  ShoppingBag,
   RefreshCw,
   Award,
   Layers,
-  Banknote,
-  CreditCard,
-  Globe,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -27,6 +20,12 @@ import { toast } from "sonner";
 import { Role } from "@prisma/client";
 import { cn } from "@/lib/utils";
 import type { ReportsPayload } from "@/services/reports";
+
+import { ReportsKpiGrid } from "./reports-kpi-grid";
+import { RevenueTrendChart } from "./charts/revenue-trend-chart";
+import { PlatformShareChart } from "./charts/platform-share-chart";
+import { BrandPerformanceChart } from "./charts/brand-performance-chart";
+import { TopProductsChart } from "./charts/top-products-chart";
 
 interface BrandItem {
   id: string;
@@ -140,10 +139,6 @@ export function ReportsClient({
   };
 
   const { summary } = data;
-  const paymentTotal = summary.cashTotal + summary.visaTotal + summary.onlineTotal;
-  const cashPct = paymentTotal > 0 ? Math.round((summary.cashTotal / paymentTotal) * 100) : 0;
-  const visaPct = paymentTotal > 0 ? Math.round((summary.visaTotal / paymentTotal) * 100) : 0;
-  const onlinePct = paymentTotal > 0 ? Math.round((summary.onlineTotal / paymentTotal) * 100) : 0;
 
   return (
     <div className="mx-auto w-full max-w-[1440px] flex flex-col gap-6 p-4 sm:p-6 lg:p-8">
@@ -324,200 +319,39 @@ export function ReportsClient({
         </CardContent>
       </Card>
 
-      {/* Main KPI Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* KPI 1: Net Revenue */}
-        <Card className="border-border/70 shadow-xs relative overflow-hidden bg-gradient-to-br from-primary/5 via-card to-card">
-          <CardHeader className="p-5 pb-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                {t("kpis.netRevenue")}
-              </span>
-              <div className="flex size-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                <DollarSign className="size-4" />
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="p-5 pt-0">
-            <div className="text-2xl font-bold font-mono tabular-nums text-foreground">
-              {formatCurrency(summary.netRevenue)}
-            </div>
-            <p className="text-[11px] text-muted-foreground mt-1">
-              {t("kpis.netRevenueDesc")}
-            </p>
-          </CardContent>
-        </Card>
+      {/* Data Analyst KPI Metrics Grid & Payment Distribution Bar */}
+      <ReportsKpiGrid summary={summary} formatCurrency={formatCurrency} />
 
-        {/* KPI 2: Net Profit */}
-        <Card className="border-border/70 shadow-xs relative overflow-hidden bg-gradient-to-br from-emerald-500/5 via-card to-card">
-          <CardHeader className="p-5 pb-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                {t("kpis.netProfit")}
-              </span>
-              <div className="flex size-8 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-                <TrendingUp className="size-4" />
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="p-5 pt-0">
-            <div className={cn(
-              "text-2xl font-bold font-mono tabular-nums",
-              summary.netProfit >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"
-            )}>
-              {formatCurrency(summary.netProfit)}
-            </div>
-            <p className="text-[11px] text-muted-foreground mt-1">
-              {t("kpis.netProfitDesc")}
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* KPI 3: Total Expenses */}
-        <Card className="border-border/70 shadow-xs relative overflow-hidden bg-gradient-to-br from-rose-500/5 via-card to-card">
-          <CardHeader className="p-5 pb-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                {t("kpis.totalExpenses")}
-              </span>
-              <div className="flex size-8 items-center justify-center rounded-lg bg-rose-500/10 text-rose-600 dark:text-rose-400">
-                <Receipt className="size-4" />
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="p-5 pt-0">
-            <div className="text-2xl font-bold font-mono tabular-nums text-rose-600 dark:text-rose-400">
-              {formatCurrency(summary.totalExpenses)}
-            </div>
-            <p className="text-[11px] text-muted-foreground mt-1">
-              {t("kpis.totalExpensesDesc")}
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* KPI 4: Orders & AOV */}
-        <Card className="border-border/70 shadow-xs relative overflow-hidden bg-gradient-to-br from-blue-500/5 via-card to-card">
-          <CardHeader className="p-5 pb-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                {t("kpis.totalOrders")} & AOV
-              </span>
-              <div className="flex size-8 items-center justify-center rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400">
-                <ShoppingBag className="size-4" />
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="p-5 pt-0">
-            <div className="flex items-baseline justify-between">
-              <span className="text-2xl font-bold font-mono tabular-nums text-foreground">
-                {summary.totalOrders}
-              </span>
-              <span className="text-xs font-mono font-semibold text-muted-foreground">
-                AOV: {formatCurrency(summary.aov)}
-              </span>
-            </div>
-            <div className="flex items-center gap-2 mt-2 text-[11px]">
-              <span className="text-emerald-600 dark:text-emerald-400 font-medium">
-                {summary.deliveredOrders} {t("kpis.deliveredOrders")}
-              </span>
-              <span className="text-muted-foreground">•</span>
-              <span className="text-rose-600 dark:text-rose-400 font-medium">
-                {summary.cancelledOrders} {t("kpis.cancelledOrders")}
-              </span>
-            </div>
-          </CardContent>
-        </Card>
+      {/* Visual Analytics Charts — Row 1: Revenue Trends & Platform Market Share */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
+        <div className="lg:col-span-7">
+          <RevenueTrendChart
+            data={data.dailyBreakdown}
+            formatCurrency={formatCurrency}
+          />
+        </div>
+        <div className="lg:col-span-5">
+          <PlatformShareChart
+            data={data.platformBrand}
+            formatCurrency={formatCurrency}
+          />
+        </div>
       </div>
 
-      {/* Secondary Metrics Bar: Discounts, Delivery Fees, and Payment Breakdown */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Metric A: Gross Sales & Discounts Breakdown */}
-        <Card className="border-border/70 shadow-xs p-4 sm:p-5 flex flex-col justify-between">
-          <div>
-            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-2">
-              تفاصيل حركة المبيعات والخصومات
-            </span>
-            <div className="space-y-2.5">
-              <div className="flex justify-between items-center text-xs">
-                <span className="text-muted-foreground">{t("kpis.grossSales")}:</span>
-                <span className="font-mono font-bold">{formatCurrency(summary.grossSales)}</span>
-              </div>
-              <div className="flex justify-between items-center text-xs">
-                <span className="text-muted-foreground">{t("kpis.discounts")}:</span>
-                <span className="font-mono font-bold text-amber-600 dark:text-amber-400">
-                  - {formatCurrency(summary.totalDiscounts)}
-                </span>
-              </div>
-              <div className="flex justify-between items-center text-xs border-t border-border/40 pt-2">
-                <span className="text-muted-foreground">{t("kpis.deliveryFees")}:</span>
-                <span className="font-mono font-bold text-primary">
-                  + {formatCurrency(summary.totalDeliveryFees)}
-                </span>
-              </div>
-            </div>
-          </div>
-        </Card>
-
-        {/* Metric B: Payment Method Distribution */}
-        <Card className="border-border/70 shadow-xs p-4 sm:p-5 lg:col-span-2 flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                {t("kpis.paymentBreakdown")}
-              </span>
-              <span className="text-xs font-mono text-muted-foreground">
-                إجمالي الدفع: {formatCurrency(paymentTotal)}
-              </span>
-            </div>
-
-            <div className="h-3.5 w-full rounded-full bg-muted overflow-hidden flex mb-3">
-              <div
-                style={{ width: `${cashPct}%` }}
-                className="bg-emerald-500 transition-all"
-                title={`Cash: ${cashPct}%`}
-              />
-              <div
-                style={{ width: `${visaPct}%` }}
-                className="bg-indigo-500 transition-all"
-                title={`Visa: ${visaPct}%`}
-              />
-              <div
-                style={{ width: `${onlinePct}%` }}
-                className="bg-sky-500 transition-all"
-                title={`Online: ${onlinePct}%`}
-              />
-            </div>
-
-            <div className="grid grid-cols-3 gap-2 text-center text-xs">
-              <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-2">
-                <div className="flex items-center justify-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold mb-0.5">
-                  <Banknote className="size-3.5" />
-                  <span>{t("kpis.cash")}</span>
-                </div>
-                <div className="font-mono font-bold">{formatCurrency(summary.cashTotal)}</div>
-                <div className="text-[10px] text-muted-foreground font-mono">({cashPct}%)</div>
-              </div>
-
-              <div className="rounded-lg border border-indigo-500/20 bg-indigo-500/5 p-2">
-                <div className="flex items-center justify-center gap-1 text-indigo-600 dark:text-indigo-400 font-semibold mb-0.5">
-                  <CreditCard className="size-3.5" />
-                  <span>{t("kpis.visa")}</span>
-                </div>
-                <div className="font-mono font-bold">{formatCurrency(summary.visaTotal)}</div>
-                <div className="text-[10px] text-muted-foreground font-mono">({visaPct}%)</div>
-              </div>
-
-              <div className="rounded-lg border border-sky-500/20 bg-sky-500/5 p-2">
-                <div className="flex items-center justify-center gap-1 text-sky-600 dark:text-sky-400 font-semibold mb-0.5">
-                  <Globe className="size-3.5" />
-                  <span>{t("kpis.online")}</span>
-                </div>
-                <div className="font-mono font-bold">{formatCurrency(summary.onlineTotal)}</div>
-                <div className="text-[10px] text-muted-foreground font-mono">({onlinePct}%)</div>
-              </div>
-            </div>
-          </div>
-        </Card>
+      {/* Visual Analytics Charts — Row 2: Brand Performance & Top Selling Sushi Rolls */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
+        <div className="lg:col-span-6">
+          <BrandPerformanceChart
+            data={data.platformBrand}
+            formatCurrency={formatCurrency}
+          />
+        </div>
+        <div className="lg:col-span-6">
+          <TopProductsChart
+            data={data.topProducts}
+            formatCurrency={formatCurrency}
+          />
+        </div>
       </div>
 
       {/* Tabs Switcher for Tables */}
