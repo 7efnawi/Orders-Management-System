@@ -160,9 +160,9 @@ export function DashboardHeader({ user, locale }: DashboardHeaderProps) {
   return (
     <>
       <header className="sticky top-0 z-40 w-full border-b border-border/70 bg-background/95 backdrop-blur-md supports-backdrop-filter:bg-background/80 transition-colors">
-        <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between gap-3 sm:gap-4 px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between gap-2 sm:gap-4 px-3 sm:px-6 lg:px-8">
           {/* Left / Brand + Nav Section */}
-          <div className="flex min-w-0 items-center gap-3 sm:gap-5 lg:gap-6">
+          <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-4 lg:gap-5 overflow-hidden">
             {/* Mobile Menu Trigger */}
             <Button
               variant="ghost"
@@ -177,7 +177,7 @@ export function DashboardHeader({ user, locale }: DashboardHeaderProps) {
             {/* Brand Logo & Title */}
             <Link
               href="/"
-              className="group flex items-center gap-2.5 outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-lg p-1 transition-transform active:scale-[0.98]"
+              className="group flex shrink-0 items-center gap-2 sm:gap-2.5 outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-lg p-1 transition-transform active:scale-[0.98]"
             >
               <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-xs shadow-primary/30 ring-1 ring-primary/20 group-hover:scale-105 transition-transform">
                 <Flame className="size-5 text-primary-foreground" />
@@ -186,7 +186,7 @@ export function DashboardHeader({ user, locale }: DashboardHeaderProps) {
                 <span className="truncate text-sm sm:text-base font-bold tracking-tight text-foreground group-hover:text-primary transition-colors leading-tight">
                   {tCommon("appName")}
                 </span>
-                <span className="truncate text-[10px] sm:text-[11px] font-semibold text-muted-foreground tracking-wider uppercase leading-tight">
+                <span className="hidden sm:inline truncate text-[10px] sm:text-[11px] font-semibold text-muted-foreground tracking-wider uppercase leading-tight">
                   {tNav("brandTag")}
                 </span>
               </div>
@@ -194,7 +194,7 @@ export function DashboardHeader({ user, locale }: DashboardHeaderProps) {
 
             {/* Desktop Navigation Pills */}
             <nav
-              className="hidden lg:flex items-center gap-1.5 ps-3 border-s border-border/60"
+              className="hidden lg:flex items-center gap-1 xl:gap-1.5 ps-2.5 xl:ps-3.5 border-s border-border/60 overflow-x-auto no-scrollbar py-0.5"
               aria-label={tNav("dashboard")}
             >
               {allowedNavItems.map((item) => {
@@ -204,7 +204,7 @@ export function DashboardHeader({ user, locale }: DashboardHeaderProps) {
                     key={item.href}
                     href={item.href}
                     className={cn(
-                      "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150 h-10 whitespace-nowrap outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                      "flex items-center gap-1.5 xl:gap-2 px-2.5 xl:px-3 py-1.5 rounded-lg text-xs xl:text-sm font-medium transition-all duration-150 h-9 xl:h-10 whitespace-nowrap shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-primary",
                       item.isActive
                         ? "bg-primary text-primary-foreground font-semibold shadow-xs shadow-primary/25"
                         : "text-muted-foreground hover:text-foreground hover:bg-muted/80"
@@ -212,7 +212,7 @@ export function DashboardHeader({ user, locale }: DashboardHeaderProps) {
                   >
                     <Icon
                       className={cn(
-                        "size-4 shrink-0",
+                        "size-3.5 xl:size-4 shrink-0",
                         item.isActive ? "text-primary-foreground" : "text-muted-foreground"
                       )}
                     />
@@ -224,32 +224,32 @@ export function DashboardHeader({ user, locale }: DashboardHeaderProps) {
           </div>
 
           {/* Right Action & User Controls */}
-          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+          <div className="flex shrink-0 items-center gap-1.5 sm:gap-2.5 ms-2">
             {/* Persistent "+ New Order" CTA Button */}
-            <Link href="/orders/new">
+            <Link href="/orders/new" className="shrink-0">
               <Button
                 className={cn(
-                  "h-10 px-3.5 sm:px-4 text-sm font-semibold rounded-lg shadow-xs transition-all duration-150 active:scale-[0.98] gap-1.5",
+                  "h-9 xl:h-10 px-3 sm:px-3.5 xl:px-4 text-xs sm:text-sm font-semibold rounded-lg shadow-xs transition-all duration-150 active:scale-[0.98] gap-1.5 shrink-0",
                   isNewOrderActive
                     ? "bg-primary/90 ring-2 ring-primary ring-offset-2 ring-offset-background text-primary-foreground"
                     : "bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/25"
                 )}
                 aria-label={tNav("newOrderCTA")}
               >
-                <Plus className="size-4.5 shrink-0" />
+                <Plus className="size-4 shrink-0" />
                 <span className="hidden sm:inline">{tNav("newOrderCTA")}</span>
               </Button>
             </Link>
 
             {/* User Profile Pill (Desktop) */}
-            <div className="hidden xl:flex items-center gap-2.5 h-10 px-2.5 rounded-lg border border-border/70 bg-card/60 shadow-2xs backdrop-blur-xs">
+            <div className="hidden xl:flex items-center gap-2 h-9 xl:h-10 px-2 xl:px-2.5 rounded-lg border border-border/70 bg-card/60 shadow-2xs backdrop-blur-xs shrink-0">
               <div
-                className="flex size-7 shrink-0 items-center justify-center rounded-md bg-muted text-foreground font-bold text-xs border border-border/80"
+                className="flex size-6.5 xl:size-7 shrink-0 items-center justify-center rounded-md bg-muted text-foreground font-bold text-xs border border-border/80"
                 title={user.name}
               >
                 {initials}
               </div>
-              <div className="flex flex-col min-w-0 max-w-[120px]">
+              <div className="flex flex-col min-w-0 max-w-[110px] xl:max-w-[130px]">
                 <span className="truncate text-xs font-semibold text-foreground leading-tight">
                   {user.name}
                 </span>
@@ -266,10 +266,10 @@ export function DashboardHeader({ user, locale }: DashboardHeaderProps) {
             </div>
 
             {/* Controls: Language, Theme, Logout */}
-            <div className="flex items-center gap-1.5 border-s border-border/80 ps-2">
+            <div className="flex items-center gap-1 sm:gap-1.5 border-s border-border/70 ps-1.5 sm:ps-2 shrink-0">
               <ThemeSwitcher />
               <LanguageSwitcher locale={locale} />
-              <div className="hidden sm:block">
+              <div className="hidden sm:block shrink-0">
                 <LogoutButton />
               </div>
             </div>
