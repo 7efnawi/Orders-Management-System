@@ -1,6 +1,6 @@
 # AGENTS.md — Order Control System
 
-نظام ويب لإدارة طلبات dark kitchen سوشي (4 براندات × 5 منصات). Next.js 16 + React 19 + Tailwind v4 + shadcn/ui + Prisma 7 + Supabase (Postgres + Auth). عربي RTL افتراضي + إنجليزي.
+نظام ويب لإدارة طلبات dark kitchen سوشي (4 براندات × 6 منصات: Talabat, InstaShop, Harry App, Elmenus, Facebook, Phone). Next.js 16 + React 19 + Tailwind v4 + shadcn/ui + Prisma 7 + Supabase (Postgres + Auth). عربي RTL افتراضي + إنجليزي.
 
 ## الأوامر
 
@@ -9,7 +9,7 @@
 - `npm run lint` — ESLint (flat config)
 - `npm run build` — إنتاج (Turbopack) — بيفشل لو typecheck فشل
 - `npx prisma migrate dev --name <x>` — تطبيق تغييرات الـ schema (بيستخدم `DIRECT_URL` من `prisma.config.ts`)
-- لا يوجد test runner لسه — التحقق الوظيفي عبر اختبارات متصفح Playwright يدوية (Python + `with_server.py`)
+- `npm run test:e2e` — سويت اختبارات منطقية مخصص بـ tsx (`tests/e2e/run-all.ts`، 4 tiers + adversarial) — مفيش Playwright/pytest. سكربتات بوابة المراحل: `npx tsx scripts/verify-phase4.ts` … `verify-phase7.ts`
 
 ## قواعد المشروع الملزمة (من ENGINEERING_DIRECTIVES.md)
 
@@ -29,7 +29,7 @@
 - **Prisma 7:** الـ connection URLs في `prisma.config.ts` مش في الـ schema. الـ client بيتعمل بـ adapter: `new PrismaClient({ adapter: new PrismaPg({...}) })` — شوف `src/lib/prisma.ts`
 - **الـ i18n:** استخدم `usePathname` من `@/i18n/navigation` (بتشيل locale prefix) — نسخة `next/navigation` بتضاعفه (`/ar/en`)
 - **تبديل اللغة:** مكوّن `src/components/language-switcher.tsx` — يعيد استخدام مش لينكات ثابتة على `/login`
-- سيرفرات يتيمة من اختبارات Playwright بتفضل ماسكة البورتات — قبل ما تحكم إن في bug، اتأكد إن مفيش `node.exe` قديم (`Get-CimInstance Win32_Process -Filter "Name='node.exe'"`)
+- سيرفرات يتيمة (node.exe من dev/اختبارات سابقة) تفضل ماسكة البورتات — قبل ما تحكم إن في bug، اتأكد إن مفيش `node.exe` قديم (`Get-CimInstance Win32_Process -Filter "Name='node.exe'"`)
 
 ## قاعدة البيانات (Supabase)
 

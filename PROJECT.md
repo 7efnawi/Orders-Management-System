@@ -4,8 +4,8 @@
 - **Framework**: Next.js 16 (App Router) + React 19 + Tailwind CSS v4 + shadcn/ui + next-intl (Bilingual AR/EN) + next-themes + Prisma 7 + Supabase PostgreSQL.
 - **Client/Server Layout**:
   - `src/app/[locale]/(dashboard)/layout.tsx` embeds client `DashboardHeader` (`src/components/layout/dashboard-header.tsx`) with active route pills, sushi branding, persistent "+ New Order" CTA button, user profile/role badge, theme switcher, and mobile drawer.
-  - `src/components/theme-provider.tsx` and `src/components/theme-switcher.tsx` manage light, dark, and specialized kitchen night-shift themes (`.kitchen`).
-  - `src/lib/visualTokens.ts` is the single source of truth for the 4 sushi brands (Flower, Mastery, Niwa, Tobiko) and 5 platforms (Talabat, elmenus, InstaShop, HarryApp, Phone).
+  - `src/components/theme-provider.tsx` and `src/components/theme-switcher.tsx` manage light, dark, and system themes (the old `.kitchen` night-shift theme was removed in Phase 8.6).
+  - `src/lib/visualTokens.ts` is the single source of truth for the 4 sushi brands (Flower, Mastery, Niwa, Tobiko) and 6 platforms (Talabat, InstaShop, Harry App, Elmenus, Facebook, Phone) rendered via official vector logos in `src/components/ui/platform-logo.tsx`.
   - `src/components/ui/brand-badge.tsx` and `src/components/ui/platform-badge.tsx` provide unified color-coded visual signatures.
   - `src/components/orders/receipt-ticket-preview.tsx` and updated `order-form.tsx` implement POS thermal receipt preview with `tabular-nums`, touch-optimized payment selectors, and customer loyalty badges.
   - `src/components/orders/kitchen-kanban.tsx`, `use-prep-timer.ts`, and updated `orders-table.tsx` implement view switching, 5-column kitchen kanban, drag-and-drop / 1-click status advances, and pulsing prep timer alert badges (>15m in PREPARING).
@@ -39,7 +39,7 @@
 | 2 | Brand & Platform Visual Signatures | F5, F6 (visualTokens.ts, BrandBadge, PlatformBadge, integration in tables/modals) | M1 | COMPLETED |
 | 3 | Fast POS Order Creation Screen | F7, F8, F9 (Receipt Ticket Preview, tabular-nums, Payment Selector cards, Loyalty Badges) | M2 | COMPLETED |
 | 4 | Live Orders Board & Kitchen Kanban | F10, F11, F12 (View Switcher, 5-col Kanban Board, Prep Timers, >15m pulsing alert badges) | M2 | COMPLETED |
-| 5 | E2E Test Suite & Adversarial Hardening | F13 (Requirement-driven E2E tests, edge cases, typecheck, lint, production build validation) | M3, M4 | PLANNED |
+| 5 | E2E Test Suite & Adversarial Hardening | F13 (Requirement-driven E2E tests, edge cases, typecheck, lint, production build validation) | M3, M4 | COMPLETED |
 
 ## Interface Contracts
 ### Visual Tokens (`src/lib/visualTokens.ts`)
