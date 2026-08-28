@@ -687,5 +687,93 @@
     },
     "brandsTitle": "Sushi Brands Portfolio",
     "platformsTitle": "Connected Platforms"
+  },
+  "reports": {
+    "title": "Reports & Analytics",
+    "subtitle": "Advanced analytics dashboard for revenue, sales, expenses, and couriers",
+    "currency": "EGP",
+    "kpis": {
+      "netRevenue": "Net Revenue",
+      "netRevenueDesc": "Sales - Discounts + Delivery Fees",
+      "grossSales": "Gross Sales",
+      "grossSalesDesc": "Item values before discount",
+      "totalExpenses": "Total Expenses",
+      "totalExpensesDesc": "Purchases and expenses in range",
+      "netProfit": "Net Operating Profit",
+      "netProfitDesc": "Net Revenue - Expenses",
+      "totalOrders": "Total Orders",
+      "deliveredOrders": "Delivered",
+      "cancelledOrders": "Cancelled",
+      "activeOrders": "In Progress",
+      "discounts": "Total Discounts",
+      "deliveryFees": "Delivery Fees Collected",
+      "aov": "Average Order Value (AOV)",
+      "paymentBreakdown": "Payment Methods Breakdown",
+      "cash": "Cash",
+      "visa": "Visa",
+      "online": "Online"
+    },
+    "filters": {
+      "title": "Date Range & Filters",
+      "startDate": "From Date",
+      "endDate": "To Date",
+      "brand": "Brand",
+      "platform": "Platform",
+      "allBrands": "All Brands",
+      "allPlatforms": "All Platforms",
+      "quick": {
+        "today": "Today",
+        "yesterday": "Yesterday",
+        "last7Days": "Last 7 Days",
+        "thisMonth": "This Month",
+        "lastMonth": "Last Month"
+      },
+      "apply": "Update Report",
+      "refresh": "Instant Refresh",
+      "loading": "Loading analytics..."
+    },
+    "tabs": {
+      "daily": "Daily Breakdown",
+      "matrix": "Platforms × Brands Matrix",
+      "drivers": "Courier Cash Collection",
+      "products": "Top 10 Selling Products"
+    },
+    "tables": {
+      "daily": {
+        "date": "Date",
+        "totalOrders": "Orders",
+        "delivered": "Delivered",
+        "cancelled": "Cancelled",
+        "sales": "Sales",
+        "deliveryFees": "Delivery Fees",
+        "expenses": "Expenses",
+        "net": "Net",
+        "empty": "No data recorded in this date range."
+      },
+      "matrix": {
+        "platform": "Platform",
+        "brand": "Brand",
+        "orders": "Order Count",
+        "sales": "Total Sales",
+        "empty": "No sales recorded in this range."
+      },
+      "drivers": {
+        "driver": "Courier",
+        "type": "Fleet",
+        "totalOrders": "Total Orders",
+        "cashOrders": "Cash Orders",
+        "cashCollected": "Cash Collected",
+        "noDriver": "Unassigned / Direct Pickup",
+        "empty": "No courier data in this range."
+      },
+      "products": {
+        "rank": "#",
+        "product": "Product",
+        "quantity": "Quantity Sold",
+        "ordersCount": "Orders Count",
+        "revenue": "Total Revenue",
+        "empty": "No products sold in this range."
+      }
+    }
   }
 }

@@ -11,10 +11,11 @@ import {
   Wallet,
   History,
   Plus,
-  Flame,
   Menu,
   X,
   Home,
+  Flame,
+  BarChart3,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -111,6 +112,13 @@ export function DashboardHeader({ user, locale }: DashboardHeaderProps) {
       icon: History,
       roles: ["OWNER", "MANAGER", "CASHIER"] as Role[],
       isActive: pathname === "/closing" || pathname.startsWith("/closing"),
+    },
+    {
+      href: "/reports",
+      label: tNav("reports"),
+      icon: BarChart3,
+      roles: ["OWNER", "MANAGER"] as Role[],
+      isActive: pathname === "/reports" || pathname.startsWith("/reports"),
     },
   ];
 
