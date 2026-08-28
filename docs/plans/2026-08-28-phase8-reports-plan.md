@@ -32,31 +32,31 @@
 ## Tasks (كل مهمة تتقفل بعد اختبارها)
 
 ### Task 8.1: Pure Calculation Engine (`src/lib/reports.ts`) + اختباراته
-- [ ] `calculateSalesSummary(orders, expenses)` → ملخص: إجمالي الأوردرات، المسلمة، الملغاة، النشطة، إجمالي المبيعات قبل/بعد الخصم، رسوم التوصيل، صافي الإيراد (subtotal − discount + fee)، المصروفات، صافي الربح، AOV، وتوزيع CASH/VISA/ONLINE
-- [ ] `groupSalesByPlatformBrand(orders)` → صفوف (منصة × براند): عدد الأوردرات + المبيعات، مرتبة تنازليًا بالمبيعات
-- [ ] `buildDailyBreakdown(orders, expenses)` → صف يومي لكل يوم في النطاق: أوردرات، مسلمة، ملغاة، مبيعات، رسوم، مصروفات، صافي
-- [ ] `calculateDriverCashCollection(orders)` → لكل مندوب (أو بدون مندوب): أوردراته الكلية، أوردراته الكاش، والمبلغ المحصّل كاش
-- [ ] `calculateTopProducts(orders, limit)` → من OrderItems للأوردرات غير الملغاة: الكمية، الإيراد، عدد الأوردرات — مرتبة بالكمية
-- [ ] **Gate:** قسم F14 في `tests/e2e/tier1-feature-coverage.test.ts` + `npm run test:e2e` أخضر + `npm run typecheck` أخضر
+- [x] `calculateSalesSummary(orders, expenses)` → ملخص: إجمالي الأوردرات، المسلمة، الملغاة، النشطة، إجمالي المبيعات قبل/بعد الخصم، رسوم التوصيل، صافي الإيراد (subtotal − discount + fee)، المصروفات، صافي الربح، AOV، وتوزيع CASH/VISA/ONLINE
+- [x] `groupSalesByPlatformBrand(orders)` → صفوف (منصة × براند): عدد الأوردرات + المبيعات، مرتبة تنازليًا بالمبيعات
+- [x] `buildDailyBreakdown(orders, expenses)` → صف يومي لكل يوم في النطاق: أوردرات، مسلمة، ملغاة، مبيعات، رسوم، مصروفات، صافي
+- [x] `calculateDriverCashCollection(orders)` → لكل مندوب (أو بدون مندوب): أوردراته الكلية، أوردراته الكاش، والمبلغ المحصّل كاش
+- [x] `calculateTopProducts(orders, limit)` → من OrderItems للأوردرات غير الملغاة: الكمية، الإيراد، عدد الأوردرات — مرتبة بالكمية
+- [x] **Gate:** قسم F14 في `tests/e2e/tier1-feature-coverage.test.ts` + `npm run test:e2e` أخضر + `npm run typecheck` أخضر
 
 ### Task 8.2: Read Service & API (`src/services/reports.ts` + `/api/reports`)
-- [ ] `getReportsData({startDate, endDate, brandId?, platformId?})` — استعلامان متوازيان (orders + expenses) ثم استدعاء محرك الحسابات
-- [ ] التحقق من صحة النطاق: تواريخ صالحة، startDate ≤ endDate، وسقف معقول للنطاق (سنتان)
-- [ ] GET `/api/reports` — دور المالك/المدير فقط، أخطاء `{code, message}` موحدة عبر `wrapApi`
-- [ ] **Gate:** `npm run typecheck` أخضر (والمنطق مجرّب بالكامل في 8.1 والبوابة النهائية في 8.4)
+- [x] `getReportsData({startDate, endDate, brandId?, platformId?})` — استعلامان متوازيان (orders + expenses) ثم استدعاء محرك الحسابات
+- [x] التحقق من صحة النطاق: تواريخ صالحة، startDate ≤ endDate، وسقف معقول للنطاق (سنتان)
+- [x] GET `/api/reports` — دور المالك/المدير فقط، أخطاء `{code, message}` موحدة عبر `wrapApi`
+- [x] **Gate:** `npm run typecheck` أخضر (والمنطق مجرّب بالكامل في 8.1 والبوابة النهائية في 8.4)
 
 ### Task 8.3: Reports UI (`/reports` page + `reports-client.tsx` + nav)
-- [ ] صفحة سيرفر بجلب الشهر الحالي افتراضيًا + حجب الكاشير (redirect)
-- [ ] فلاتر (من تاريخ / إلى تاريخ) مع إعادة الجلب من `/api/reports` وحالات تحميل وخطأ
-- [ ] بطاقات KPI متوافقة مع نظام المقاسات الموحد (h-10، max-w-[1440px]، gap-6)
-- [ ] 4 جداول: التحليل اليومي، منصة×براند، تحصيل المناديب، أعلى المنتجات — فارغة تعرض حالة "لا بيانات"
-- [ ] تبويب "التقارير" في الهيدر للمالك/المدير فقط + ترجمات `reports.*` في ar/en
-- [ ] **Gate:** `npm run typecheck` + `npm run lint` أخضر
+- [x] صفحة سيرفر بجلب الشهر الحالي افتراضيًا + حجب الكاشير (redirect)
+- [x] فلاتر (من تاريخ / إلى تاريخ) مع إعادة الجلب من `/api/reports` وحالات تحميل وخطأ
+- [x] بطاقات KPI متوافقة مع نظام المقاسات الموحد (h-10، max-w-[1440px]، gap-6)
+- [x] 4 جداول: التحليل اليومي، منصة×براند، تحصيل المناديب، أعلى المنتجات — فارغة تعرض حالة "لا بيانات"
+- [x] تبويب "التقارير" في الهيدر للمالك/المدير فقط + ترجمات `reports.*` في ar/en
+- [x] **Gate:** `npm run typecheck` + `npm run lint` أخضر
 
 ### Task 8.4: Verification Gate & PROJECT_LOG
-- [ ] `scripts/verify-phase8.ts`: بذر (كاشير/براند/منصة/منطقتين/مندوب/3 منتجات) + 4 أوردرات (كاش مع مندوب، فيزا مع مندوب، أونلاين بدون مندوب، ملغي) + مصروفين → مطابقة أرقام الملخص والمصفوفة والمناديب وأعلى المنتجات بالسنت → تنظيف كامل
-- [ ] `npm run typecheck` + `npm run lint` + `npm run test:e2e` + `npm run build` + `npx tsx scripts/verify-phase8.ts` — كلهم خضراء
-- [ ] تحديث `PROJECT_LOG.md` في نفس الـ commit
+- [x] `scripts/verify-phase8.ts`: بذر (كاشير/براند/منصة/منطقتين/مندوب/3 منتجات) + 4 أوردرات (كاش مع مندوب، فيزا مع مندوب، أونلاين بدون مندوب، ملغي) + مصروفين → مطابقة أرقام الملخص والمصفوفة والمناديب وأعلى المنتجات بالسنت → تنظيف كامل
+- [x] `npm run typecheck` + `npm run lint` + `npm run test:e2e` + `npm run build` + `npx tsx scripts/verify-phase8.ts` — كلهم خضراء
+- [x] تحديث `PROJECT_LOG.md` في نفس الـ commit
 
 ## Out of Scope (لاحقًا)
 
