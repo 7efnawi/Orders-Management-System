@@ -75,8 +75,12 @@
       - توحيد أزرار البراندات وقائمة المنصة وحقول الهاتف والاسم والعنوان وبحث المنتجات والخصم على مقاس `h-10` (40px) بدون أي حواف متعرجة.
     - توحيد حاويات الصفحات (Page Containers) بالكامل:
       - توحيد عرض وتجاوب وهوامش جميع الصفحات (`/`, `/orders`, `/menu`, `/delivery`, `/expenses`, `/closing`) على `max-w-[1440px] flex flex-col gap-6 p-4 sm:p-6 lg:p-8 mx-auto` للقضاء التام على أي قفزة أو اهتزاز عند التنقل بين الشاشات.
+13. إصلاح وتنسيق شريط المنصات وعمود حالة الطلبات (Platform Hub Grid & Order Status Polish):
+    - إعادة تصميم بطاقات المنصات الـ 6 في الداشبورد `DashboardOverviewClient` لتكون في شبكة متناسقة `grid grid-cols-2 sm:grid-cols-3 gap-2.5` بدلاً من الصناديق المتفرقة، مع خلفيات وحدود متدرجة من ألوان المنصات الرسمية وعداد رقمي مرتفع أنيق.
+    - إخفاء مؤقت التحضير `PrepTimerBadge` نهائياً عن الطلبات المسلمة (`DELIVERED`) والملغاة (`CANCELLED`) لمنع ظهور أوقات مضللة (مثل `1370:22`) على طلبات منتهية بالفعل، وقصره على الطلبات النشطة فقط في المطبخ والتوصيل.
+    - تنسيق عرض المندوب تحت حالة الطلب في جدول الطلبات ككبسولة مخصصة وأنيقة تحتوي على أيقونة الشاحنة `Truck` دون أي تشويه أو نقاط اقتطاع مزعجة.
 **السبب:** تلبية الملاحظات والتعديلات التشغيلية والواجهية التي طلبها المستخدم مع الالتزام بأعلى معايير الأداء والتبسيط المعماري وسجل التدقيق (Directives §0, §2, §3).
-**الملفات المتأثرة:** `src/components/ui/button.tsx`, `src/components/ui/input.tsx`, `src/components/ui/select.tsx`, `src/components/ui/searchable-select.tsx`, `src/components/layout/dashboard-header.tsx`, `src/components/theme-switcher.tsx`, `src/components/language-switcher.tsx`, `src/components/auth/logout-button.tsx`, `src/components/orders/order-form.tsx`, `src/components/orders/orders-table.tsx`, `src/components/delivery/delivery-client.tsx`, `src/components/closing/closing-client.tsx`, `src/components/closing/closing-history-table.tsx`, `src/components/expenses/expenses-client.tsx`, `src/components/menu/menu-client.tsx`, `src/app/[locale]/(dashboard)/orders/page.tsx`, `PROJECT_LOG.md`
+**الملفات المتأثرة:** `src/components/dashboard/dashboard-overview.tsx`, `src/components/orders/orders-table.tsx`, `src/components/orders/prep-timer-badge.tsx`, `src/hooks/use-prep-timer.ts`, `PROJECT_LOG.md`
 **تأثير على أجزاء تانية:** تحسين ملحوظ في سرعة وسلاسة الاستخدام، وجاهزية النظام بالكامل للتشغيل الفعلي.
 
 ---

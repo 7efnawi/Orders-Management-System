@@ -747,11 +747,14 @@ export function OrdersTable({
 
                       {/* Status & Prep Timer & Discount Alert */}
                       <TableCell>
-                        <div className="flex flex-col gap-1 items-start">
+                        <div className="flex flex-col gap-1.5 items-start">
                           <div className="flex items-center gap-1.5 flex-wrap">
                             <Badge
                               variant="outline"
-                              className={cn("text-[11px] font-semibold", STATUS_COLORS[order.status])}
+                              className={cn(
+                                "text-xs px-2.5 py-0.5 font-semibold rounded-full border shadow-2xs",
+                                STATUS_COLORS[order.status]
+                              )}
                             >
                               {t(`statuses.${order.status}`)}
                             </Badge>
@@ -764,10 +767,10 @@ export function OrdersTable({
                           </div>
 
                           {order.driver && (
-                            <span className="flex items-center gap-1 text-[10px] text-muted-foreground font-medium">
-                              <Truck className="size-2.5 text-primary shrink-0" />
-                              <span className="truncate max-w-[100px]">{order.driver.name}</span>
-                            </span>
+                            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-muted/60 text-[11px] text-muted-foreground font-medium border border-border/40 max-w-[150px]">
+                              <Truck className="size-3 text-primary shrink-0" />
+                              <span className="truncate">{order.driver.name}</span>
+                            </div>
                           )}
 
                           {order.discountStatus === DiscountStatus.PENDING && (
@@ -972,7 +975,10 @@ export function OrdersTable({
                         <div className="flex items-center gap-1">
                           <Badge
                             variant="outline"
-                            className={cn("text-xs font-semibold", STATUS_COLORS[order.status])}
+                            className={cn(
+                              "text-xs px-2.5 py-0.5 font-semibold rounded-full border shadow-2xs",
+                              STATUS_COLORS[order.status]
+                            )}
                           >
                             {t(`statuses.${order.status}`)}
                           </Badge>
@@ -989,7 +995,7 @@ export function OrdersTable({
                       </div>
                     </div>
 
-                    {/* Meta: Brand, Customer, Payment */}
+                    {/* Meta: Brand, Customer, Driver, Payment */}
                     <div className="space-y-1 text-xs">
                       <div className="flex justify-between items-center">
                         <span className="text-muted-foreground">{t("table.brand")}:</span>
@@ -1005,6 +1011,16 @@ export function OrdersTable({
                           {order.customer.name} ({order.customer.phone})
                         </span>
                       </div>
+
+                      {order.driver && (
+                        <div className="flex justify-between items-center">
+                          <span className="text-muted-foreground">{t("table.driver") || "المندوب"}:</span>
+                          <span className="font-medium text-foreground flex items-center gap-1">
+                            <Truck className="size-3 text-primary" />
+                            {order.driver.name}
+                          </span>
+                        </div>
+                      )}
 
                       <div className="flex justify-between items-center">
                         <span className="text-muted-foreground">{t("table.payment")}:</span>

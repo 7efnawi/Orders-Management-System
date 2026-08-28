@@ -26,7 +26,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PlatformLogo } from "@/components/ui/platform-logo";
 import { PlatformBadge } from "@/components/ui/platform-badge";
-import { getBrandToken } from "@/lib/visualTokens";
+import { getBrandToken, getPlatformToken } from "@/lib/visualTokens";
 import { OrderStatus, Role } from "@prisma/client";
 import { cn } from "@/lib/utils";
 import type { DashboardOverview } from "@/services/orders";
@@ -563,7 +563,7 @@ export function DashboardOverviewClient({
             </CardContent>
           </Card>
 
-          {/* Platform Logos Hub */}
+          {/* Platform Performance Hub */}
           <Card className="border-border/70 shadow-xs">
             <CardHeader className="p-5 pb-3 border-b border-border/40">
               <CardTitle className="text-sm font-bold flex items-center gap-2">
@@ -571,20 +571,31 @@ export function DashboardOverviewClient({
                 <span>{t("platformsTitle")}</span>
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-4 flex flex-wrap items-center gap-2.5 justify-between">
-              {platformCounts.map((p) => (
-                <div
-                  key={p.id}
-                  className="flex items-center gap-2 p-2 rounded-lg border border-border/60 bg-card hover:bg-muted/40 transition-colors shadow-2xs"
-                  title={p.name}
-                >
-                  <PlatformLogo platformName={p.name} size="sm" />
-                  <span className="text-xs font-medium">{p.name}</span>
-                  <span className="text-[11px] font-mono text-muted-foreground font-bold tabular-nums bg-muted px-1.5 py-0.5 rounded">
-                    {p.count}
-                  </span>
-                </div>
-              ))}
+            <CardContent className="p-4 grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+              {platformCounts.map((p) => {
+                const token = getPlatformToken(p.name);
+                return (
+                  <div
+                    key={p.id}
+                    className={cn(
+                      "flex items-center justify-between p-2.5 rounded-lg border transition-all select-none hover:shadow-2xs",
+                      token.bgClass,
+                      token.borderClass
+                    )}
+                    title={p.name}
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      <PlatformLogo platformName={p.name} size="sm" />
+                      <span className={cn("text-xs font-semibold truncate", token.textClass)}>
+                        {p.name}
+                      </span>
+                    </div>
+                    <span className="text-xs font-mono font-bold tabular-nums px-1.5 py-0.5 rounded bg-background/80 dark:bg-background/60 border border-border/50 shadow-2xs">
+                      {p.count}
+                    </span>
+                  </div>
+                );
+              })}
             </CardContent>
           </Card>
         </div>

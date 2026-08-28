@@ -63,11 +63,11 @@ export function usePrepTimer({
     return () => clearInterval(interval);
   }, [startTime, isActive]);
 
-  const elapsedSeconds = calculateElapsedSeconds(startTime);
+  const elapsedSeconds = isActive ? calculateElapsedSeconds(startTime) : 0;
   const minutes = Math.floor(elapsedSeconds / 60);
   const seconds = elapsedSeconds % 60;
-  const isWarning = minutes >= warningThresholdMinutes && minutes < criticalThresholdMinutes;
-  const isCritical = minutes >= criticalThresholdMinutes;
+  const isWarning = isActive && minutes >= warningThresholdMinutes && minutes < criticalThresholdMinutes;
+  const isCritical = isActive && minutes >= criticalThresholdMinutes;
   const isDelayed = isCritical;
 
   return {
