@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useTranslations } from "next-intl";
-import { Link, usePathname } from "@/i18n/navigation";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { Role } from "@prisma/client";
 import {
   LayoutGrid,
@@ -16,6 +16,11 @@ import {
   Home,
   Flame,
   BarChart3,
+  Users,
+  ChevronDown,
+  LogOut,
+  ShieldCheck,
+  User as UserIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -38,8 +43,40 @@ export function DashboardHeader({ user, locale }: DashboardHeaderProps) {
   const tCommon = useTranslations("common");
   const tNav = useTranslations("nav");
   const tRoles = useTranslations("roles");
+  const tAuth = useTranslations("auth");
   const pathname = usePathname();
+  const router = useRouter();
+
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+  const [userMenuOpen, setUserMenuOpen] = React.useState(false);
+  const [loggingOut, setLoggingOut] = React.useState(false);
+  const userMenuRef = React.useRef<HTMLDivElement>(null);
+
+  // Close user menu on outside click or Escape
+  React.useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        userMenuRef.current &&
+        !userMenuRef.current.contains(event.target as Node)
+      ) {
+        setUserMenuOpen(false);
+      }
+    }
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        setUserMenuOpen(false);
+        setMobileMenuOpen(false);
+      }
+    }
+    if (userMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [userMenuOpen]);
 
   // Lock body scroll when mobile drawer is open
   React.useEffect(() => {
@@ -53,29 +90,21 @@ export function DashboardHeader({ user, locale }: DashboardHeaderProps) {
     };
   }, [mobileMenuOpen]);
 
-  // Handle escape key
-  React.useEffect(() => {
-    function onKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") {
-        setMobileMenuOpen(false);
-      }
+  async function handleLogout() {
+    setLoggingOut(true);
+    try {
+      await fetch("/api/auth/signout", { method: "POST" });
+      router.push("/login");
+      router.refresh();
+    } finally {
+      setLoggingOut(false);
     }
-    if (mobileMenuOpen) {
-      window.addEventListener("keydown", onKeyDown);
-    }
-    return () => {
-      window.removeEventListener("keydown", onKeyDown);
-    };
-  }, [mobileMenuOpen]);
+  }
 
-  const navItems = [
-    {
-      href: "/",
-      label: tNav("dashboard"),
-      icon: Home,
-      roles: ["OWNER", "MANAGER", "CASHIER"] as Role[],
-      isActive: pathname === "/" || pathname === "",
-    },
+  const isHomeActive = pathname === "/" || pathname === "";
+
+  // Navigation items for desktop (excludes Home tab since Brand Logo & Title links directly to "/")
+  const desktopNavItems = [
     {
       href: "/orders",
       label: tNav("orders"),
@@ -120,27 +149,59 @@ export function DashboardHeader({ user, locale }: DashboardHeaderProps) {
       roles: ["OWNER", "MANAGER"] as Role[],
       isActive: pathname === "/reports" || pathname.startsWith("/reports"),
     },
+    {
+      href: "/users",
+      label: tNav("users"),
+      icon: Users,
+      roles: ["OWNER", "MANAGER"] as Role[],
+      isActive: pathname === "/users" || pathname.startsWith("/users"),
+    },
   ];
 
-  const allowedNavItems = navItems.filter((item) =>
+  // Navigation items for mobile slide-over drawer (includes explicit Home link at top)
+  const mobileNavItems = [
+    {
+      href: "/",
+      label: tNav("dashboard"),
+      icon: Home,
+      roles: ["OWNER", "MANAGER", "CASHIER"] as Role[],
+      isActive: isHomeActive,
+    },
+    ...desktopNavItems,
+  ];
+
+  const allowedDesktopNavItems = desktopNavItems.filter((item) =>
     item.roles.includes(user.role)
   );
 
-  const roleStyles: Record<Role, { badgeClass: string; dotClass: string }> = {
+  const allowedMobileNavItems = mobileNavItems.filter((item) =>
+    item.roles.includes(user.role)
+  );
+
+  const roleStyles: Record<
+    Role,
+    { badgeClass: string; dotClass: string; avatarClass: string }
+  > = {
     OWNER: {
       badgeClass:
-        "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30",
+        "bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30",
       dotClass: "bg-amber-500",
+      avatarClass:
+        "bg-gradient-to-br from-amber-500/20 to-amber-600/30 text-amber-700 dark:text-amber-300 border-amber-500/40",
     },
     MANAGER: {
       badgeClass:
-        "bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border-indigo-500/30",
+        "bg-indigo-500/15 text-indigo-700 dark:text-indigo-400 border-indigo-500/30",
       dotClass: "bg-indigo-500",
+      avatarClass:
+        "bg-gradient-to-br from-indigo-500/20 to-indigo-600/30 text-indigo-700 dark:text-indigo-300 border-indigo-500/40",
     },
     CASHIER: {
       badgeClass:
-        "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30",
+        "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30",
       dotClass: "bg-emerald-500",
+      avatarClass:
+        "bg-gradient-to-br from-emerald-500/20 to-emerald-600/30 text-emerald-700 dark:text-emerald-300 border-emerald-500/40",
     },
   };
 
@@ -159,10 +220,10 @@ export function DashboardHeader({ user, locale }: DashboardHeaderProps) {
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full border-b border-border/70 bg-background/95 backdrop-blur-md supports-backdrop-filter:bg-background/80 transition-colors">
-        <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between gap-2 sm:gap-4 px-3 sm:px-6 lg:px-8">
+      <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/95 backdrop-blur-md supports-backdrop-filter:bg-background/85 transition-colors">
+        <div className="mx-auto flex h-16 max-w-[1536px] items-center justify-between gap-2 sm:gap-4 px-3 sm:px-6 lg:px-8">
           {/* Left / Brand + Nav Section */}
-          <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-4 lg:gap-5 overflow-hidden">
+          <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3 lg:gap-4">
             {/* Mobile Menu Trigger */}
             <Button
               variant="ghost"
@@ -174,46 +235,50 @@ export function DashboardHeader({ user, locale }: DashboardHeaderProps) {
               <Menu className="size-5" />
             </Button>
 
-            {/* Brand Logo & Title */}
+            {/* Brand Logo & Title (Clean, Sharp Restaurant Identity) */}
             <Link
               href="/"
-              className="group flex shrink-0 items-center gap-2 sm:gap-2.5 outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-lg p-1 transition-transform active:scale-[0.98]"
+              className="group flex shrink-0 items-center gap-2.5 outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl py-1 px-1.5 transition-opacity hover:opacity-90 active:scale-[0.98]"
+              aria-label={tCommon("appName")}
+              title={tCommon("appName")}
             >
-              <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-xs shadow-primary/30 ring-1 ring-primary/20 group-hover:scale-105 transition-transform">
-                <Flame className="size-5 text-primary-foreground" />
+              <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-rose-500 via-pink-600 to-amber-500 text-white shadow-xs shadow-pink-500/20 transition-transform group-hover:scale-105">
+                <Flame className="size-5" />
               </div>
               <div className="flex flex-col min-w-0">
-                <span className="truncate text-sm sm:text-base font-bold tracking-tight text-foreground group-hover:text-primary transition-colors leading-tight">
+                <span className="truncate text-sm sm:text-base font-bold tracking-tight text-foreground transition-colors group-hover:text-primary leading-tight">
                   {tCommon("appName")}
                 </span>
-                <span className="hidden sm:inline truncate text-[10px] sm:text-[11px] font-semibold text-muted-foreground tracking-wider uppercase leading-tight">
+                <span className="hidden xl:inline truncate text-[10px] xl:text-[11px] font-semibold text-muted-foreground tracking-wider uppercase leading-tight">
                   {tNav("brandTag")}
                 </span>
               </div>
             </Link>
 
-            {/* Desktop Navigation Pills */}
+            {/* Desktop Navigation Tabs (Generous spacing & zero text clipping) */}
             <nav
-              className="hidden lg:flex items-center gap-1 xl:gap-1.5 ps-2.5 xl:ps-3.5 border-s border-border/60 overflow-x-auto no-scrollbar py-0.5"
+              className="hidden lg:flex items-center gap-1 xl:gap-1.5 ps-3 border-s border-border/60 py-0.5"
               aria-label={tNav("dashboard")}
             >
-              {allowedNavItems.map((item) => {
+              {allowedDesktopNavItems.map((item) => {
                 const Icon = item.icon;
                 return (
                   <Link
                     key={item.href}
                     href={item.href}
                     className={cn(
-                      "flex items-center gap-1.5 xl:gap-2 px-2.5 xl:px-3 py-1.5 rounded-lg text-xs xl:text-sm font-medium transition-all duration-150 h-9 xl:h-10 whitespace-nowrap shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                      "flex items-center gap-1.5 xl:gap-2 px-2.5 xl:px-3 py-1.5 rounded-lg text-xs xl:text-sm font-medium transition-all duration-150 h-9 whitespace-nowrap shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-primary",
                       item.isActive
-                        ? "bg-primary text-primary-foreground font-semibold shadow-xs shadow-primary/25"
+                        ? "bg-primary text-primary-foreground font-semibold shadow-xs shadow-primary/20"
                         : "text-muted-foreground hover:text-foreground hover:bg-muted/80"
                     )}
                   >
                     <Icon
                       className={cn(
                         "size-3.5 xl:size-4 shrink-0",
-                        item.isActive ? "text-primary-foreground" : "text-muted-foreground"
+                        item.isActive
+                          ? "text-primary-foreground"
+                          : "text-muted-foreground"
                       )}
                     />
                     <span>{item.label}</span>
@@ -224,12 +289,12 @@ export function DashboardHeader({ user, locale }: DashboardHeaderProps) {
           </div>
 
           {/* Right Action & User Controls */}
-          <div className="flex shrink-0 items-center gap-1.5 sm:gap-2.5 ms-2">
+          <div className="flex shrink-0 items-center gap-2 sm:gap-2.5 ms-2">
             {/* Persistent "+ New Order" CTA Button */}
             <Link href="/orders/new" className="shrink-0">
               <Button
                 className={cn(
-                  "h-9 xl:h-10 px-3 sm:px-3.5 xl:px-4 text-xs sm:text-sm font-semibold rounded-lg shadow-xs transition-all duration-150 active:scale-[0.98] gap-1.5 shrink-0",
+                  "h-9 xl:h-10 px-3 sm:px-3.5 text-xs sm:text-sm font-semibold rounded-lg shadow-xs transition-all duration-150 active:scale-[0.98] gap-1.5 shrink-0 cursor-pointer",
                   isNewOrderActive
                     ? "bg-primary/90 ring-2 ring-primary ring-offset-2 ring-offset-background text-primary-foreground"
                     : "bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/25"
@@ -241,37 +306,131 @@ export function DashboardHeader({ user, locale }: DashboardHeaderProps) {
               </Button>
             </Link>
 
-            {/* User Profile Pill (Desktop) */}
-            <div className="hidden xl:flex items-center gap-2 h-9 xl:h-10 px-2 xl:px-2.5 rounded-lg border border-border/70 bg-card/60 shadow-2xs backdrop-blur-xs shrink-0">
-              <div
-                className="flex size-6.5 xl:size-7 shrink-0 items-center justify-center rounded-md bg-muted text-foreground font-bold text-xs border border-border/80"
-                title={user.name}
+            {/* Modern User Profile Dropdown (Sleek Avatar + Quick Menu) */}
+            <div className="relative inline-block text-start" ref={userMenuRef}>
+              <button
+                type="button"
+                className={cn(
+                  "flex items-center gap-2 h-9 xl:h-10 px-2 rounded-lg border border-border/70 bg-card/60 shadow-2xs backdrop-blur-xs transition-all cursor-pointer hover:bg-muted/80 focus-visible:ring-2 focus-visible:ring-primary outline-none",
+                  userMenuOpen && "bg-muted border-border ring-1 ring-primary/30"
+                )}
+                onClick={() => setUserMenuOpen((prev) => !prev)}
+                aria-expanded={userMenuOpen}
+                aria-haspopup="true"
+                aria-label={tNav("userProfile")}
               >
-                {initials}
-              </div>
-              <div className="flex flex-col min-w-0 max-w-[110px] xl:max-w-[130px]">
-                <span className="truncate text-xs font-semibold text-foreground leading-tight">
-                  {user.name}
-                </span>
-                <Badge
-                  variant="outline"
+                <div
                   className={cn(
-                    "text-[10px] px-1.5 py-0 font-medium w-fit border-0 p-0 leading-none",
-                    userRoleStyle.badgeClass
+                    "relative flex size-7 shrink-0 items-center justify-center rounded-full font-bold text-xs border shadow-2xs",
+                    userRoleStyle.avatarClass
                   )}
+                  title={user.name}
                 >
-                  {tRoles(user.role)}
-                </Badge>
-              </div>
+                  {initials}
+                  <span
+                    className={cn(
+                      "absolute -bottom-0.5 -end-0.5 size-2.5 rounded-full ring-2 ring-background",
+                      userRoleStyle.dotClass
+                    )}
+                  />
+                </div>
+                <div className="hidden sm:flex flex-col min-w-0 max-w-[100px] xl:max-w-[130px] text-start">
+                  <span className="truncate text-xs font-semibold text-foreground leading-tight">
+                    {user.name}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground font-medium leading-none mt-0.5">
+                    {tRoles(user.role)}
+                  </span>
+                </div>
+                <ChevronDown
+                  className={cn(
+                    "size-3.5 text-muted-foreground transition-transform duration-200 shrink-0",
+                    userMenuOpen && "rotate-180 text-foreground"
+                  )}
+                />
+              </button>
+
+              {userMenuOpen && (
+                <div
+                  role="menu"
+                  aria-orientation="vertical"
+                  className="absolute end-0 mt-1.5 w-64 z-50 rounded-xl border border-border bg-popover/95 backdrop-blur-md p-2 shadow-xl ring-1 ring-black/5 animate-in fade-in-0 zoom-in-95 duration-150 text-popover-foreground"
+                >
+                  {/* User Profile Header Card */}
+                  <div className="flex items-center gap-3 p-2.5 rounded-lg bg-muted/60 border border-border/60 mb-2">
+                    <div
+                      className={cn(
+                        "flex size-10 shrink-0 items-center justify-center rounded-full font-bold text-sm border shadow-xs",
+                        userRoleStyle.avatarClass
+                      )}
+                    >
+                      {initials}
+                    </div>
+                    <div className="flex flex-col min-w-0">
+                      <span className="truncate text-sm font-bold text-foreground">
+                        {user.name}
+                      </span>
+                      <span className="truncate text-xs text-muted-foreground">
+                        {user.email}
+                      </span>
+                      <div className="mt-1">
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            "text-[10px] px-1.5 py-0 font-medium border-0 w-fit",
+                            userRoleStyle.badgeClass
+                          )}
+                        >
+                          <ShieldCheck className="size-3 me-1 inline-block" />
+                          {tRoles(user.role)}
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Navigation Shortcuts in Dropdown */}
+                  <div className="space-y-0.5 border-b border-border/60 pb-1.5 mb-1.5">
+                    {user.role === "OWNER" && (
+                      <Link
+                        href="/users"
+                        role="menuitem"
+                        className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-foreground hover:bg-muted transition-colors cursor-pointer"
+                        onClick={() => setUserMenuOpen(false)}
+                      >
+                        <Users className="size-3.5 text-muted-foreground" />
+                        <span>{tNav("users")}</span>
+                      </Link>
+                    )}
+                    <Link
+                      href="/closing"
+                      role="menuitem"
+                      className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-foreground hover:bg-muted transition-colors cursor-pointer"
+                      onClick={() => setUserMenuOpen(false)}
+                    >
+                      <History className="size-3.5 text-muted-foreground" />
+                      <span>{tNav("closing")}</span>
+                    </Link>
+                  </div>
+
+                  {/* Logout Action */}
+                  <button
+                    type="button"
+                    role="menuitem"
+                    className="flex w-full items-center gap-2 px-2.5 py-2 rounded-lg text-xs font-semibold text-destructive hover:bg-destructive/10 hover:text-destructive transition-colors cursor-pointer disabled:opacity-50"
+                    onClick={handleLogout}
+                    disabled={loggingOut}
+                  >
+                    <LogOut className="size-3.5" />
+                    <span>{loggingOut ? tAuth("signingOut") : tAuth("logout")}</span>
+                  </button>
+                </div>
+              )}
             </div>
 
-            {/* Controls: Language, Theme, Logout */}
-            <div className="flex items-center gap-1 sm:gap-1.5 border-s border-border/70 ps-1.5 sm:ps-2 shrink-0">
+            {/* Quick Controls: Language & Theme */}
+            <div className="flex items-center gap-1 border-s border-border/70 ps-1.5 shrink-0">
               <ThemeSwitcher />
               <LanguageSwitcher locale={locale} />
-              <div className="hidden sm:block shrink-0">
-                <LogoutButton />
-              </div>
             </div>
           </div>
         </div>
@@ -345,7 +504,7 @@ export function DashboardHeader({ user, locale }: DashboardHeaderProps) {
               className="flex-1 overflow-y-auto space-y-1.5 py-2"
               aria-label={tNav("mobileMenu")}
             >
-              {allowedNavItems.map((item) => {
+              {allowedMobileNavItems.map((item) => {
                 const Icon = item.icon;
                 return (
                   <Link

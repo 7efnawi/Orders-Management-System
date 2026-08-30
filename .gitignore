@@ -16,9 +16,10 @@ build/
 # Agent skills (reinstallable via skills-lock.json)
 .agents/
 
-# OS
+# OS & IDE
 .DS_Store
 Thumbs.db
+.zcode/
 
 # Logs
 *.log
