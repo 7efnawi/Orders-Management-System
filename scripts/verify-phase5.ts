@@ -211,11 +211,11 @@ async function runPhase5Verification() {
   console.log(`✓ Zone CRUD complete: Created (fee: 50), Updated (fee: 60), Inactive filtering verified, Reactivated`);
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // STEP 3: Delivery Driver CRUD Operations (All Fleet Types) & Filtering
+  // STEP 3: Delivery Driver CRUD Operations (OWN, APP, EXTERNAL) & Filtering
   // ─────────────────────────────────────────────────────────────────────────────
-  console.log("\n📍 [Step 3/5] Testing Delivery Driver CRUD (OWN, APP, PICKUP, EXTERNAL) & filtering...");
+  console.log("\n📍 [Step 3/5] Testing Delivery Driver CRUD (OWN, APP, EXTERNAL) & filtering...");
 
-  // Create 4 drivers for each fleet type
+  // Create 3 drivers for fleet types (OWN, APP, EXTERNAL)
   const driverOwn = await createDeliveryDriver(ownerUser.id, {
     name: "Phase 5 Driver OWN",
     type: DriverType.OWN,
@@ -224,10 +224,6 @@ async function runPhase5Verification() {
     name: "Phase 5 Driver APP",
     type: DriverType.APP,
   });
-  const driverPickup = await createDeliveryDriver(ownerUser.id, {
-    name: "Phase 5 Driver PICKUP",
-    type: DriverType.PICKUP,
-  });
   const driverExternal = await createDeliveryDriver(ownerUser.id, {
     name: "Phase 5 Driver EXTERNAL",
     type: DriverType.EXTERNAL,
@@ -235,7 +231,6 @@ async function runPhase5Verification() {
 
   assert.strictEqual(driverOwn.type, DriverType.OWN);
   assert.strictEqual(driverApp.type, DriverType.APP);
-  assert.strictEqual(driverPickup.type, DriverType.PICKUP);
   assert.strictEqual(driverExternal.type, DriverType.EXTERNAL);
 
   // Update Driver OWN name & toggle isActive
@@ -271,10 +266,13 @@ async function runPhase5Verification() {
     "listDeliveryDrivers(true, APP) must NOT contain Driver OWN"
   );
 
-  // Re-activate Driver OWN
-  await updateDeliveryDriver(ownerUser.id, driverOwn.id, { isActive: true });
+  // Reactivate driver
+  const reactivatedDriverOwn = await updateDeliveryDriver(ownerUser.id, driverOwn.id, {
+    isActive: true,
+  });
+  assert.strictEqual(reactivatedDriverOwn.isActive, true);
 
-  console.log(`✓ Driver CRUD complete: Created OWN, APP, PICKUP, EXTERNAL fleets; Verified filtering by active status & type`);
+  console.log(`✓ Driver CRUD complete: Created (OWN, APP, EXTERNAL), Inactive filtering verified, Reactivated`);
 
   // ─────────────────────────────────────────────────────────────────────────────
   // STEP 4: Order Driver Assignment & Dynamic Fee Recalculation
@@ -341,12 +339,12 @@ async function runPhase5Verification() {
   assert.strictEqual(Number(orderRestoredOwn.deliveryFee), 60, "Delivery fee must be RESTORED to 60 for Driver OWN");
   assert.strictEqual(orderRestoredOwn.driverId, driverOwn.id, "driverId must match Driver OWN");
 
-  // 4. Reassign driver to Driver PICKUP -> deliveryFee must be ZEROED (0)
-  const orderWithPickup = await assignDriverToOrder(cashierUser.id, order1.id, driverPickup.id);
-  assert.strictEqual(Number(orderWithPickup.deliveryFee), 0, "Delivery fee must be ZERO (0) for Driver PICKUP");
-  assert.strictEqual(orderWithPickup.driverId, driverPickup.id, "driverId must match Driver PICKUP");
+  // 4. Reassign driver to Driver EXTERNAL -> deliveryFee must be 60 (Zone Fee)
+  const orderWithExternal = await assignDriverToOrder(cashierUser.id, order1.id, driverExternal.id);
+  assert.strictEqual(Number(orderWithExternal.deliveryFee), 60, "Delivery fee must be 60 for Driver EXTERNAL");
+  assert.strictEqual(orderWithExternal.driverId, driverExternal.id, "driverId must match Driver EXTERNAL");
 
-  console.log(`✓ Driver Assignment rules verified: OWN (60 EGP) -> APP (0 EGP) -> OWN (60 EGP restored) -> PICKUP (0 EGP)`);
+  console.log(`✓ Driver Assignment rules verified: OWN (60 EGP) -> APP (0 EGP) -> OWN (60 EGP restored) -> EXTERNAL (60 EGP)`);
   console.log(`✓ Atomic AuditLogs recorded on each driver assignment`);
 
   // ─────────────────────────────────────────────────────────────────────────────

@@ -81,9 +81,8 @@ export function calculateOrderTotals(input: {
   const discount = Math.max(0, input.discount ?? 0);
   const rawFee = Math.max(0, input.deliveryFee ?? 0);
 
-  // App fleet or customer pickup means restaurant collected delivery fee is 0
-  const netDeliveryFee =
-    input.driverType === DriverType.APP || input.driverType === DriverType.PICKUP ? 0 : rawFee;
+  // App fleet means restaurant collected delivery fee is 0 (handled by platform)
+  const netDeliveryFee = input.driverType === DriverType.APP ? 0 : rawFee;
 
   const total = Math.max(0, subtotal - discount + netDeliveryFee);
 

@@ -50,9 +50,8 @@ export function generateReceiptPreview(input: {
   const discount = Math.max(0, input.discount || 0);
   const rawFee = Math.max(0, input.deliveryFee || 0);
 
-  // Delivery fee zeroed if APP driver or customer PICKUP
-  const netDeliveryFee =
-    input.driverType === "APP" || input.driverType === "PICKUP" ? 0 : rawFee;
+  // Delivery fee zeroed if APP driver (platform handled)
+  const netDeliveryFee = input.driverType === "APP" ? 0 : rawFee;
 
   let subtotal = 0;
   const processedItems = input.items.map((item) => {

@@ -61,9 +61,8 @@ const DRIVER_TYPE_BADGES: Record<
       "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30 font-medium",
   },
   [DriverType.PICKUP]: {
-    labelKey: "drivers.types.PICKUP",
-    className:
-      "bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/30 font-medium",
+    labelKey: "drivers.types.OWN",
+    className: "hidden",
   },
 };
 
@@ -608,19 +607,6 @@ export function DeliveryClient({
                   className="h-8 text-xs px-2.5"
                 >
                   {t("drivers.types.EXTERNAL")}
-                </Button>
-                <Button
-                  type="button"
-                  variant={
-                    driverTypeFilter === DriverType.PICKUP
-                      ? "secondary"
-                      : "ghost"
-                  }
-                  size="sm"
-                  onClick={() => setDriverTypeFilter(DriverType.PICKUP)}
-                  className="h-8 text-xs px-2.5"
-                >
-                  {t("drivers.types.PICKUP")}
                 </Button>
               </div>
 

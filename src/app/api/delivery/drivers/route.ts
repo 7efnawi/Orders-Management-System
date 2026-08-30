@@ -5,7 +5,7 @@ import { isResponse, requireApiRole, wrapApi } from "@/lib/api";
 import { listDeliveryDrivers, createDeliveryDriver } from "@/services/delivery";
 
 export const createDriverSchema = z.object({
-  name: z.string().min(1),
+  name: z.string().trim().optional(),
   type: z.nativeEnum(DriverType),
 });
 

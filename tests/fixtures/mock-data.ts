@@ -15,7 +15,7 @@ export interface MockOrder {
     totalOrders: number;
   };
   paymentMethod: "CASH" | "VISA" | "ONLINE";
-  driverType?: "OWN" | "APP" | "EXTERNAL" | "PICKUP" | null;
+  driverType?: "OWN" | "APP" | "EXTERNAL" | null;
   driverName?: string | null;
   items: Array<{
     productId: string;

@@ -347,7 +347,7 @@ export function OrderForm({
   }, [selectedDriverId, drivers]);
 
   const netDeliveryFee = useMemo(() => {
-    if (selectedDriver?.type === "APP" || selectedDriver?.type === "PICKUP") {
+    if (selectedDriver?.type === "APP") {
       return 0;
     }
     return rawDeliveryFee;
@@ -375,21 +375,21 @@ export function OrderForm({
 
   const driverSelectItems = useMemo(
     () =>
-      drivers.map((d) => ({
-        id: d.id,
-        label: d.name,
-        badge: d.type,
-        keywords: [
-          d.type,
-          d.type === "OWN"
-            ? "داخلي خاص"
-            : d.type === "APP"
-            ? "تطبيق شركة"
-            : d.type === "EXTERNAL"
-            ? "خارجي حر"
-            : "استلام عميل",
-        ],
-      })),
+      drivers
+        .filter((d) => d.type !== "PICKUP")
+        .map((d) => ({
+          id: d.id,
+          label: d.name,
+          badge: d.type === "OWN" ? "داخلي" : d.type === "APP" ? "تطبيق" : "خارجي",
+          keywords: [
+            d.type,
+            d.type === "OWN"
+              ? "داخلي كابتن خاص مطعم"
+              : d.type === "APP"
+              ? "تطبيق شركة طلبات منيو"
+              : "خارجي شحن شركة",
+          ],
+        })),
     [drivers]
   );
 

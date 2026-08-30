@@ -17,7 +17,7 @@ export interface UpdateDeliveryZoneInput {
 }
 
 export interface CreateDeliveryDriverInput {
-  name: string;
+  name?: string;
   type: DriverType;
 }
 
@@ -25,6 +25,25 @@ export interface UpdateDeliveryDriverInput {
   name?: string;
   type?: DriverType;
   isActive?: boolean;
+}
+
+/**
+ * جلب أو إنشاء السائق النظامي الافتراضي لطيار التطبيق أو شركة الشحن الخارجية
+ */
+export async function getOrCreateSystemDriver(type: DriverType) {
+  const existing = await prisma.deliveryDriver.findFirst({
+    where: { type, isActive: true },
+  });
+  if (existing) return existing;
+
+  const defaultName = type === DriverType.APP ? "طيار التطبيق" : "شركة شحن خارجية";
+  return prisma.deliveryDriver.create({
+    data: {
+      name: defaultName,
+      type,
+      isActive: true,
+    },
+  });
 }
 
 /**
@@ -168,13 +187,19 @@ export async function createDeliveryDriver(
   userId: string,
   input: CreateDeliveryDriverInput
 ) {
-  const trimmedName = input.name?.trim();
-  if (!trimmedName) {
-    throw new Error("INVALID_NAME: Driver name is required");
-  }
-
   if (!input.type || !Object.values(DriverType).includes(input.type)) {
     throw new Error("INVALID_DRIVER_TYPE: Invalid driver type");
+  }
+
+  let trimmedName = input.name?.trim();
+  if (!trimmedName) {
+    if (input.type === DriverType.APP) {
+      trimmedName = "طيار التطبيق";
+    } else if (input.type === DriverType.EXTERNAL) {
+      trimmedName = "شركة شحن خارجية";
+    } else {
+      throw new Error("INVALID_NAME: Driver name is required for own restaurant drivers");
+    }
   }
 
   return prisma.$transaction(async (tx) => {
@@ -300,10 +325,10 @@ export async function assignDriverToOrder(
       throw new Error("DRIVER_INACTIVE: Cannot assign inactive driver");
     }
 
-    // Business rule: If driver is APP or PICKUP, net deliveryFee is 0.
+    // Business rule: If driver is APP, net deliveryFee is 0 (platform handled).
     // If OWN or EXTERNAL, restores zone fee if order has zone.
     let newDeliveryFee = 0;
-    if (driver.type === DriverType.APP || driver.type === DriverType.PICKUP) {
+    if (driver.type === DriverType.APP) {
       newDeliveryFee = 0;
     } else if (order.zone) {
       newDeliveryFee = Number(order.zone.fee);

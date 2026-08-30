@@ -317,7 +317,7 @@ export function OrderDetailsModal({
                         <>
                           {order.driver.name}{" "}
                           <span className="text-muted-foreground text-[10px]">
-                            ({t(`driverTypes.${order.driver.type as "OWN" | "APP" | "EXTERNAL" | "PICKUP"}`) || order.driver.type})
+                            ({t(`driverTypes.${order.driver.type as "OWN" | "APP" | "EXTERNAL"}`) || order.driver.type})
                           </span>
                         </>
                       ) : (

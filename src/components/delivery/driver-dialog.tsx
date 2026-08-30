@@ -31,7 +31,7 @@ export interface DeliveryDriverRow {
 }
 
 const driverSchema = z.object({
-  name: z.string().trim().min(1),
+  name: z.string().trim().optional(),
   type: z.nativeEnum(DriverType),
 });
 
@@ -81,20 +81,43 @@ function DriverForm({
 }) {
   const t = useTranslations("delivery");
   const [name, setName] = useState(initial.name);
-  const [type, setType] = useState<DriverType>(initial.type);
+  const [type, setType] = useState<DriverType>(
+    initial.type === DriverType.PICKUP ? DriverType.OWN : initial.type
+  );
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
+  const handleTypeChange = (newType: DriverType) => {
+    setType(newType);
+    if (!driverId) {
+      if (newType === DriverType.APP && (!name || name === t("drivers.types.EXTERNAL") || name === t("drivers.types.OWN"))) {
+        setName(t("drivers.types.APP"));
+      } else if (newType === DriverType.EXTERNAL && (!name || name === t("drivers.types.APP") || name === t("drivers.types.OWN"))) {
+        setName(t("drivers.types.EXTERNAL"));
+      } else if (newType === DriverType.OWN && (name === t("drivers.types.APP") || name === t("drivers.types.EXTERNAL"))) {
+        setName("");
+      }
+    }
+  };
+
   async function onSave(e?: React.FormEvent) {
     if (e) e.preventDefault();
-    const parsed = driverSchema.safeParse({ name, type });
-    if (!parsed.success) {
-      const issue = parsed.error.issues[0];
-      if (issue?.path[0] === "name") {
-        setError(t("validation.nameRequired"));
+    
+    let resolvedName = name.trim();
+    if (!resolvedName) {
+      if (type === DriverType.APP) {
+        resolvedName = t("drivers.types.APP");
+      } else if (type === DriverType.EXTERNAL) {
+        resolvedName = t("drivers.types.EXTERNAL");
       } else {
-        setError(t("validation.typeRequired"));
+        setError(t("validation.nameRequired"));
+        return;
       }
+    }
+
+    const parsed = driverSchema.safeParse({ name: resolvedName, type });
+    if (!parsed.success) {
+      setError(t("validation.nameRequired"));
       return;
     }
 
@@ -130,19 +153,8 @@ function DriverForm({
   return (
     <form onSubmit={onSave} className="space-y-4">
       <div className="grid gap-2">
-        <Label htmlFor="driver-name">{t("drivers.name")}</Label>
-        <Input
-          id="driver-name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder={t("drivers.namePlaceholder")}
-          autoFocus
-        />
-      </div>
-
-      <div className="grid gap-2">
         <Label htmlFor="driver-type">{t("drivers.type")}</Label>
-        <Select value={type} onValueChange={(val) => setType(val as DriverType)}>
+        <Select value={type} onValueChange={(val) => handleTypeChange(val as DriverType)}>
           <SelectTrigger id="driver-type">
             <SelectValue />
           </SelectTrigger>
@@ -150,9 +162,34 @@ function DriverForm({
             <SelectItem value={DriverType.OWN}>{t("drivers.types.OWN")}</SelectItem>
             <SelectItem value={DriverType.APP}>{t("drivers.types.APP")}</SelectItem>
             <SelectItem value={DriverType.EXTERNAL}>{t("drivers.types.EXTERNAL")}</SelectItem>
-            <SelectItem value={DriverType.PICKUP}>{t("drivers.types.PICKUP")}</SelectItem>
           </SelectContent>
         </Select>
+      </div>
+
+      <div className="grid gap-2">
+        <Label htmlFor="driver-name">
+          {t("drivers.name")}{" "}
+          {type === DriverType.OWN ? (
+            <span className="text-destructive">*</span>
+          ) : (
+            <span className="text-xs text-muted-foreground font-normal">
+              ({t("drivers.nameOptional") || "اختياري"})
+            </span>
+          )}
+        </Label>
+        <Input
+          id="driver-name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder={
+            type === DriverType.APP
+              ? t("drivers.types.APP")
+              : type === DriverType.EXTERNAL
+              ? t("drivers.types.EXTERNAL")
+              : t("drivers.namePlaceholder")
+          }
+          autoFocus={type === DriverType.OWN}
+        />
       </div>
 
       {error ? (
@@ -165,7 +202,10 @@ function DriverForm({
         <Button type="button" variant="outline" onClick={onClose} disabled={saving}>
           {t("actions.cancel")}
         </Button>
-        <Button type="submit" disabled={saving || !name.trim()}>
+        <Button
+          type="submit"
+          disabled={saving || (type === DriverType.OWN && !name.trim())}
+        >
           {saving ? t("actions.saving") : t("actions.save")}
         </Button>
       </DialogFooter>

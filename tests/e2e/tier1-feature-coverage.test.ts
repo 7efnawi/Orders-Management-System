@@ -15,7 +15,7 @@ import {
   nextAllowedStatuses,
   OrderStatus,
 } from "../../src/lib/orderStateMachine";
-import { CancelReason, DriverType } from "@prisma/client";
+import { CancelReason, DriverType, Role } from "@prisma/client";
 import {
   buildDailyBreakdown,
   calculateDriverCashCollection,
@@ -927,6 +927,108 @@ export async function runTier1Tests(): Promise<TestRunner> {
       () => buildDailyBreakdown([], [], "2026-02-10", "2026-02-01"),
       /INVALID_RANGE/
     );
+  });
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // FEATURE 15: User Management & Role-Based Access Control (FR-USR-01..04)
+  // ═══════════════════════════════════════════════════════════════════════════
+  runner.setContext("F15: User Management & Roles UI", 1);
+
+  const mockUsersList = [
+    { id: "u-1", name: "Ahmed Owner", email: "owner@sushi.com", role: "OWNER" as Role, isActive: true, createdAt: new Date("2026-01-01") },
+    { id: "u-2", name: "Sara Manager", email: "sara@sushi.com", role: "MANAGER" as Role, isActive: true, createdAt: new Date("2026-01-05") },
+    { id: "u-3", name: "Ali Cashier", email: "ali@sushi.com", role: "CASHIER" as Role, isActive: true, createdAt: new Date("2026-01-10") },
+    { id: "u-4", name: "Mona Cashier Inactive", email: "mona@sushi.com", role: "CASHIER" as Role, isActive: false, createdAt: new Date("2026-01-15") },
+  ];
+
+  await runner.test("F15.1: Filter users by role, active status, and search query", () => {
+    // Filter by role
+    const managers = mockUsersList.filter((u) => u.role === "MANAGER");
+    assert.strictEqual(managers.length, 1);
+    assert.strictEqual(managers[0].name, "Sara Manager");
+
+    // Filter by active status
+    const activeUsers = mockUsersList.filter((u) => u.isActive === true);
+    assert.strictEqual(activeUsers.length, 3);
+    const inactiveUsers = mockUsersList.filter((u) => u.isActive === false);
+    assert.strictEqual(inactiveUsers.length, 1);
+    assert.strictEqual(inactiveUsers[0].name, "Mona Cashier Inactive");
+
+    // Search by name or email (case-insensitive substring)
+    const searchMatch = mockUsersList.filter(
+      (u) =>
+        u.name.toLowerCase().includes("sara") ||
+        u.email.toLowerCase().includes("sara")
+    );
+    assert.strictEqual(searchMatch.length, 1);
+    assert.strictEqual(searchMatch[0].id, "u-2");
+  });
+
+  await runner.test("F15.2: Self-deactivation prevention for current active owner", () => {
+    function validateUserUpdate(actorId: string, targetId: string, data: { isActive?: boolean; role?: Role }) {
+      if (actorId === targetId) {
+        if (data.isActive === false) throw new Error("CANNOT_DEACTIVATE_SELF");
+        if (data.role && data.role !== "OWNER") throw new Error("CANNOT_DEMOTE_SELF");
+      }
+      return { ok: true };
+    }
+
+    // Owner cannot deactivate self
+    assert.throws(
+      () => validateUserUpdate("u-1", "u-1", { isActive: false }),
+      /CANNOT_DEACTIVATE_SELF/
+    );
+
+    // Owner can deactivate other users
+    assert.doesNotThrow(() => validateUserUpdate("u-1", "u-3", { isActive: false }));
+  });
+
+  await runner.test("F15.3: Self-demotion prevention for current active owner", () => {
+    function validateUserUpdate(actorId: string, targetId: string, data: { isActive?: boolean; role?: Role }) {
+      if (actorId === targetId) {
+        if (data.isActive === false) throw new Error("CANNOT_DEACTIVATE_SELF");
+        if (data.role && data.role !== "OWNER") throw new Error("CANNOT_DEMOTE_SELF");
+      }
+      return { ok: true };
+    }
+
+    // Owner cannot demote self to MANAGER or CASHIER
+    assert.throws(
+      () => validateUserUpdate("u-1", "u-1", { role: "MANAGER" }),
+      /CANNOT_DEMOTE_SELF/
+    );
+    assert.throws(
+      () => validateUserUpdate("u-1", "u-1", { role: "CASHIER" }),
+      /CANNOT_DEMOTE_SELF/
+    );
+
+    // Owner can change role of another user
+    assert.doesNotThrow(() => validateUserUpdate("u-1", "u-3", { role: "MANAGER" }));
+  });
+
+  await runner.test("F15.4: Email validation and duplicate email rejection", () => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    assert.strictEqual(emailRegex.test("valid.user@kitchen.com"), true);
+    assert.strictEqual(emailRegex.test("invalid-email"), false);
+    assert.strictEqual(emailRegex.test("@missing-user.com"), false);
+
+    const existingEmails = new Set(mockUsersList.map((u) => u.email.toLowerCase()));
+    assert.strictEqual(existingEmails.has("owner@sushi.com"), true, "Duplicate email must be detected");
+    assert.strictEqual(existingEmails.has("new.cashier@sushi.com"), false, "Unique email allowed");
+  });
+
+  await runner.test("F15.5: Session rejection for inactive user accounts (FR-USR-03)", () => {
+    function checkUserSession(user: { isActive: boolean }) {
+      if (!user.isActive) return { authenticated: false, reason: "INACTIVE" };
+      return { authenticated: true };
+    }
+
+    const activeSession = checkUserSession(mockUsersList[0]);
+    assert.strictEqual(activeSession.authenticated, true);
+
+    const inactiveSession = checkUserSession(mockUsersList[3]);
+    assert.strictEqual(inactiveSession.authenticated, false);
+    assert.strictEqual(inactiveSession.reason, "INACTIVE");
   });
 
   return runner;

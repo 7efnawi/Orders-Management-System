@@ -71,9 +71,8 @@ const DRIVER_TYPE_BADGES: Record<
       "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30 font-medium",
   },
   [DriverType.PICKUP]: {
-    labelKey: "drivers.types.PICKUP",
-    className:
-      "bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/30 font-medium",
+    labelKey: "drivers.types.OWN",
+    className: "hidden",
   },
 };
 
@@ -154,7 +153,10 @@ function AssignDriverForm({
       })
       .then((data) => {
         if (active) {
-          setDrivers(data.drivers || []);
+          const list: ActiveDriver[] = (data.drivers || []).filter(
+            (d: ActiveDriver) => d.type !== DriverType.PICKUP
+          );
+          setDrivers(list);
         }
       })
       .catch(() => {
@@ -173,16 +175,50 @@ function AssignDriverForm({
     };
   }, [t]);
 
-  const filteredDrivers = useMemo(() => {
-    if (!search.trim()) return drivers;
-    return drivers.filter((d) =>
-      matchesMultiToken(search, [
-        d.name,
-        d.type,
-        t(DRIVER_TYPE_BADGES[d.type]?.labelKey || ""),
-      ])
+  // System and Own drivers partitioning
+  const appDriver = useMemo(() => drivers.find((d) => d.type === DriverType.APP), [drivers]);
+  const externalDriver = useMemo(
+    () => drivers.find((d) => d.type === DriverType.EXTERNAL),
+    [drivers]
+  );
+  const ownDrivers = useMemo(
+    () => drivers.filter((d) => d.type === DriverType.OWN),
+    [drivers]
+  );
+
+  const filteredOwnDrivers = useMemo(() => {
+    if (!search.trim()) return ownDrivers;
+    return ownDrivers.filter((d) =>
+      matchesMultiToken(search, [d.name, d.type, t("drivers.types.OWN")])
     );
-  }, [drivers, search, t]);
+  }, [ownDrivers, search, t]);
+
+  const handleSelectQuickFleet = async (type: DriverType) => {
+    const existing = type === DriverType.APP ? appDriver : externalDriver;
+    if (existing) {
+      setSelectedDriverId(existing.id);
+      return;
+    }
+
+    // Auto-create standard fleet driver if not present
+    try {
+      const res = await fetch("/api/delivery/drivers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type,
+          name: type === DriverType.APP ? t("drivers.types.APP") : t("drivers.types.EXTERNAL"),
+        }),
+      });
+      if (res.ok) {
+        const created = await res.json();
+        setDrivers((prev) => [...prev, created]);
+        setSelectedDriverId(created.id);
+      }
+    } catch {
+      toast.error(t("error"));
+    }
+  };
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -241,6 +277,9 @@ function AssignDriverForm({
   const isOrderReady = order.status === OrderStatus.READY;
   const canDispatchOption = isOrderReady;
 
+  const isAppSelected = appDriver ? selectedDriverId === appDriver.id : false;
+  const isExternalSelected = externalDriver ? selectedDriverId === externalDriver.id : false;
+
   return (
     <div className="space-y-4 py-2">
       {/* Current Driver Display */}
@@ -252,7 +291,7 @@ function AssignDriverForm({
           <div className="flex items-center gap-1.5 font-semibold text-foreground">
             <UserCheck className="size-3.5 text-primary" />
             <span>{order.driver.name}</span>
-            {order.driver.type && (
+            {order.driver.type && order.driver.type !== DriverType.PICKUP && (
               <Badge variant="outline" className="text-[10px] py-0 px-1.5 font-normal">
                 {t(
                   DRIVER_TYPE_BADGES[order.driver.type as DriverType]?.labelKey ||
@@ -264,85 +303,158 @@ function AssignDriverForm({
         </div>
       )}
 
-      {/* Search Box */}
-      <div className="relative">
-        <Search className="absolute start-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-        <Input
-          type="text"
-          placeholder={t("assignDialog.searchPlaceholder")}
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="ps-9 h-9 text-xs"
-        />
-      </div>
-
-      {/* Drivers List */}
-      <div className="max-h-56 overflow-y-auto space-y-1.5 pe-1">
-        {loading ? (
-          <div className="flex h-32 flex-col items-center justify-center gap-2 text-muted-foreground">
-            <Loader2 className="size-5 animate-spin text-primary" />
-            <p className="text-xs">{t("actions.saving")}</p>
-          </div>
-        ) : filteredDrivers.length === 0 ? (
-          <div className="flex h-32 flex-col items-center justify-center gap-1.5 rounded-lg border border-dashed p-4 text-center">
-            <Users className="size-6 text-muted-foreground/60" />
-            <p className="text-xs font-semibold text-foreground">
-              {t("assignDialog.noDrivers")}
-            </p>
-            <p className="text-[11px] text-muted-foreground max-w-xs">
-              {t("assignDialog.noDriversDesc")}
-            </p>
-          </div>
-        ) : (
-          filteredDrivers.map((driver) => {
-            const isSelected = selectedDriverId === driver.id;
-            const badgeInfo = DRIVER_TYPE_BADGES[driver.type];
-
-            return (
+      {/* ── Quick Fleet Cards (App & External) ── */}
+      <div className="space-y-1.5">
+        <Label className="text-xs font-semibold text-muted-foreground block">
+          {t("drivers.types.title") || "نوع التوصيل السريع"}
+        </Label>
+        <div className="grid grid-cols-2 gap-2">
+          {/* App Fleet Card */}
+          <button
+            type="button"
+            onClick={() => handleSelectQuickFleet(DriverType.APP)}
+            className={cn(
+              "flex flex-col items-start gap-1 rounded-xl border p-2.5 text-start transition-all cursor-pointer",
+              isAppSelected
+                ? "border-purple-500 bg-purple-500/10 ring-1 ring-purple-500 text-purple-700 dark:text-purple-300"
+                : "border-border bg-card hover:bg-muted/40 text-foreground"
+            )}
+          >
+            <div className="flex items-center justify-between w-full">
+              <div className="flex items-center gap-1.5">
+                <Truck className="size-4 text-purple-600 dark:text-purple-400" />
+                <span className="font-bold text-xs">{t("drivers.types.APP")}</span>
+              </div>
               <div
-                key={driver.id}
-                onClick={() => setSelectedDriverId(driver.id)}
                 className={cn(
-                  "flex items-center justify-between gap-2 rounded-xl border p-2.5 cursor-pointer transition-all text-xs",
-                  isSelected
-                    ? "border-primary bg-primary/5 ring-1 ring-primary"
-                    : "border-border hover:bg-muted/40"
+                  "size-4 rounded-full border flex items-center justify-center",
+                  isAppSelected
+                    ? "bg-purple-600 text-white border-purple-600"
+                    : "border-muted-foreground/30"
                 )}
               >
-                <div className="flex items-center gap-2 min-w-0">
-                  <div
-                    className={cn(
-                      "flex size-7 shrink-0 items-center justify-center rounded-lg border",
-                      isSelected
-                        ? "bg-primary text-primary-foreground border-primary"
-                        : "bg-background text-muted-foreground"
-                    )}
-                  >
-                    {isSelected ? (
-                      <Check className="size-4 stroke-[3]" />
-                    ) : driver.type === DriverType.OWN ? (
-                      <Bike className="size-3.5" />
-                    ) : (
-                      <Truck className="size-3.5" />
-                    )}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="font-semibold text-foreground truncate">
-                      {driver.name}
-                    </p>
-                  </div>
-                </div>
-
-                <Badge
-                  variant="outline"
-                  className={cn("text-[10px] shrink-0", badgeInfo.className)}
-                >
-                  {t(badgeInfo.labelKey)}
-                </Badge>
+                {isAppSelected && <Check className="size-2.5 stroke-[3]" />}
               </div>
-            );
-          })
-        )}
+            </div>
+            <span className="text-[10px] text-muted-foreground">
+              {t("drivers.types.appDesc") || "طيار المنصة (طلبات / المنيوز)"}
+            </span>
+          </button>
+
+          {/* External Courier Card */}
+          <button
+            type="button"
+            onClick={() => handleSelectQuickFleet(DriverType.EXTERNAL)}
+            className={cn(
+              "flex flex-col items-start gap-1 rounded-xl border p-2.5 text-start transition-all cursor-pointer",
+              isExternalSelected
+                ? "border-blue-500 bg-blue-500/10 ring-1 ring-blue-500 text-blue-700 dark:text-blue-300"
+                : "border-border bg-card hover:bg-muted/40 text-foreground"
+            )}
+          >
+            <div className="flex items-center justify-between w-full">
+              <div className="flex items-center gap-1.5">
+                <Truck className="size-4 text-blue-600 dark:text-blue-400" />
+                <span className="font-bold text-xs">{t("drivers.types.EXTERNAL")}</span>
+              </div>
+              <div
+                className={cn(
+                  "size-4 rounded-full border flex items-center justify-center",
+                  isExternalSelected
+                    ? "bg-blue-600 text-white border-blue-600"
+                    : "border-muted-foreground/30"
+                )}
+              >
+                {isExternalSelected && <Check className="size-2.5 stroke-[3]" />}
+              </div>
+            </div>
+            <span className="text-[10px] text-muted-foreground">
+              {t("drivers.types.externalDesc") || "شركة شحن خارجية"}
+            </span>
+          </button>
+        </div>
+      </div>
+
+      {/* ── Internal Fleet Drivers ── */}
+      <div className="space-y-2 pt-2 border-t">
+        <div className="flex items-center justify-between">
+          <Label className="text-xs font-semibold block">
+            {t("drivers.types.OWN")} ({ownDrivers.length})
+          </Label>
+        </div>
+
+        {/* Search Box */}
+        <div className="relative">
+          <Search className="absolute start-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
+          <Input
+            type="text"
+            placeholder={t("assignDialog.searchPlaceholder")}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="ps-8 h-8 text-xs"
+          />
+        </div>
+
+        {/* Drivers List */}
+        <div className="max-h-40 overflow-y-auto space-y-1 pe-1">
+          {loading ? (
+            <div className="flex h-24 flex-col items-center justify-center gap-2 text-muted-foreground">
+              <Loader2 className="size-4 animate-spin text-primary" />
+              <p className="text-xs">{t("actions.saving")}</p>
+            </div>
+          ) : filteredOwnDrivers.length === 0 ? (
+            <div className="flex h-20 flex-col items-center justify-center gap-1 rounded-lg border border-dashed p-2 text-center">
+              <Users className="size-4 text-muted-foreground/60" />
+              <p className="text-xs text-muted-foreground">
+                {search ? t("assignDialog.noDrivers") : (t("drivers.noOwnDrivers") || "لا يوجد مناديب مسجلين للمطعم")}
+              </p>
+            </div>
+          ) : (
+            filteredOwnDrivers.map((driver) => {
+              const isSelected = selectedDriverId === driver.id;
+
+              return (
+                <div
+                  key={driver.id}
+                  onClick={() => setSelectedDriverId(driver.id)}
+                  className={cn(
+                    "flex items-center justify-between gap-2 rounded-lg border p-2 cursor-pointer transition-all text-xs",
+                    isSelected
+                      ? "border-emerald-500 bg-emerald-500/10 ring-1 ring-emerald-500"
+                      : "border-border hover:bg-muted/40"
+                  )}
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div
+                      className={cn(
+                        "flex size-6 shrink-0 items-center justify-center rounded-md border",
+                        isSelected
+                          ? "bg-emerald-600 text-white border-emerald-600"
+                          : "bg-background text-muted-foreground"
+                      )}
+                    >
+                      {isSelected ? (
+                        <Check className="size-3.5 stroke-[3]" />
+                      ) : (
+                        <Bike className="size-3.5" />
+                      )}
+                    </div>
+                    <span className="font-semibold text-foreground truncate">
+                      {driver.name}
+                    </span>
+                  </div>
+
+                  <Badge
+                    variant="outline"
+                    className="text-[10px] shrink-0 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
+                  >
+                    {t("drivers.types.OWN")}
+                  </Badge>
+                </div>
+              );
+            })
+          )}
+        </div>
       </div>
 
       {/* Dispatch Option Switch (for READY status orders) */}
