@@ -56,8 +56,15 @@ export function wrapApi(handler: () => Promise<NextResponse>): Promise<NextRespo
         err.message.startsWith("DRIVER_INACTIVE") ||
         err.message.startsWith("DISCOUNT_REASON_REQUIRED") ||
         err.message.startsWith("DUPLICATE_") ||
-        err.message.startsWith("SHIFT_")
+        err.message.startsWith("SHIFT_") ||
+        err.message.startsWith("EMAIL_EXISTS") ||
+        err.message.startsWith("CANNOT_") ||
+        err.message.startsWith("AUTH_") ||
+        err.message === "USER_NOT_FOUND"
       ) {
+        if (err.message === "USER_NOT_FOUND") {
+          return apiError("USER_NOT_FOUND", "User not found", 404);
+        }
         const colonIdx = err.message.indexOf(":");
         const code = colonIdx > -1 ? err.message.slice(0, colonIdx).trim() : err.message;
         const message = colonIdx > -1 ? err.message.slice(colonIdx + 1).trim() : err.message;
