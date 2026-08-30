@@ -473,6 +473,17 @@ export interface DashboardOverview {
   }>;
   brandCounts: Array<{ id: string; name: string; count: number }>;
   platformCounts: Array<{ id: string; name: string; count: number }>;
+  ownerInsights?: {
+    todayRevenue: number;
+    yesterdayRevenue: number;
+    todayOrders: number;
+    yesterdayOrders: number;
+    todayCancelled: number;
+    yesterdayCancelled: number;
+    todayActiveOrders: number;
+    activeUsersCount: number;
+    activeDriversCount: number;
+  };
 }
 
 /**
@@ -542,7 +553,7 @@ export async function getDashboardOverview(userId: string, role: Role): Promise<
     }),
     prisma.order.findMany({
       orderBy: { createdAt: "desc" },
-      take: 6,
+      take: 10,
       include: {
         brand: { select: { id: true, name: true } },
         platform: { select: { id: true, name: true } },
@@ -632,6 +643,55 @@ export async function getDashboardOverview(userId: string, role: Role): Promise<
     };
   });
 
+  let ownerInsights: DashboardOverview["ownerInsights"] = undefined;
+
+  if (role === "OWNER") {
+    const yesterdayStart = new Date(todayStart);
+    yesterdayStart.setDate(yesterdayStart.getDate() - 1);
+    const yesterdayEnd = new Date(todayStart);
+
+    const [yesterdayOrders, activeUsersCount, activeDriversCount] = await Promise.all([
+      prisma.order.findMany({
+        where: { createdAt: { gte: yesterdayStart, lt: yesterdayEnd } },
+        select: {
+          status: true,
+          subtotal: true,
+          discount: true,
+          discountStatus: true,
+          deliveryFee: true,
+        },
+      }),
+      prisma.user.count({ where: { isActive: true } }),
+      prisma.deliveryDriver.count({ where: { isActive: true } }),
+    ]);
+
+    let yesterdayRevenue = 0;
+    let yesterdayCancelled = 0;
+
+    for (const o of yesterdayOrders) {
+      if (o.status === "CANCELLED") {
+        yesterdayCancelled++;
+      } else {
+        const subtotal = Number(o.subtotal);
+        const discount = o.discountStatus === "REJECTED" ? 0 : Number(o.discount);
+        const fee = Number(o.deliveryFee);
+        yesterdayRevenue += Math.max(0, subtotal - discount + fee);
+      }
+    }
+
+    ownerInsights = {
+      todayRevenue: totalRevenue,
+      yesterdayRevenue,
+      todayOrders: ordersInPeriod.length,
+      yesterdayOrders: yesterdayOrders.length,
+      todayCancelled: statusCounts.CANCELLED,
+      yesterdayCancelled,
+      todayActiveOrders: activeOrdersCount,
+      activeUsersCount,
+      activeDriversCount,
+    };
+  }
+
   return {
     activeShift: activeShift
       ? {
@@ -664,5 +724,6 @@ export async function getDashboardOverview(userId: string, role: Role): Promise<
       name: p.name,
       count: platformCountMap.get(p.id) || 0,
     })),
+    ownerInsights,
   };
 }

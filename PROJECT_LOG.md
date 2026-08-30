@@ -10,6 +10,197 @@
 |---|---|---|
 | القائمة النهائية للمنصات | ✅ حُسمت (Talabat, InstaShop, Harry App, Elmenus, Facebook, Phone) | Platform seed & Visual Tokens |
 
+## [2026-08-30] تخصيص لوحة التحكم الرئيسية حسب الدور والصلاحيات (Role-Based Customized Dashboard)
+**النوع:** Feature & UI/UX Architecture
+**اللي اتعمل:**
+- **تخصيص لوحة التحكم حسب الدور:**
+  - **الكاشير (`CashierDashboard`):** شاشة عمليات سريعة موجهة لتسجيل وتتبع طلبات الشيفت الجاري، بدون أي بيانات مالية تاريخية أو تحليلية مربكة، مع بطاقات مؤشرات الشيفت (إجمالي الطلبات، المسلم، كاش الخزينة، المصروفات) ولوحة مراحل السوشي (Pipeline).
+  - **المدير (`ManagerDashboard`):** لوحة إشراف تشغيلي شاملة لمتابعة كافة الشيفتات المفتوحة، وتدفق الطلبات عبر القنوات، وإيرادات اليوم ومصروفات التشغيل، مع تفكيك حجم الطلبات حسب البراندات والمنصات.
+  - **المالك (`OwnerDashboard`):** لوحة قيادة تنفيذية تتضمن مقارنة ذكية للأداء بين **اليوم والأمس** (Delta % ونسب التغير بالإيرادات والطلبات ونسب الإلغاء)، وحصص البراندات والمنصات بالنسبة المئوية ومخططات التقدم، ومؤشرات الطاقة التشغيلية للفريق والمناديب.
+- **توسيع طبقة الخدمات (`getDashboardOverview`):**
+  - حساب مؤشرات مقارنة الأمس (`yesterdayRevenue`, `yesterdayOrders`, `yesterdayCancelled`) وحصر المستخدمين والمناديب النشطين للـ Owner.
+- **إعادة هيكلة العرض كـ Role Router:**
+  - تحويل `DashboardOverviewClient` إلى موجه نظيف يختار المكون المناسب لكل مستخدم تلقائياً.
+- **بوابات الجودة:** اجتياز `npm run typecheck` (0 أخطاء)، واجتياز `scripts/verify-phase9.ts` بنجاح 100%، واجتياز `npm run test:e2e` (191/191 اختبار بنجاح 100%).
+**الملفات المتأثرة:** `src/services/orders.ts`, `src/components/dashboard/dashboard-overview.tsx`, `src/components/dashboard/cashier-dashboard.tsx`, `src/components/dashboard/manager-dashboard.tsx`, `src/components/dashboard/owner-dashboard.tsx`, `src/messages/ar.json`, `src/messages/en.json`, `PROJECT_LOG.md`
+
+---
+
+## [2026-08-30] تمكين إعادة تفعيل الحسابات المحذوفة وتوليد بيانات الدخول تلقائياً (User Reactivation & Credentials Provisioning)
+**النوع:** Feature & Bug Fix
+**اللي اتعمل:**
+- **دعم إعادة التفعيل في طبقة الخدمات والـ API:**
+  - تحديث دالة `updateUser` في `src/services/users.ts` ومسار `PATCH /api/users/[id]` لتوليد كلمة مرور مؤقتة عشوائية وإعادة إنشاء/تنشيط حساب الدخول في **Supabase Auth** تلقائياً عند تحويل حالة المستخدم من معطل (`isActive: false`) إلى نشط (`isActive: true`).
+- **تحسين واجهة المستخدم وتجربة الاستعادة:**
+  - إضافة زر إجراء صريح **"إعادة تفعيل" (`table.reactivate`)** في صفوف الحسابات المعطلة/المحذوفة باللون الأخضر المميز.
+  - دعم إعادة التفعيل أيضاً عبر الـ Switch ونافذة تعديل المستخدم (`user-dialog.tsx`).
+  - عند اكتمال إعادة التفعيل بنجاح، تظهر تلقائياً نافذة **"كلمة المرور المؤقتة الجديدة"** مع زر نسخ بنقرة واحدة لتسليمها للموظف، وتعود حالة الحساب لنشط فوراً في الواجهة والـ KPI.
+- **بوابات الجودة:**
+  - اجتياز `npm run typecheck` (0 أخطاء).
+  - اجتياز `scripts/verify-phase9.ts` بنجاح 100% (شاملاً اختبار إعادة التفعيل وتوليد كلمات المرور وفحص الـ Audit Logs).
+  - اجتياز `npm run test:e2e` (191/191 اختبار بنجاح 100%).
+**الملفات المتأثرة:** `src/services/users.ts`, `src/app/api/users/[id]/route.ts`, `src/components/users/users-client.tsx`, `src/components/users/user-dialog.tsx`, `src/messages/ar.json`, `src/messages/en.json`, `scripts/verify-phase9.ts`, `PROJECT_LOG.md`
+
+---
+
+## [2026-08-30] ضبط الفلتر الافتراضي لصفحة المستخدمين على الحسابات النشطة فقط (Set Default User Filter to Active Only)
+**النوع:** UX Enhancement & State Sync
+**اللي اتعمل:**
+- تعديل الحالة الابتدائية للفلتر `selectedStatus` في `src/components/users/users-client.tsx` لتكون `"ACTIVE"` (النشطين فقط) افتراضياً.
+- تحديث دالة `handleDeleteUser` لتقوم بتعيين `isActive: false` في الذاكرة المحلية عند نجاح الحذف، مما يُسقط المستخدم المحذوف تلقائياً وفورياً من جدول النشطين مع تحديث بطاقات إحصائيات الـ KPI بدقة متناهية.
+- ضمان عدم ظهور المستخدمين المحذوفين أو المعطلين بعد أي تحديث للصفحة (Refresh) إلا عند اختيار فلتر "المعطلين فقط" يدوياً.
+- **بوابات الجودة:** اجتياز `npm run typecheck` (0 أخطاء)، واجتياز `scripts/verify-phase9.ts` بنجاح 100%، واجتياز `npm run test:e2e` (191/191 اختبار بنجاح 100%).
+**الملفات المتأثرة:** `src/components/users/users-client.tsx`, `PROJECT_LOG.md`
+
+---
+
+## [2026-08-30] إصلاح تسجيل دخول المستخدمين الجدد وتوفير ميزة حذف الحسابات بالصلاحيات (User Provisioning Fix & Delete Feature)
+**النوع:** Bug Fix & Feature
+**اللي اتعمل:**
+- **إصلاح تسجيل دخول المستخدمين الجدد (Supabase Auth Provisioning):**
+  - إنشاء `src/lib/supabase/admin.ts` باستخدام `service_role` key لربط إضافة المستخدمين الجدد بإنشاء حساب في Supabase Auth تلقائياً مع توليد كلمة مرور مؤقتة آمنة عشوائياً.
+  - عرض بطاقة "كلمة المرور المؤقتة" مرة واحدة في واجهة المالك/المدير مع زر نسخ وملاحظة توجيهية للموظف.
+  - دعم إعادة تفعيل الحسابات المحذوفة سابقاً عند إعادة إضافتها بنفس البريد الإلكتروني.
+- **ميزة حذف المستخدم (Delete User with Role-Based Guards):**
+  - إضافة دالة `deleteUser` في `src/services/users.ts` ومسار `DELETE /api/users/[id]`.
+  - حماية المالك من حذف حسابه الشخصي (`CANNOT_DELETE_SELF`).
+  - السماح للمدير بحذف الكاشير فقط ومنعه من حذف أي مدير آخر أو مالك (`FORBIDDEN_DELETE`).
+  - عند الحذف: إلغاء حساب Supabase Auth فوراً لمنعه من الدخول، وتعطيل الحساب محلياً (`isActive = false`) مع توثيق العملية ذرياً في جدول الـ `AuditLog`.
+- **فتح وصول المدير لصفحة المستخدمين:**
+  - إتاحة تبويب وصفحة المستخدمين للمدير مع تقييد نطاق العرض والإضافة والتعديل والحذف للكاشيرات فقط.
+- **بوابات الجودة:**
+  - اجتياز `npm run typecheck` (0 أخطاء).
+  - اجتياز `scripts/verify-phase9.ts` بنجاح 100% (يشمل 7 خطوات اختبارية للحذف والصلاحيات وتوليد كلمات المرور).
+  - اجتياز `npm run test:e2e` (191/191 اختبار بنجاح 100%).
+**الملفات المتأثرة:** `src/lib/supabase/admin.ts`, `.env.example`, `src/services/users.ts`, `src/app/api/users/route.ts`, `src/app/api/users/[id]/route.ts`, `src/app/[locale]/(dashboard)/users/page.tsx`, `src/components/layout/dashboard-header.tsx`, `src/components/users/user-dialog.tsx`, `src/components/users/users-client.tsx`, `src/messages/ar.json`, `src/messages/en.json`, `scripts/verify-phase9.ts`, `PROJECT_LOG.md`
+
+---
+
+## [2026-08-30] إصلاح خطأ عدم تطابق الـ Hydration لتنسيق التاريخ في صفحة المستخدمين (Fix Locale Date Hydration Mismatch in Users Page)
+**النوع:** Bug Fix
+**اللي اتعمل:**
+- استبدال `toLocaleDateString(undefined)` بـ `format.dateTime(...)` من `useFormatter()` التابع لـ `next-intl` لضمان توحيد لغة تنسيق التاريخ حتمياً بين السيرفر والمتصفح بحسب الـ Locale الفعلي للمستخدم.
+- إضافة `suppressHydrationWarning` لعنصر عرض التاريخ في جدول المستخدمين.
+- **بوابات الجودة:** اجتياز `npm run typecheck` (0 أخطاء) و `npm run test:e2e` (191/191 اختبار بنجاح 100%).
+**الملفات المتأثرة:** `src/components/users/users-client.tsx`, `PROJECT_LOG.md`
+
+---
+
+## [2026-08-30] توحيد وموازنة أبعاد وعناصر صفحة إدارة المستخدمين (Users Page UI/UX & Layout Harmonization)
+**النوع:** UI/UX & Refactoring
+**اللي اتعمل:**
+- **توحيد الحاوية وهوامش الصفحة:**
+  - تعديل الحاوية الرئيسية لتتبع المعيار المعتمد بالنظام (`mx-auto flex w-full max-w-[1440px] flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-8`) لتتطابق في المحاذاة والهوامش مع باقي الشاشات.
+- **ضبط شبكة كروت الإحصائيات (KPI Grid):**
+  - توحيد ارتفاع وأبعاد الكروت الخمسة بحجم أيقونات معتمد `size-11` وأرقام عريضة متناسقة بخاصية `tabular-nums`.
+- **تنسيق شريط البحث والفلاتر:**
+  - إعادة توزيع حقل البحث ومجموعتي الأزرار المقسمة (أدوار المستخدمين وحالات التفعيل) لتتجاوب بسلاسة دون تداخل أو قص.
+- **تحسين جدول المستخدمين:**
+  - اعتماد أفاتار دائري مميز لكل مستخدم مع ألوان متدرجة بحسب الدور (أصفر للمالك، نيلي للمدير، زمردي للكاشير)، وتحسين مساحات الأعمدة وأزرار التفعيل والتعديل.
+- **بوابات الجودة:**
+  - اجتياز `npm run typecheck` (0 أخطاء)، `npm run test:e2e` (191/191 بنجاح 100%)، و `scripts/verify-phase9.ts` (100% بنجاح).
+**الملفات المتأثرة:** `src/components/users/users-client.tsx`, `src/components/users/user-dialog.tsx`, `src/messages/ar.json`, `src/messages/en.json`, `docs/plans/2026-08-30-users-page-harmonization-plan.md`, `PROJECT_LOG.md`
+
+---
+
+## [2026-08-30] إعادة تصميم شريط التنقل العلوي وتحديث الهوية البصرية (Navigation Bar UI/UX Redesign & Brand Polish)
+**النوع:** UI/UX & Refactoring
+**اللي اتعمل:**
+- **تحديث الهوية التجارية واسم النظام:**
+  - اعتماد اسم براند واقعي وفاخر **Sushi Flower** (سوشي فلاور) ووصف تشغيلي دقيق: **إدارة الطلبات والتشغيل** / **OPERATIONS & ORDER CONTROL**.
+- **إصلاح تشوه رابط الشعار والصفحة الرئيسية:**
+  - إزالة الإطار الرمادي النشط والحدود المحيطة بالشعار في الصفحة الرئيسية، وبناء شعار نظيف وفاخر بأيقونة متدرجة ناعمة تبرز هوية البراند دون أي تشوه بصري عند التفعيل.
+- **حل مشكلة اختفاء وقص زر "المستخدمين":**
+  - إعادة موازنة مساحات الشريط العلوي وتعديل الـ padding والـ gap للتبويبات السبعة (`الأوردرات`، `المنيو`، `التوصيل`، `المصاريف`، `إغلاق اليوم`، `التقارير`، `المستخدمين`) لضمان ظهور كافة التبويبات بنصوصها وأيقوناتها كاملة على جميع مقاسات الشاشات من 1024px فما فوق وبدون أي قص.
+- **تطوير شريحة المستخدم وقائمة الحساب المنسدلة (User Profile Dropdown):**
+  - استبدال الصندوق الثقيل القديم بـ Avatar دائري عصري فائق الأناقة مع نقطة لونية ذكية توضح الدور (أصفر للمالك، نيلي للمدير، أخضر للكاشير).
+  - إضافة قائمة منسدلة أنيقة تشمل بطاقة بيانات المستخدم، البريد، شارة الدور، روابط التنقل السريعة، وزر تسجيل الخروج السلس.
+- **بوابات الجودة:**
+  - اجتياز `npm run typecheck` (0 أخطاء) و `npm run test:e2e` (191/191 اختبار بنجاح 100%).
+**الملفات المتأثرة:** `src/components/layout/dashboard-header.tsx`, `src/messages/ar.json`, `src/messages/en.json`, `docs/plans/2026-08-30-navbar-ui-ux-redesign-plan.md`, `PROJECT_LOG.md`
+
+---
+
+## [2026-08-30] إصلاح خطأ عدم تطابق الـ Hydration الناتج عن إضافات المتصفح (Fix Browser Extension Hydration Mismatch on Body Tag)
+**النوع:** Bug Fix
+**اللي اتعمل:**
+- إضافة خاصية `suppressHydrationWarning` إلى وسم `<body ...>` في `src/app/[locale]/layout.tsx`.
+- **السبب:** إضافات المتصفح (مثل Grammarly التي تحقن خصائص `data-new-gr-c-s-check-loaded` و `data-gr-ext-installed` على وسم `<body>` قبل اكتمال الـ Hydration في React 19) كانت تتسبب في إطلاق تحذير React Hydration Error. تم حل المشكلة نهائياً بتفعيل تجاهل تحذيرات المطابقة على عنصر `body` بجانب `html`.
+- **بوابات الجودة:** اجتياز `npm run typecheck` (0 أخطاء) و `npm run test:e2e` (191/191 اختبار بنجاح 100%).
+**الملفات المتأثرة:** `src/app/[locale]/layout.tsx`, `PROJECT_LOG.md`
+
+---
+
+## [2026-08-30] تعديل منظومة التوصيل: حذف استلام العميل وتبسيط تعيين طياري التطبيقات والشركات الخارجية (Delivery Refinement & Pickup Removal)
+**النوع:** Feature & Refactoring
+**اللي اتعمل:**
+- **حذف استلام العميل من المطعم (`PICKUP`) بالكامل:**
+  - بما أن النظام مخصص لمطبخ سحابي (Dark Kitchen) توصيل فقط، تم حذف خيار `PICKUP` نهائياً من كافة الواجهات والحقول والفلاتر ونوافذ الحوار وشاشات الطلبات والـ POS والـ State Machine والترجمات.
+- **تبسيط طياري التطبيقات (`APP`) والشركات الخارجية (`EXTERNAL`):**
+  - التفريق المعماري بين طيار المطعم الداخلي (`OWN`) وطياري المنصات والشحن (`APP` / `EXTERNAL`):
+    - طيار المطعم (`OWN`): يسجل بالاسم كفرد وموظف لمتابعة كاش الشيفتات والتسليمات الفردية.
+    - طيار المنصة (`APP`) وشركة الشحن (`EXTERNAL`): لا يتطلبان تسجيل اسم شخصي مسبقاً، ويتم تعيينهما بنوع الأسطول بضغطة زر واحدة.
+  - إضافة دالة `getOrCreateSystemDriver` في `src/services/delivery.ts` لضمان وجود سجلات النظام لطياري التطبيقات والشركات الخارجية تلقائياً.
+- **تحديث واجهات التعيين والـ POS (`AssignDriverDialog` & `OrderForm`):**
+  - إعادة تصميم نافذة تعيين المندوب (`AssignDriverDialog`) لتشمل بطاقات سريعة بلمسة واحدة:
+    - 🟣 **طيار التطبيق (APP Fleet)** (تصفير رسوم التوصيل المحصلة للمطعم).
+    - 🔵 **شركة شحن خارجية (EXTERNAL Courier)** (احتساب رسوم المنطقة).
+    - 🟢 **طياري أسطول المطعم (OWN Fleet)** مع بحث مخصص وقائمة للمناديب المسجلين بالاسم.
+  - تنظيف قائمة اختيار المندوب في شاشة إنشاء الطلب السريع (`POS / OrderForm`) وتحديث شاشة تفاصيل الطلب (`OrderDetailsModal`).
+- **اجتياز بوابات الجودة بالكامل:**
+  - `npm run typecheck` (0 أخطاء).
+  - `npm run test:e2e` (191/191 اختبار بنجاح 100%).
+  - `scripts/verify-phase5.ts` و `scripts/verify-phase8.ts` (100% بنجاح).
+**السبب:** تلبية طلب العميل بمطابقة السيستم لواقع تشغيل المطبخ السحابي وإلغاء الاستلام وتسهيل اختيار طياري المنصات.
+**الملفات المتأثرة:** `src/lib/orderStateMachine.ts`, `src/services/delivery.ts`, `src/app/api/delivery/drivers/route.ts`, `src/components/delivery/driver-dialog.tsx`, `src/components/delivery/delivery-client.tsx`, `src/components/delivery/assign-driver-dialog.tsx`, `src/components/orders/order-form.tsx`, `src/components/orders/order-details-modal.tsx`, `src/messages/ar.json`, `src/messages/en.json`, `tests/fixtures/mock-data.ts`, `tests/helpers/receipt-oracle.ts`, `scripts/verify-phase5.ts`, `PROJECT_LOG.md`
+**تأثير على أجزاء تانية:** منظومة الدليفري أصبحت أسرع بكثير في نقطة البيع والـ Kanban، وبلا أي تعقيد أو إدخال أسماء وهمية لطياري التطبيقات.
+
+---
+
+## [2026-08-28] المرحلة 9 — إدارة المستخدمين والصلاحيات وبوابة التحقق الآلي (Phase 9: User Management & Roles UI Completion)
+**النوع:** Feature, Security & Quality Gate
+**اللي اتعمل:**
+- **طبقة خدمات المستخدمين (`src/services/users.ts`):**
+  - بناء `listUsers` مع دعم الفلترة حسب الدور (`Role`)، وحالة التفعيل (`isActive`)، والبحث بالاسم أو البريد الإلكتروني.
+  - بناء `createUser` مع التحقق من صحة البريد الإلكتروني ومنع تكراره، وتسجيل `AuditLog` ذري داخل نفس الـ `prisma.$transaction`.
+  - بناء `updateUser` مع حماية ذاتية للمالك (`CANNOT_DEACTIVATE_SELF` و `CANNOT_DEMOTE_SELF`) وتسجيل تدقيق ذري بحالتي `oldValue` و `newValue`.
+- **راوتات الـ API المحمية بـ OWNER فقط (`src/app/api/users/`):**
+  - `GET /api/users`: استرجاع قائمة المستخدمين مع تطبيق الفلاتر.
+  - `POST /api/users`: إنشاء مستخدم جديد بعد التحقق عبر Zod.
+  - `PATCH /api/users/[id]`: تعديل الاسم أو الدور أو حالة التفعيل مع فحص Zod وحماية الصلاحيات.
+- **واجهة المستخدم ثنائية اللغة (`/users`):**
+  - صفحة السيرفر المحمية `src/app/[locale]/(dashboard)/users/page.tsx` مع تحويل غير المالك إلى `/`.
+  - مكوّن العميل `src/components/users/users-client.tsx` بشبكة KPI (إجمالي المستخدمين، الحسابات النشطة، المالكين، المديرين، الكاشيرات)، شريط بحث وفلاتر تفاعلية، وجدول مستخدمين متجاوب مع تبديل حالة الحساب بلمسة واحدة.
+  - مكوّن النافذة المنبثقة `src/components/users/user-dialog.tsx` لإضافة وتعديل المستخدمين واختيار الأدوار مع شروحات وظيفية ملونة.
+  - إظهار رابط تبويب "المستخدمين" في شريط التنقل `dashboard-header.tsx` للمالك فقط (`OWNER`).
+  - دعم كامل للترجمات في `src/messages/ar.json` و `src/messages/en.json`.
+- **الاختبارات وبوابات الجودة:**
+  - إضافة قسم F15 في `tests/e2e/tier1-feature-coverage.test.ts` واجتياز 191/191 اختبار.
+  - إنشاء سكربت التحقق الآلي `scripts/verify-phase9.ts` واجتيازه بنسبة نجاح 100%.
+  - `npm run typecheck` بنسبة نجاح 100% (0 أخطاء).
+**السبب:** استيفاء متطلبات إدارة المستخدمين والصلاحيات بالكامل (`FR-USR-01` … `FR-USR-04`) وتأمين الوصول للنظام.
+**الملفات المتأثرة:** `src/services/users.ts`, `src/app/api/users/*`, `src/components/users/*`, `src/app/[locale]/(dashboard)/users/page.tsx`, `src/components/layout/dashboard-header.tsx`, `src/messages/ar.json`, `src/messages/en.json`, `tests/e2e/tier1-feature-coverage.test.ts`, `scripts/verify-phase9.ts`, `PROJECT_LOG.md`
+**تأثير على أجزاء تانية:** اكتملت المرحلة 9 بنجاح تام والنظام جاهز للمرحلة 10 (سجل تدقيق العمليات والمراقبة FR-AUD-03/04).
+
+---
+
+## [2026-08-28] دمج الشعار والصفحة الرئيسية وحل قص النصوص في شريط التنقل (Navbar Brand & Home Consolidation and Responsive Refinement)
+**النوع:** UI/UX Polish & Refactoring
+**اللي اتعمل:**
+- **دمج الشعار والصفحة الرئيسية (Brand & Home Consolidation):**
+  - دمج رابط الصفحة الرئيسية "الرئيسية" مع الشعار واسم النظام ("نظام إدارة الطلبات") في رابط تفاعلي موحد يقود إلى `/` مع تفعيل بصري مميز `isHomeActive` عند التواجد في الرئيسية.
+  - إزالة زر "الرئيسية" المستقل من صف الأزرار في سطح المكتب لتوفير أكثر من 90px من العرض الأفقي ومنع تكرار الوظيفة.
+  - الإبقاء على رابط "الرئيسية" في أعلى القائمة الجانبية للموبايل لضمان سهولة الوصول باللمس.
+- **القضاء على مشكلة قص النصوص (Eliminating Text Truncation):**
+  - ضبط المسافات الأفقية والهوامش للروابط (`gap-0.5 xl:gap-1.5` و `px-2 xl:px-3` و `text-xs xl:text-sm`).
+  - إخفاء الوصف الفرعي للشعار ("4 براندات سوشي · مطبخ سحابي") في الشاشات المتوسطة والكبيرة (`hidden xl:inline`) وتفعيله في الشاشات العريضة جداً لضمان ظهور كامل أسماء التبويبات ("التقارير"، "إغلاق اليوم"، "المصاريف"، "التوصيل"، "المنيو"، "الأوردرات") بدون أي قص (Truncation) أو ظهور "التق...".
+- **اجتياز بوابات الجودة:**
+  - `npm run typecheck` (0 أخطاء).
+  - `npm run test:e2e` (186/186 اختبار بنجاح 100%).
+**السبب:** تحسين تجربة المستخدم وحل مشكلة قص نص "التقارير" وتوفير مساحة أفقية مريحة لاستيعاب التبويبات القادمة (المستخدمين والمراقبة).
+**الملفات المتأثرة:** `src/components/layout/dashboard-header.tsx`, `docs/plans/2026-08-28-navbar-refinement-plan.md`, `PROJECT_LOG.md`
+**تأثير على أجزاء تانية:** الواجهة أصبحت أنظف وأوسع وبأفضل ممارسات الـ UX المتوافقة مع كافة مقاسات الشاشات.
+
 ---
 
 ## [2026-08-28] تحسينات لوحة التقارير التحليلية والرسوم البيانية وحل تداخل شريط التنقل (Data Analyst Reports Redesign & Navigation Fix)

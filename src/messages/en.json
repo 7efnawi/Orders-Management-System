@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "Order Control System",
+    "appName": "Sushi Flower",
     "loading": "Loading…",
     "save": "Save",
     "cancel": "Cancel",
@@ -73,7 +73,7 @@
     "audit": "Audit Log",
     "users": "Users",
     "newOrderCTA": "New Order",
-    "brandTag": "4 SUSHI BRANDS · DARK KITCHEN",
+    "brandTag": "OPERATIONS & ORDER CONTROL",
     "mobileMenu": "Main Menu",
     "userProfile": "User Profile",
     "openNavigation": "Open navigation",
@@ -199,8 +199,7 @@
     "driverTypes": {
       "OWN": "Own Fleet",
       "APP": "App Fleet",
-      "EXTERNAL": "External Courier",
-      "PICKUP": "Customer Pickup"
+      "EXTERNAL": "External Courier"
     },
     "liveDashboard": "Live Orders Dashboard",
     "dashboardSubtitle": "Real-time order tracking and status management",
@@ -376,11 +375,15 @@
       "createdSuccess": "Delivery driver created successfully",
       "updatedSuccess": "Delivery driver updated successfully",
       "types": {
+        "title": "Quick Delivery Type",
         "OWN": "Own Fleet",
         "APP": "App Fleet",
         "EXTERNAL": "External Courier",
-        "PICKUP": "Customer Pickup"
+        "appDesc": "Platform Driver (Talabat / Elmenus)",
+        "externalDesc": "External Shipping Company"
       },
+      "noOwnDrivers": "No restaurant drivers registered",
+      "nameOptional": "Optional",
       "filterAllTypes": "All Driver Types"
     },
     "status": {
@@ -686,7 +689,63 @@
       "menuDesc": "Manage sushi categories and dishes"
     },
     "brandsTitle": "Sushi Brands Portfolio",
-    "platformsTitle": "Connected Platforms"
+    "platformsTitle": "Connected Platforms",
+    "cashier": {
+      "title": "Cashier Express Dashboard",
+      "subtitle": "Record orders, track shift progress, and monitor kitchen prep pipeline",
+      "myShift": "Your Current Shift",
+      "kpi": {
+        "shiftOrders": "Shift Orders",
+        "shiftOrdersDesc": "Total orders entered in this shift",
+        "delivered": "Delivered",
+        "deliveredDesc": "Successfully completed orders",
+        "shiftCash": "Vault Cash",
+        "shiftCashDesc": "Cash collected in cash drawer",
+        "expenses": "Shift Expenses",
+        "expensesDesc": "Expenses logged during shift"
+      },
+      "pipeline": "Sushi Prep & Dispatch Pipeline",
+      "recentOrders": "Recent Shift Orders"
+    },
+    "manager": {
+      "title": "Operations Manager Hub",
+      "subtitle": "Monitor order flow across channels, kitchen pipeline, and fleet dispatch",
+      "allShifts": "Active Shift Monitoring",
+      "kpi": {
+        "activeOrders": "Active Orders",
+        "activeOrdersDesc": "In preparation or out for delivery",
+        "revenue": "Today's Gross Sales",
+        "revenueDesc": "All platform orders today",
+        "delivered": "Completed Orders",
+        "deliveredDesc": "Successfully delivered today",
+        "expenses": "Total Expenses",
+        "expensesDesc": "Operating expenses logged today"
+      },
+      "brandsOverview": "Brand Orders Breakdown",
+      "platformsOverview": "Delivery Platforms Performance",
+      "recentOrders": "Live Orders Log"
+    },
+    "owner": {
+      "title": "Executive Owner Overview",
+      "subtitle": "Sushi Flower operational health, business intelligence, and strategic KPIs",
+      "vsYesterday": "vs. Yesterday",
+      "noYesterdayData": "No data for yesterday",
+      "kpi": {
+        "todayRevenue": "Today's Net Revenue",
+        "todayRevenueDesc": "Compared to yesterday's revenue",
+        "todayOrders": "Today's Total Orders",
+        "todayOrdersDesc": "Compared to yesterday's volume",
+        "cancelRate": "Cancellation Rate",
+        "cancelRateDesc": "Compared to yesterday's rate",
+        "activeTeam": "Active Team Members",
+        "activeTeamDesc": "Cashiers, managers, and fleet drivers"
+      },
+      "brandShare": "Brand Share of Today's Volume",
+      "platformShare": "Platform Share of Today's Volume",
+      "activeDrivers": "Active Couriers",
+      "activeUsers": "Active Users",
+      "recentOrders": "Live Real-Time Activity"
+    }
   },
   "reports": {
     "title": "Reports & Analytics",
@@ -798,6 +857,84 @@
         "revenue": "Total Revenue",
         "empty": "No products sold in this range."
       }
+    }
+  },
+  "users": {
+    "title": "User Management & Permissions",
+    "subtitle": "Manage team accounts, assign roles and access permissions, and control account status",
+    "addUser": "Add New User",
+    "editUser": "Edit User Details",
+    "refresh": "Refresh",
+    "searchPlaceholder": "Search by name or email...",
+    "stats": {
+      "total": "Total Accounts",
+      "active": "Active Accounts",
+      "owners": "Owners",
+      "managers": "Managers",
+      "cashiers": "Cashiers"
+    },
+    "filters": {
+      "allRoles": "All Roles",
+      "allStatuses": "All Statuses",
+      "activeOnly": "Active Only",
+      "inactiveOnly": "Inactive Only"
+    },
+    "table": {
+      "user": "User",
+      "role": "Role & Permissions",
+      "status": "Account Status",
+      "createdAt": "Registration Date",
+      "actions": "Actions",
+      "active": "Active",
+      "inactive": "Inactive",
+      "reactivate": "Reactivate",
+      "empty": "No users found matching the search criteria."
+    },
+    "dialog": {
+      "addTitle": "Add New User",
+      "editTitle": "Edit User Account",
+      "name": "Full Name",
+      "namePlaceholder": "e.g. Ahmed Mahmoud",
+      "email": "Email Address",
+      "emailPlaceholder": "example@sushikitchen.com",
+      "role": "System Role & Permissions",
+      "roleDescriptions": {
+        "OWNER": "Full control over system, reports, finances, and team user management",
+        "MANAGER": "Manage menu, delivery, approve discount requests, and view analytics",
+        "CASHIER": "Create orders, log operating expenses, and close daily cash shifts"
+      },
+      "status": "Account Status",
+      "activeDesc": "Account is active and can sign in to the platform",
+      "inactiveDesc": "Account is deactivated and access is revoked",
+      "save": "Save Changes",
+      "create": "Create User",
+      "cancel": "Cancel",
+      "saving": "Saving...",
+      "tempPasswordTitle": "User Account Created Successfully",
+      "tempPasswordDesc": "Save the temporary password and share it with the employee to sign in. It will not be shown again.",
+      "reactivateTitle": "User Account Reactivated Successfully",
+      "reactivateDesc": "Account is now active and a new temporary password has been generated. Share it with the employee to sign in.",
+      "copyPassword": "Copy Password",
+      "copied": "Copied!",
+      "confirmDone": "Done, Close Window"
+    },
+    "deleteConfirm": {
+      "title": "Confirm Delete User Account",
+      "desc": "Are you sure you want to delete {name}'s account? Their authentication access will be revoked and they will not be able to log in unless an Owner or Manager re-adds them.",
+      "confirm": "Yes, Delete Account",
+      "cancel": "Cancel",
+      "deleting": "Deleting..."
+    },
+    "toast": {
+      "created": "User created successfully",
+      "updated": "User details updated successfully",
+      "deleted": "User account deleted successfully",
+      "reactivated": "User account reactivated and new credentials generated successfully",
+      "statusChanged": "Account status updated successfully",
+      "cannotDeactivateSelf": "You cannot deactivate your own account or demote your Owner role",
+      "cannotDeleteSelf": "You cannot delete your own account",
+      "forbiddenDelete": "You do not have permission to delete this user",
+      "error": "An error occurred while processing the request"
     }
   }
 }
