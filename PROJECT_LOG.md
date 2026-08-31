@@ -10,6 +10,17 @@
 |---|---|---|
 | القائمة النهائية للمنصات | ✅ حُسمت (Talabat, InstaShop, Harry App, Elmenus, Facebook, Phone) | Platform seed & Visual Tokens |
 
+## [2026-08-31] إصلاح مفتاح ترجمة هاتف العميل في معاينة الإيصال (Fix missing orders.phone i18n key)
+**النوع:** Bug Fix (TDD)
+**اللي اتعمل:**
+- حل خطأ `MISSING_MESSAGE: Could not resolve orders.phone in messages for locale ar` في مكوّن `receipt-ticket-preview.tsx`.
+- إضافة مفتاح `"phone": "رقم الهاتف"` في `src/messages/ar.json` و`"phone": "Phone"` في `src/messages/en.json` تحت مساحة الأسماء `"orders"`.
+- اتباع دورة TDD كاملة: كتابة اختبار فحص مفاتيح الترجمة في `tests/e2e/tier3-cross-feature.test.ts` (Red ➔ Green).
+- **بوابات الجودة:** اجتياز `npm run typecheck` (0 أخطاء)، واجتياز `npm run test:e2e` بنجاح 100% (192/192 اختبار).
+**الملفات المتأثرة:** `src/messages/ar.json`, `src/messages/en.json`, `tests/e2e/tier3-cross-feature.test.ts`, `PROJECT_LOG.md`
+
+---
+
 ## [2026-08-30] تخصيص لوحة التحكم الرئيسية حسب الدور والصلاحيات (Role-Based Customized Dashboard)
 **النوع:** Feature & UI/UX Architecture
 **اللي اتعمل:**

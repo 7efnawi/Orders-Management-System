@@ -89,6 +89,7 @@
     "externalId": "رقم الأوردر الخارجي (التطبيق)",
     "externalIdPlaceholder": "مثال: #TAL-9823",
     "customer": "العميل",
+    "phone": "رقم الهاتف",
     "customerLookup": "بحث برقم الهاتف",
     "phonePlaceholder": "أدخل رقم الهاتف (مثال: 01012345678)",
     "customerName": "اسم العميل",

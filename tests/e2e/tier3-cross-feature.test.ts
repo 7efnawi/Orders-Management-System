@@ -1,4 +1,5 @@
 import assert from "node:assert";
+import fs from "node:fs";
 import { TestRunner } from "../helpers/test-runner";
 import {
   getBrandToken,
@@ -84,6 +85,16 @@ export async function runTier3Tests(): Promise<TestRunner> {
       assert.ok(receipt.formattedLines.some((l) => l.includes("556.00")));
     });
   }
+
+  await runner.test("C2.[i18n Keys]: Verify orders.phone and receipt customer keys exist in ar.json and en.json", () => {
+    const ar = JSON.parse(fs.readFileSync("src/messages/ar.json", "utf-8"));
+    const en = JSON.parse(fs.readFileSync("src/messages/en.json", "utf-8"));
+
+    assert.ok(ar.orders.phone, "orders.phone must exist in ar.json");
+    assert.ok(en.orders.phone, "orders.phone must exist in en.json");
+    assert.ok(ar.orders.customer, "orders.customer must exist in ar.json");
+    assert.ok(en.orders.customer, "orders.customer must exist in en.json");
+  });
 
   // ═══════════════════════════════════════════════════════════════════════════
   // COMBINATION 3: Orders View Switcher × Brand/Platform Filter Retention

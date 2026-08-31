@@ -89,6 +89,7 @@
     "externalId": "External Order ID (App)",
     "externalIdPlaceholder": "e.g. #TAL-9823",
     "customer": "Customer",
+    "phone": "Phone",
     "customerLookup": "Phone lookup",
     "phonePlaceholder": "Enter phone number (e.g. 01012345678)",
     "customerName": "Customer Name",
