@@ -86,7 +86,7 @@ export async function runTier3Tests(): Promise<TestRunner> {
     });
   }
 
-  await runner.test("C2.[i18n Keys]: Verify orders.phone and receipt customer keys exist in ar.json and en.json", () => {
+  await runner.test("C2.[i18n Keys]: Verify orders.phone, closing.cashier and closing.notesPlaceholder keys exist in ar.json and en.json", () => {
     const ar = JSON.parse(fs.readFileSync("src/messages/ar.json", "utf-8"));
     const en = JSON.parse(fs.readFileSync("src/messages/en.json", "utf-8"));
 
@@ -94,6 +94,11 @@ export async function runTier3Tests(): Promise<TestRunner> {
     assert.ok(en.orders.phone, "orders.phone must exist in en.json");
     assert.ok(ar.orders.customer, "orders.customer must exist in ar.json");
     assert.ok(en.orders.customer, "orders.customer must exist in en.json");
+
+    assert.ok(ar.closing.cashier, "closing.cashier must exist in ar.json");
+    assert.ok(en.closing.cashier, "closing.cashier must exist in en.json");
+    assert.ok(ar.closing.notesPlaceholder, "closing.notesPlaceholder must exist in ar.json");
+    assert.ok(en.closing.notesPlaceholder, "closing.notesPlaceholder must exist in en.json");
   });
 
   // ═══════════════════════════════════════════════════════════════════════════
