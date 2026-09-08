@@ -10,6 +10,27 @@
 |---|---|---|
 | القائمة النهائية للمنصات | ✅ حُسمت (Talabat, InstaShop, Harry App, Elmenus, Facebook, Phone) | Platform seed & Visual Tokens |
 
+## [2026-09-09] إعادة تصميم رسم وترتيب أفضل الأصناف مبيعاً (Top Products Leaderboard & Chart Redesign)
+**النوع:** UI/UX Excellence & Data Visualization Redesign (TDD)
+**اللي اتعمل:**
+- حل جذري لمشكلة تداخل النصوص العربية مع أعمدة الرسم البياني (SVG RTL Overlap bug في مكتبة Recharts عند استخدام `layout="vertical"` داخل بيئة RTL):
+  - استبدال العرض القديم بـ **شريط الأداء التنفيذي (Executive Leaderboard)** كنمط افتراضي مطابق لأرقى لوحات بيانات الـ SaaS (Shopify/Stripe):
+    - صفوف بيانية عصرية مزودة بأوسمة المراكز الذهبية والفضية والبرونزية (`#1`, `#2`, `#3`) مع حلقات تمييز ناعمة.
+    - عرض الاسم العربي الكامل للصنف بوضوح تام دون أي اقتطاع قسري مع tooltip أصلي عند تمرير الماوس.
+    - إحصائيات دقيقة ومحاذاة في أقصى اليسار: عدد الطلبات، وصافي الإيراد بالجنيه المصري (`formatCurrency`)، وشارة كبسولة مدمجة للكمية المباعة (`15 قطعة`).
+    - مسارات تقدم انسيابية (Progress Tracks) بتدرج لوني جذاب `from-violet-600 via-purple-500 to-indigo-500` تتناسب بدقة مع حصة المنتج من المبيعات.
+    - تفاعل سلس عند التمرير (`hover:bg-muted/40`) دون حجب المحتوى أو تشويه المظهر.
+  - توفير محوّل أوضاع العرض (View Mode Switcher) في ترويسة البطاقة:
+    - خيار 1: "شريط الأداء" (Leaderboard — الافتراضي).
+    - خيار 2: "رسم بياني" (Upward Column Chart) بنمط أعمدة رأسية صاعدة (`layout="horizontal"`) تلغي نهائياً مشكلة تداخل النصوص في SVG تحت اتجاه RTL.
+  - إصلاح صندوق التلميحات (Tooltip): تصميم بنية Flex متوافقة مع `dir="rtl"` تمنع قلب اتجاه النقطتين الرأسيتين (`:`) وتضمن قراءة احترافية للأرقام والمسميات.
+- إضافة مفاتيح الترجمة المعيارية في `src/messages/ar.json` و `src/messages/en.json` (`leaderboard`, `barChart`, `item`, `soldCount`).
+- إضافة اختبار TDD المعياري `C7.11` في `tests/e2e/tier3-cross-feature.test.ts`.
+- **بوابات الجودة:** اجتياز `npm run typecheck` (0 أخطاء)، واجتياز `npm run test:e2e` بنجاح 100% (203/203 اختبار).
+**الملفات المتأثرة:** `src/components/reports/charts/top-products-chart.tsx`, `src/messages/ar.json`, `src/messages/en.json`, `tests/e2e/tier3-cross-feature.test.ts`, `PROJECT_LOG.md`
+
+---
+
 ## [2026-09-08] محرك الطباعة والـ PDF المعزول المثالي (Task 3: Perfect Isolated Iframe Print Engine for PDF Export)
 **النوع:** Core Feature & Printable Document Architecture (TDD)
 **اللي اتعمل:**

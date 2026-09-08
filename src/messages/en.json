@@ -797,6 +797,10 @@
       "quantity": "Quantity Sold",
       "sales": "Sales",
       "share": "Share",
+      "leaderboard": "Leaderboard",
+      "barChart": "Bar Chart",
+      "item": "pcs",
+      "soldCount": "pcs sold",
       "noChartData": "No sufficient data available to render charts in this date range."
     },
     "filters": {

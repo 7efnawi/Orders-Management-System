@@ -405,5 +405,16 @@ export async function runTier3Tests(): Promise<TestRunner> {
     assert.ok(html.includes("page-break-inside"), "Should configure page break rules");
   });
 
+  await runner.test("C7.11: Top products leaderboard translation keys exist in ar.json and en.json", async () => {
+    const fs = await import("fs");
+    const ar = JSON.parse(fs.readFileSync("src/messages/ar.json", "utf-8"));
+    const en = JSON.parse(fs.readFileSync("src/messages/en.json", "utf-8"));
+
+    assert.ok(ar.reports.charts?.leaderboard, "ar.reports.charts.leaderboard must exist");
+    assert.ok(en.reports.charts?.leaderboard, "en.reports.charts.leaderboard must exist");
+    assert.ok(ar.reports.charts?.barChart, "ar.reports.charts.barChart must exist");
+    assert.ok(en.reports.charts?.barChart, "en.reports.charts.barChart must exist");
+  });
+
   return runner;
 }
