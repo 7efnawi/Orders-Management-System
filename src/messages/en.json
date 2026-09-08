@@ -807,6 +807,10 @@
       "platform": "Platform",
       "allBrands": "All Brands",
       "allPlatforms": "All Platforms",
+      "exportCsv": "Export to Excel CSV",
+      "exportCsvShort": "Excel",
+      "printPdf": "Print or Save as PDF",
+      "printPdfShort": "PDF",
       "quick": {
         "today": "Today",
         "yesterday": "Yesterday",
@@ -819,46 +823,104 @@
       "loading": "Loading analytics..."
     },
     "tabs": {
-      "daily": "Daily Breakdown",
-      "matrix": "Platforms × Brands Matrix",
-      "drivers": "Courier Cash Collection",
-      "products": "Top 10 Selling Products"
+      "overview": "Overview",
+      "sales": "Sales",
+      "products": "Products",
+      "peakHours": "Peak Hours",
+      "orderSources": "Order Sources",
+      "payment": "Payment",
+      "employees": "Employees"
     },
-    "tables": {
-      "daily": {
+    "refreshSuccess": "Report data refreshed successfully",
+    "exportSuccess": "File exported successfully",
+    "errors": {
+      "invalidDateRange": "Start date must be on or before end date",
+      "generic": "An error occurred while loading data"
+    },
+    "sales": {
+      "grossSales": "Gross Sales",
+      "totalDiscounts": "Total Discounts",
+      "deliveryFees": "Delivery Fees",
+      "netRevenue": "Net Revenue",
+      "table": {
         "date": "Date",
-        "totalOrders": "Orders",
+        "orders": "Orders",
         "delivered": "Delivered",
         "cancelled": "Cancelled",
         "sales": "Sales",
         "deliveryFees": "Delivery Fees",
         "expenses": "Expenses",
         "net": "Net",
-        "empty": "No data recorded in this date range."
-      },
-      "matrix": {
-        "platform": "Platform",
-        "brand": "Brand",
-        "orders": "Order Count",
-        "sales": "Total Sales",
-        "empty": "No sales recorded in this range."
-      },
-      "drivers": {
-        "driver": "Courier",
-        "type": "Fleet",
-        "totalOrders": "Total Orders",
-        "cashOrders": "Cash Orders",
-        "cashCollected": "Cash Collected",
-        "noDriver": "Unassigned / Direct Pickup",
-        "empty": "No courier data in this range."
-      },
-      "products": {
+        "empty": "No data for the selected period"
+      }
+    },
+    "products": {
+      "table": {
         "rank": "#",
         "product": "Product",
-        "quantity": "Quantity Sold",
-        "ordersCount": "Orders Count",
-        "revenue": "Total Revenue",
-        "empty": "No products sold in this range."
+        "qty": "Qty Sold",
+        "orders": "Orders",
+        "revenue": "Revenue",
+        "share": "Share",
+        "empty": "No products sold in this period"
+      }
+    },
+    "peakHours": {
+      "title": "Peak Hours Analysis",
+      "peakAt": "Peak at",
+      "orders": "orders",
+      "loading": "Loading peak hour data...",
+      "noData": "No data available in this time range",
+      "low": "Low",
+      "high": "High",
+      "hourlyDistribution": "Hourly Order Distribution (24h)"
+    },
+    "orderSources": {
+      "table": {
+        "platform": "Platform",
+        "brand": "Brand",
+        "orders": "Orders",
+        "revenue": "Revenue",
+        "empty": "No data recorded in this range"
+      }
+    },
+    "payment": {
+      "chartTitle": "Payment Methods Distribution",
+      "cash": "Cash",
+      "visa": "Visa / Card",
+      "online": "Online",
+      "revenue": "Revenue Collected",
+      "noData": "No payment data available",
+      "table": {
+        "method": "Payment Method",
+        "orders": "Orders",
+        "revenue": "Revenue",
+        "total": "Total"
+      }
+    },
+    "employees": {
+      "teamPerformance": "Team Performance",
+      "discountsLog": "Discounts Log",
+      "loading": "Loading employee data...",
+      "noData": "No employee data available",
+      "table": {
+        "cashier": "Cashier",
+        "totalOrders": "Total Orders",
+        "cancelled": "Cancelled",
+        "revenue": "Revenue",
+        "aov": "Avg. Order Value",
+        "discountsApproved": "Discounts Approved",
+        "empty": "No employee data for this period"
+      },
+      "disc": {
+        "orderNum": "Order #",
+        "cashier": "Cashier",
+        "approver": "Approved By",
+        "reason": "Reason",
+        "status": "Status",
+        "value": "Discount Value",
+        "date": "Date",
+        "empty": "No discounts recorded in this period"
       }
     }
   },

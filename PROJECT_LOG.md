@@ -10,6 +10,20 @@
 |---|---|---|
 | القائمة النهائية للمنصات | ✅ حُسمت (Talabat, InstaShop, Harry App, Elmenus, Facebook, Phone) | Platform seed & Visual Tokens |
 
+## [2026-09-08] تحديث مفاتيح الترجمة العربية والإنجليزية واختبارات التحقق (Task 8: Reports Translations & i18n E2E Tests)
+**النوع:** Localization & i18n (TDD)
+**اللي اتعمل:**
+- تحديث شامل لمساحة أسماء التقارير في `src/messages/ar.json` و`src/messages/en.json`:
+  - إضافة أسماء ومسميات التبويبات السبعة: `overview`, `sales`, `products`, `peakHours`, `orderSources`, `payment`, `employees`.
+  - إضافة مفاتيح أزرار التصدير لـ Excel والطباعة لـ PDF ورسائل النجاح والخطأ.
+  - إضافة نصوص ومسميات جداول وتحليلات المبيعات، المنتجات، ساعات الذروة، مصادر الطلبات، والمدفوعات.
+  - إضافة نصوص ومسميات تقارير أداء الكاشيرية وسجل الخصومات (العادية والمعتمدة والمرفوضة).
+- تحديث اختبارات `C2.[i18n Keys]` في `tests/e2e/tier3-cross-feature.test.ts` لتغطية جميع المفاتيح الجديدة وضمان عدم حدوث أي استثناءات `MISSING_MESSAGE`.
+- **بوابات الجودة:** اجتياز `npm run typecheck` (0 أخطاء)، واجتياز `npm run test:e2e` بنجاح 100% (197/197 اختبار).
+**الملفات المتأثرة:** `src/messages/ar.json`, `src/messages/en.json`, `tests/e2e/tier3-cross-feature.test.ts`, `PROJECT_LOG.md`
+
+---
+
 ## [2026-09-08] إعادة هيكلة الحاوية الرئيسية لصفحة التقارير وميزة التصدير (Task 7: ReportsClient Rewrite & Export Engine)
 **النوع:** Frontend Architecture & UI/UX Redesign
 **اللي اتعمل:**

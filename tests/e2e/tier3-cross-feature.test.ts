@@ -99,6 +99,27 @@ export async function runTier3Tests(): Promise<TestRunner> {
     assert.ok(en.closing.cashier, "closing.cashier must exist in en.json");
     assert.ok(ar.closing.notesPlaceholder, "closing.notesPlaceholder must exist in ar.json");
     assert.ok(en.closing.notesPlaceholder, "closing.notesPlaceholder must exist in en.json");
+
+    // Reports new tabs and sections
+    assert.ok(ar.reports.tabs?.overview, "reports.tabs.overview must exist in ar.json");
+    assert.ok(en.reports.tabs?.overview, "reports.tabs.overview must exist in en.json");
+    assert.ok(ar.reports.tabs?.sales, "reports.tabs.sales must exist in ar.json");
+    assert.ok(en.reports.tabs?.sales, "reports.tabs.sales must exist in en.json");
+    assert.ok(ar.reports.tabs?.products, "reports.tabs.products must exist in ar.json");
+    assert.ok(en.reports.tabs?.products, "reports.tabs.products must exist in en.json");
+    assert.ok(ar.reports.tabs?.peakHours, "reports.tabs.peakHours must exist in ar.json");
+    assert.ok(en.reports.tabs?.peakHours, "reports.tabs.peakHours must exist in en.json");
+    assert.ok(ar.reports.tabs?.orderSources, "reports.tabs.orderSources must exist in ar.json");
+    assert.ok(en.reports.tabs?.orderSources, "reports.tabs.orderSources must exist in en.json");
+    assert.ok(ar.reports.tabs?.payment, "reports.tabs.payment must exist in ar.json");
+    assert.ok(en.reports.tabs?.payment, "reports.tabs.payment must exist in en.json");
+    assert.ok(ar.reports.tabs?.employees, "reports.tabs.employees must exist in ar.json");
+    assert.ok(en.reports.tabs?.employees, "reports.tabs.employees must exist in en.json");
+
+    assert.ok(ar.reports.peakHours?.title, "reports.peakHours.title must exist in ar.json");
+    assert.ok(en.reports.peakHours?.title, "reports.peakHours.title must exist in en.json");
+    assert.ok(ar.reports.employees?.teamPerformance, "reports.employees.teamPerformance must exist in ar.json");
+    assert.ok(en.reports.employees?.teamPerformance, "reports.employees.teamPerformance must exist in en.json");
   });
 
   // ═══════════════════════════════════════════════════════════════════════════
