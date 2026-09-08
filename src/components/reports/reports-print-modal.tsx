@@ -17,6 +17,11 @@ import type {
   EmployeesPayload,
 } from "@/services/reports";
 import type { ReportsFilterState } from "./reports-filter-bar";
+import {
+  generatePrintableReportHtml,
+  printHtmlViaIframe,
+  generateReportTableHtml,
+} from "@/lib/printReport";
 
 type TabId =
   | "overview"
@@ -84,7 +89,33 @@ export function ReportsPrintModal({
   };
 
   const handlePrint = () => {
-    window.print();
+    const tableHtml = generateReportTableHtml(activeTab, {
+      mainData,
+      peakData,
+      empData,
+      formatCurrency,
+    });
+
+    const printableHtml = generatePrintableReportHtml({
+      title: getReportTitle(),
+      dateRange: {
+        startDate: filter.startDate,
+        endDate: filter.endDate,
+      },
+      brandName: brandName || tModal("allBrands"),
+      platformName: platformName || tModal("allPlatforms"),
+      kpis: [
+        { label: tModal("kpiRevenue"), value: formatCurrency(mainData.summary.netRevenue) },
+        { label: tModal("kpiOrders"), value: `${mainData.summary.totalOrders} طلب` },
+        { label: tModal("kpiExpenses"), value: formatCurrency(mainData.summary.totalExpenses) },
+        { label: tModal("kpiProfit"), value: formatCurrency(mainData.summary.netProfit) },
+      ],
+      tableHtml,
+      generatedBy: tModal("systemAdmin"),
+      timestamp: formattedTimestamp,
+    });
+
+    printHtmlViaIframe(printableHtml);
   };
 
   return (
@@ -93,40 +124,6 @@ export function ReportsPrintModal({
         className="max-w-5xl max-h-[92vh] flex flex-col p-0 gap-0 overflow-hidden bg-background text-foreground border-border/80 shadow-2xl"
         showCloseButton={false}
       >
-        {/* Print Stylesheet Injection */}
-        <style dangerouslySetInnerHTML={{ __html: `
-          @media print {
-            body {
-              background: #ffffff !important;
-              color: #000000 !important;
-              font-family: 'Segoe UI', 'Cairo', Tahoma, sans-serif !important;
-            }
-            body * {
-              visibility: hidden !important;
-            }
-            #printable-report-area,
-            #printable-report-area * {
-              visibility: visible !important;
-            }
-            #printable-report-area {
-              position: fixed !important;
-              left: 0 !important;
-              top: 0 !important;
-              width: 100% !important;
-              margin: 0 !important;
-              padding: 10mm 15mm !important;
-              background: #ffffff !important;
-              color: #0f172a !important;
-              box-shadow: none !important;
-              border: none !important;
-              z-index: 99999 !important;
-            }
-            @page {
-              size: A4 portrait;
-              margin: 10mm;
-            }
-          }
-        `}} />
 
         {/* Modal Top Action Bar (Hidden in Print) */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-border/60 bg-muted/30">

@@ -10,6 +10,22 @@
 |---|---|---|
 | القائمة النهائية للمنصات | ✅ حُسمت (Talabat, InstaShop, Harry App, Elmenus, Facebook, Phone) | Platform seed & Visual Tokens |
 
+## [2026-09-08] محرك الطباعة والـ PDF المعزول المثالي (Task 3: Perfect Isolated Iframe Print Engine for PDF Export)
+**النوع:** Core Feature & Printable Document Architecture (TDD)
+**اللي اتعمل:**
+- إنشاء محرك الطباعة المستقل `src/lib/printReport.ts`:
+  - دالة `generatePrintableReportHtml`: توليد مستند HTML تنفيذي متكامل بحجم A4 قياسي (`@page { size: A4 portrait; margin: 12mm 15mm; }`) يدعم خط Cairo العربي، وترويسة رسمية معتمدة لـ Sushi Flower، وشبكة بيانات الفلاتر، و 4 بطاقات إحصائية للمؤشرات الرئيسية، وجدول تفصيلي مع قواعد طباعة صارمة (`tr { page-break-inside: avoid; }`) تمنع قص الجداول عبر الصفحات المتعددة، ومساحة توقيعات للإدارة واعتماد مالي، وإشعار سرية في التذييل.
+  - دالة `generateReportTableHtml`: بناء الجداول المتخصصة لكل تبويب (المبيعات، المنتجات، طرق الدفع، مصادر الطلبات، الموظفون، ساعات الذروة، النظرة العامة) دون أي منطق أعمال في واجهة المستخدم (Directives §2).
+  - دالة `printHtmlViaIframe`: تشغيل الطباعة أو التصدير لملف PDF عبر إنشاء عنصر Iframe خفي ومؤقت، وكتابة المستند المعزول داخله واستدعاء `iframe.contentWindow.print()`، ثم تنظيف الـ iframe تلقائياً بعد اكتمال الطباعة. هذا يعزل التقرير تماماً عن قيود نافذة الـ Dialog وعن `overflow: hidden` و `position: fixed` التي كانت تتسبب في قص وتلف المستند.
+- تحديث `src/components/reports/reports-print-modal.tsx`:
+  - ربط زر الطباعة بدالة `handlePrint` التي تستدعي `printHtmlViaIframe` مع توليد المستند بالكامل.
+  - إزالة قواعد `@media print` المشوهة السابقة والاحتفاظ بالمعاينة البصرية داخل المودال مطابقة تماماً لمخرجات الـ PDF.
+- إضافة اختبار TDD `C7.10` في `tests/e2e/tier3-cross-feature.test.ts`.
+- **بوابات الجودة:** اجتياز `npm run typecheck` (0 أخطاء)، واجتياز `npm run test:e2e` بنجاح 100% (202/202 اختبار).
+**الملفات المتأثرة:** `src/lib/printReport.ts`, `src/components/reports/reports-print-modal.tsx`, `tests/e2e/tier3-cross-feature.test.ts`, `PROJECT_LOG.md`
+
+---
+
 ## [2026-09-08] إصلاح اقتطاع أسماء المنتجات وتوسيع المحور Y في الرسم البياني لأعلى الأصناف (Task 2: Fix Top Products Chart Labels Truncation & Expand Y-Axis Width)
 **النوع:** UI/UX Polish & Data Visualization
 **اللي اتعمل:**

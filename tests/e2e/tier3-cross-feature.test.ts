@@ -387,5 +387,23 @@ export async function runTier3Tests(): Promise<TestRunner> {
     assert.ok(!result.some((r) => r.platformName.includes("Phase 5")), "No Phase 5 platform");
   });
 
+  await runner.test("C7.10: generatePrintableReportHtml produces complete clean A4 HTML without modal artifacts", async () => {
+    const { generatePrintableReportHtml } = await import("../../src/lib/printReport");
+    const html = generatePrintableReportHtml({
+      title: "تقرير المبيعات والتحليلات اليومية",
+      dateRange: { startDate: "2026-09-01", endDate: "2026-09-08" },
+      kpis: [
+        { label: "صافي الإيرادات", value: "25,000 ج.م" },
+        { label: "إجمالي الطلبات", value: 140 },
+      ],
+      tableHtml: "<table><tr><td>Test Table</td></tr></table>",
+    });
+    assert.ok(html.includes("<!DOCTYPE html>"), "Should contain DOCTYPE");
+    assert.ok(html.includes("@page { size: A4 portrait;"), "Should define A4 page size");
+    assert.ok(html.includes("Sushi Flower"), "Should include brand header");
+    assert.ok(html.includes("25,000 ج.م"), "Should include KPI value");
+    assert.ok(html.includes("page-break-inside"), "Should configure page break rules");
+  });
+
   return runner;
 }
