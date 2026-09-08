@@ -10,6 +10,18 @@
 |---|---|---|
 | القائمة النهائية للمنصات | ✅ حُسمت (Talabat, InstaShop, Harry App, Elmenus, Facebook, Phone) | Platform seed & Visual Tokens |
 
+## [2026-09-08] شريط فلاتر التقارير الموحد وتصدير البيانات (Task 3: Shared Reports Filter Bar & Export)
+**النوع:** Frontend Feature & UI Components
+**اللي اتعمل:**
+- إنشاء مكوّن `src/components/reports/reports-filter-bar.tsx` المشترك:
+  - تصفية التاريخ (من/إلى) مع أزرار الفترات السريعة (اليوم، أمس، آخر 7 أيام، هذا الشهر، الشهر السابق).
+  - تصفية حسب البراند والمنصة.
+  - دعم تصدير ملفات Excel/CSV والطباعة إلى PDF عبر زرين مخصصين بدعم الوضع الطباعي `print:hidden`.
+- **بوابات الجودة:** اجتياز `npm run typecheck` (0 أخطاء)، واجتياز `npm run test:e2e` بنجاح 100% (197/197 اختبار).
+**الملفات المتأثرة:** `src/components/reports/reports-filter-bar.tsx`, `PROJECT_LOG.md`
+
+---
+
 ## [2026-09-08] خدمات ونقاط نهاية تقارير ساعات الذروة والموظفين ومقارنة الفترات (Task 2: Reports Services & API Routes)
 **النوع:** Backend Feature & API Design
 **اللي اتعمل:**
