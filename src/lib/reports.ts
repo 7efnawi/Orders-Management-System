@@ -88,6 +88,55 @@ export interface TopProductRow {
   ordersCount: number;
 }
 
+export interface HourlyRow {
+  hour: number;
+  orders: number;
+  revenue: number;
+}
+
+export interface DayHourCell {
+  day: number;
+  hour: number;
+  orders: number;
+}
+
+export interface ReportOrderInputExtended extends ReportOrderInput {
+  cashierId?: string | null;
+  cashierName?: string | null;
+  approverName?: string | null;
+  orderNumber?: string | null;
+  discountReason?: string | null;
+}
+
+export interface EmployeeReportRow {
+  cashierId: string;
+  cashierName: string;
+  totalOrders: number;
+  cancelledOrders: number;
+  totalRevenue: number;
+  avgOrderValue: number;
+  discountsApproved: number;
+  discountsApprovedValue: number;
+}
+
+export interface DiscountRow {
+  orderId: string;
+  orderNumber: string;
+  cashierName: string;
+  approverName: string | null;
+  discountValue: number;
+  discountReason: string | null;
+  discountStatus: string;
+  orderDate: string;
+}
+
+export interface SalesComparison {
+  netRevenueDeltaPct: number;
+  ordersDeltaPct: number;
+  aovDeltaPct: number;
+  netProfitDeltaPct: number;
+}
+
 /** الخصم الفعلي المحسوب على الأوردر — المرفوض يعتبر صفر */
 function effectiveDiscount(order: ReportOrderInput): number {
   if (
@@ -400,3 +449,156 @@ export function calculateTopProducts(
     )
     .slice(0, Math.max(1, limit));
 }
+
+// ───────────── Peak Hours Engine ─────────────
+
+/**
+ * توزيع الطلبات على 24 ساعة — دائمًا 24 صف (الساعات الفارغة = 0)
+ * الأوردرات الملغاة مستبعدة
+ */
+export function buildHourlyBreakdown(
+  orders: ReportOrderInput[] = []
+): HourlyRow[] {
+  const agg = Array.from({ length: 24 }, () => ({ orders: 0, revenue: 0 }));
+
+  for (const order of orders) {
+    if (isCancelled(order)) continue;
+    const d = order.createdAt instanceof Date ? order.createdAt : new Date(order.createdAt);
+    const h = d.getHours();
+    agg[h].orders += 1;
+    agg[h].revenue += orderNetTotal(order);
+  }
+
+  return agg.map((cell, hour) => ({
+    hour,
+    orders: cell.orders,
+    revenue: roundCurrency(cell.revenue),
+  }));
+}
+
+/**
+ * مصفوفة 7 أيام × 24 ساعة = 168 خلية للـ Heatmap (day: 0=Sun … 6=Sat)
+ * الأوردرات الملغاة مستبعدة
+ */
+export function buildDayHourHeatmap(
+  orders: ReportOrderInput[] = []
+): DayHourCell[] {
+  const map = new Map<string, number>();
+
+  for (const order of orders) {
+    if (isCancelled(order)) continue;
+    const d = order.createdAt instanceof Date ? order.createdAt : new Date(order.createdAt);
+    const key = `${d.getDay()}_${d.getHours()}`;
+    map.set(key, (map.get(key) ?? 0) + 1);
+  }
+
+  const cells: DayHourCell[] = [];
+  for (let day = 0; day < 7; day++) {
+    for (let hour = 0; hour < 24; hour++) {
+      cells.push({ day, hour, orders: map.get(`${day}_${hour}`) ?? 0 });
+    }
+  }
+  return cells;
+}
+
+// ───────────── Employee Engine ─────────────
+
+/**
+ * إحصائيات كل كاشير: أوردراته، إلغاءاته، إيراداته، وخصوماته المعتمدة
+ */
+export function calculateEmployeeReport(
+  orders: ReportOrderInputExtended[] = []
+): EmployeeReportRow[] {
+  const map = new Map<string, EmployeeReportRow & { _revenue: number }>();
+
+  for (const order of orders) {
+    const key = order.cashierId ?? "__unknown__";
+    const row = map.get(key) ?? {
+      cashierId: order.cashierId ?? "",
+      cashierName: order.cashierName ?? "—",
+      totalOrders: 0,
+      cancelledOrders: 0,
+      totalRevenue: 0,
+      avgOrderValue: 0,
+      discountsApproved: 0,
+      discountsApprovedValue: 0,
+      _revenue: 0,
+    };
+    row.totalOrders += 1;
+    if (isCancelled(order)) {
+      row.cancelledOrders += 1;
+    } else {
+      row._revenue += orderNetTotal(order);
+      const ds = String(order.discountStatus ?? "").toUpperCase();
+      if (ds === "APPROVED") {
+        row.discountsApproved += 1;
+        row.discountsApprovedValue += Math.max(0, toNumber(order.discount));
+      }
+    }
+    map.set(key, row);
+  }
+
+  return Array.from(map.values())
+    .map(({ _revenue, ...row }) => {
+      const active = row.totalOrders - row.cancelledOrders;
+      const rev = roundCurrency(_revenue);
+      return {
+        ...row,
+        totalRevenue: rev,
+        avgOrderValue: active > 0 ? roundCurrency(rev / active) : 0,
+        discountsApprovedValue: roundCurrency(row.discountsApprovedValue),
+      };
+    })
+    .sort((a, b) => b.totalOrders - a.totalOrders || b.totalRevenue - a.totalRevenue);
+}
+
+/**
+ * استخراج صفوف الخصومات (APPROVED أو REJECTED) للتقرير المالي
+ */
+export function extractDiscountRows(
+  orders: ReportOrderInputExtended[] = []
+): DiscountRow[] {
+  const rows: DiscountRow[] = [];
+
+  for (const order of orders) {
+    const ds = String(order.discountStatus ?? "").toUpperCase();
+    if (!ds || ds === "NONE" || ds === "PENDING") continue;
+    rows.push({
+      orderId: order.id,
+      orderNumber: order.orderNumber ?? order.id.slice(-6),
+      cashierName: order.cashierName ?? "—",
+      approverName: order.approverName ?? null,
+      discountValue: Math.max(0, toNumber(order.discount)),
+      discountReason: order.discountReason ?? null,
+      discountStatus: ds,
+      orderDate: orderDateKey(order.createdAt),
+    });
+  }
+
+  return rows.sort((a, b) => b.orderDate.localeCompare(a.orderDate));
+}
+
+// ───────────── KPI Comparison Engine ─────────────
+
+function calcPctChange(curr: number, prev: number): number {
+  if (prev === 0) {
+    return curr > 0 ? 100 : 0;
+  }
+  return roundCurrency(((curr - prev) / prev) * 100);
+}
+
+/**
+ * حساب نسب التغير بين فترتين لبطاقات الـ KPI
+ */
+export function calculateSalesComparison(
+  current: { netRevenue: number; totalOrders: number; aov: number; netProfit: number },
+  previous: { netRevenue: number; totalOrders: number; aov: number; netProfit: number }
+): SalesComparison {
+  return {
+    netRevenueDeltaPct: calcPctChange(current.netRevenue, previous.netRevenue),
+    ordersDeltaPct: calcPctChange(current.totalOrders, previous.totalOrders),
+    aovDeltaPct: calcPctChange(current.aov, previous.aov),
+    netProfitDeltaPct: calcPctChange(current.netProfit, previous.netProfit),
+  };
+}
+

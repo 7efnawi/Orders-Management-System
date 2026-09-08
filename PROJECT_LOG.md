@@ -10,6 +10,21 @@
 |---|---|---|
 | القائمة النهائية للمنصات | ✅ حُسمت (Talabat, InstaShop, Harry App, Elmenus, Facebook, Phone) | Platform seed & Visual Tokens |
 
+## [2026-09-08] محرك تحليلات التقارير — ساعات الذروة، الموظفون، ومقارنة الفترات (Task 1: Reports Engine Extensions)
+**النوع:** Feature & Domain Modeling (TDD)
+**اللي اتعمل:**
+- إضافة دوال حسابية نقية (Pure Functions) في `src/lib/reports.ts`:
+  - `buildHourlyBreakdown`: توزيع الطلبات والإيراد على 24 ساعة (مع استبعاد الملغى).
+  - `buildDayHourHeatmap`: مصفوفة 7×24 (168 خلية) لتغذية Heatmap ساعات الذروة.
+  - `calculateEmployeeReport`: إحصائيات كل كاشير (الطلبات، الإلغاء، الإيرادات، AOV، الخصومات المعتمدة وقيمتها).
+  - `extractDiscountRows`: استخراج سجل الخصومات (APPROVED / REJECTED) مرتباً بالتاريخ.
+  - `calculateSalesComparison`: حساب نسب التغير بين فترتين لبطاقات الـ KPI (% deltas).
+- اتباع دورة TDD كاملة: إضافة اختبارات C7 في `tests/e2e/tier3-cross-feature.test.ts` واجتيازها بنجاح (197/197 اختبار).
+- **بوابات الجودة:** `npm run typecheck` (0 أخطاء)، `npm run test:e2e` (197/197 ناجح).
+**الملفات المتأثرة:** `src/lib/reports.ts`, `tests/e2e/tier3-cross-feature.test.ts`, `PROJECT_LOG.md`
+
+---
+
 ## [2026-08-31] إصلاح مفاتيح ترجمة إغلاق الشيفت (Fix missing closing.cashier & closing.notesPlaceholder i18n keys)
 **النوع:** Bug Fix (TDD)
 **اللي اتعمل:**

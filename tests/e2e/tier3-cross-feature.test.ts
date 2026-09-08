@@ -208,5 +208,94 @@ export async function runTier3Tests(): Promise<TestRunner> {
     }
   });
 
+  // ═══════════════════════════════════════════════════════════════════════════
+  // COMBINATION 7: Reports Engine — Hourly, Heatmap, Employee & Comparison
+  // ═══════════════════════════════════════════════════════════════════════════
+  runner.setContext("C7: Reports Engine Extensions", 3);
+
+  await runner.test("C7.1: buildHourlyBreakdown groups orders by hour, excludes cancelled, returns 24 rows", async () => {
+    const { buildHourlyBreakdown } = await import("../../src/lib/reports");
+    const orders = [
+      { id: "o1", status: "DELIVERED", paymentMethod: "CASH", subtotal: 100, createdAt: new Date("2026-09-08T09:30:00") },
+      { id: "o2", status: "DELIVERED", paymentMethod: "CASH", subtotal: 150, createdAt: new Date("2026-09-08T09:45:00") },
+      { id: "o3", status: "DELIVERED", paymentMethod: "VISA", subtotal: 200, createdAt: new Date("2026-09-08T14:00:00") },
+      { id: "o4", status: "CANCELLED", paymentMethod: "CASH", subtotal: 80,  createdAt: new Date("2026-09-08T09:00:00") },
+    ];
+    const result = buildHourlyBreakdown(orders as any);
+    assert.strictEqual(result.length, 24, "Must return exactly 24 hourly rows");
+    const h9 = result.find((r) => r.hour === 9)!;
+    assert.strictEqual(h9.orders, 2, "Hour 9: 2 non-cancelled orders");
+    assert.strictEqual(h9.revenue, 250, "Hour 9: revenue = 100 + 150");
+    const h14 = result.find((r) => r.hour === 14)!;
+    assert.strictEqual(h14.orders, 1);
+    assert.strictEqual(h14.revenue, 200);
+    assert.strictEqual(result.find((r) => r.hour === 0)!.orders, 0, "Empty hour returns 0 orders");
+  });
+
+  await runner.test("C7.2: buildDayHourHeatmap returns 7x24=168 cells with non-cancelled orders", async () => {
+    const { buildDayHourHeatmap } = await import("../../src/lib/reports");
+    // Date: 2026-09-08 is a Tuesday (day index 2)
+    const testDate = new Date("2026-09-08T15:00:00");
+    const orders = [
+      { id: "o1", status: "DELIVERED", paymentMethod: "CASH", subtotal: 100, createdAt: testDate },
+      { id: "o2", status: "CANCELLED", paymentMethod: "CASH", subtotal: 100, createdAt: testDate },
+    ];
+    const result = buildDayHourHeatmap(orders as any);
+    assert.strictEqual(result.length, 168, "Must return 168 cells for 7 days x 24 hours");
+    const cell = result.find((c) => c.day === testDate.getDay() && c.hour === 15)!;
+    assert.strictEqual(cell.orders, 1, "Should count 1 delivered order, excluding cancelled");
+  });
+
+  await runner.test("C7.3: calculateEmployeeReport aggregates per-cashier metrics correctly", async () => {
+    const { calculateEmployeeReport } = await import("../../src/lib/reports");
+    const orders = [
+      { id: "o1", status: "DELIVERED", paymentMethod: "CASH", subtotal: 200, discount: 0, discountStatus: "NONE", deliveryFee: 0, createdAt: new Date(), cashierId: "c1", cashierName: "أحمد" },
+      { id: "o2", status: "CANCELLED", paymentMethod: "CASH", subtotal: 100, discount: 0, discountStatus: "NONE", deliveryFee: 0, createdAt: new Date(), cashierId: "c1", cashierName: "أحمد" },
+      { id: "o3", status: "DELIVERED", paymentMethod: "VISA", subtotal: 300, discount: 30, discountStatus: "APPROVED", deliveryFee: 0, createdAt: new Date(), cashierId: "c2", cashierName: "سارة" },
+    ];
+    const result = calculateEmployeeReport(orders as any);
+    const ahmed = result.find((r) => r.cashierId === "c1")!;
+    assert.strictEqual(ahmed.totalOrders, 2);
+    assert.strictEqual(ahmed.cancelledOrders, 1);
+    assert.strictEqual(ahmed.totalRevenue, 200);
+    const sara = result.find((r) => r.cashierId === "c2")!;
+    assert.strictEqual(sara.discountsApproved, 1);
+    assert.strictEqual(sara.discountsApprovedValue, 30);
+  });
+
+  await runner.test("C7.4: extractDiscountRows returns only APPROVED/REJECTED rows sorted by date desc", async () => {
+    const { extractDiscountRows } = await import("../../src/lib/reports");
+    const orders = [
+      { id: "o1", status: "DELIVERED", paymentMethod: "CASH", subtotal: 200, discount: 50, discountStatus: "APPROVED", discountReason: "VIP", createdAt: new Date("2026-09-08"), cashierName: "أحمد", approverName: "مدير", orderNumber: "ORD-001" },
+      { id: "o2", status: "DELIVERED", paymentMethod: "CASH", subtotal: 100, discount: 0,  discountStatus: "NONE",     discountReason: null,  createdAt: new Date("2026-09-07"), cashierName: "أحمد", approverName: null,   orderNumber: "ORD-002" },
+      { id: "o3", status: "DELIVERED", paymentMethod: "CASH", subtotal: 80,  discount: 20, discountStatus: "REJECTED", discountReason: "غير مبرر", createdAt: new Date("2026-09-06"), cashierName: "سارة", approverName: null, orderNumber: "ORD-003" },
+    ];
+    const result = extractDiscountRows(orders as any);
+    assert.strictEqual(result.length, 2, "Only APPROVED and REJECTED rows");
+    assert.strictEqual(result[0].discountValue, 50, "APPROVED row first (desc date)");
+    assert.strictEqual(result[1].discountStatus, "REJECTED");
+  });
+
+  await runner.test("C7.5: calculateSalesComparison computes percentage deltas safely", async () => {
+    const { calculateSalesComparison } = await import("../../src/lib/reports");
+    const current = {
+      netRevenue: 1500,
+      totalOrders: 15,
+      aov: 100,
+      netProfit: 600,
+    };
+    const previous = {
+      netRevenue: 1000,
+      totalOrders: 10,
+      aov: 100,
+      netProfit: 500,
+    };
+    const comp = calculateSalesComparison(current as any, previous as any);
+    assert.strictEqual(comp.netRevenueDeltaPct, 50, "Revenue +50%");
+    assert.strictEqual(comp.ordersDeltaPct, 50, "Orders +50%");
+    assert.strictEqual(comp.aovDeltaPct, 0, "AOV +0%");
+    assert.strictEqual(comp.netProfitDeltaPct, 20, "Net profit +20%");
+  });
+
   return runner;
 }
