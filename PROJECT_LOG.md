@@ -10,6 +10,25 @@
 |---|---|---|
 | القائمة النهائية للمنصات | ✅ حُسمت (Talabat, InstaShop, Harry App, Elmenus, Facebook, Phone) | Platform seed & Visual Tokens |
 
+## [2026-09-08] مستند ومعاينة التقرير الرسمي المطبوع للـ PDF (Task 4: Executive PDF Printable Report Modal)
+**النوع:** Core Feature & Printable Document Architecture (TDD)
+**اللي اتعمل:**
+- إنشاء مكوّن المعاينة والطباعة المتقدم `src/components/reports/reports-print-modal.tsx`:
+  - فتح نافذة معاينة رسمية فاخرة (Print Preview Modal) عند الضغط على زر "طباعة / PDF" في شريط الفلاتر.
+  - عرض مستند تنفيذي متكامل بحجم صفحة A4 مخصص للإدارة وأصحاب المطعم:
+    - ترويسة رسمية للمطعم `Sushi Flower — Dark Kitchen Management` مع شارة تقرير إداري معتمد ووقت وتاريخ الإصدار الدقيق.
+    - شبكة بيانات الفلاتر (النطاق الزمني، البراند، المنصة، وجهة الإصدار والاعتماد).
+    - 4 بطاقات إحصائية رئيسية (صافي الإيرادات، عدد الطلبات، المصروفات، وصافي الأرباح).
+    - جدول بيانات متكامل ومتخصص بحسب التبويب النشط (المبيعات، المنتجات، طرق الدفع، ساعات الذروة، الكاشيرية، أو النظرة العامة) مع صف الإجمالي العام.
+    - مساحة توقيعات رسمية معتمدة لإدارة التشغيل والإدارة المالية وختم المطعم.
+    - حقن قواعد الطباعة `@media print` لعزل المستند الرسمي بدقة متناهية وإخفاء أزرار الواجهة والـ backdrop والـ sidebar لطباعة نقية 100% أو الحفظ كملف PDF عالي الجودة.
+- ربط المكوّن في `src/components/reports/reports-client.tsx` وإضافة مفاتيح الترجمة في `src/messages/ar.json` و`src/messages/en.json`.
+- إضافة اختبار TDD `C7.8` في `tests/e2e/tier3-cross-feature.test.ts` والتحقق من صحة مفاتيح الترجمة.
+- **بوابات الجودة:** اجتياز `npm run typecheck` (0 أخطاء)، واجتياز `npm run test:e2e` بنجاح 100% (200/200 اختبار).
+**الملفات المتأثرة:** `src/components/reports/reports-print-modal.tsx`, `src/components/reports/reports-client.tsx`, `src/messages/ar.json`, `src/messages/en.json`, `tests/e2e/tier3-cross-feature.test.ts`, `PROJECT_LOG.md`
+
+---
+
 ## [2026-09-08] محرك تصدير Excel الاحترافي المنسق (Task 3: Professional Formatted Excel Export Engine)
 **النوع:** Core Feature & Export Architecture (TDD)
 **اللي اتعمل:**
@@ -28,7 +47,7 @@
 
 ---
 
-
+## [2026-09-08] ضخ بيانات اختبارية واقعية لمطعم سوشي حقيقي (Task 2: Realistic Dark Kitchen Dataset Seeding)
 **النوع:** Developer Tooling & Realistic Dataset
 **اللي اتعمل:**
 - إنشاء وتشغيل سكربت `scripts/seed-realistic-reports-data.ts`:

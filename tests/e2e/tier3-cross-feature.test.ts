@@ -360,5 +360,18 @@ export async function runTier3Tests(): Promise<TestRunner> {
     assert.ok(html.includes("background-color"), "Should include CSS styling");
   });
 
+  await runner.test("C7.8: Reports print modal translation keys exist in ar.json and en.json", async () => {
+    const fs = await import("fs");
+    const ar = JSON.parse(fs.readFileSync("src/messages/ar.json", "utf-8"));
+    const en = JSON.parse(fs.readFileSync("src/messages/en.json", "utf-8"));
+
+    assert.ok(ar.reports.printModal?.title, "ar.reports.printModal.title must exist");
+    assert.ok(en.reports.printModal?.title, "en.reports.printModal.title must exist");
+    assert.ok(ar.reports.printModal?.printAction, "ar.reports.printModal.printAction must exist");
+    assert.ok(en.reports.printModal?.printAction, "en.reports.printModal.printAction must exist");
+    assert.ok(ar.reports.printModal?.systemLetterhead, "ar.reports.printModal.systemLetterhead must exist");
+    assert.ok(en.reports.printModal?.systemLetterhead, "en.reports.printModal.systemLetterhead must exist");
+  });
+
   return runner;
 }

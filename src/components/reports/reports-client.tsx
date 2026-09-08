@@ -29,6 +29,7 @@ import { PeakHoursTab } from "./tabs/peak-hours-tab";
 import { OrderSourcesTab } from "./tabs/order-sources-tab";
 import { PaymentTab } from "./tabs/payment-tab";
 import { EmployeesTab } from "./tabs/employees-tab";
+import { ReportsPrintModal } from "./reports-print-modal";
 
 type TabId =
   | "overview"
@@ -86,6 +87,7 @@ export function ReportsClient({
 
   const [activeTab, setActiveTab] = React.useState<TabId>("overview");
   const [loading, setLoading] = React.useState(false);
+  const [printModalOpen, setPrintModalOpen] = React.useState(false);
 
   const formatCurrency = (val: number) =>
     `${Number(val || 0).toLocaleString("en-US", {
@@ -454,7 +456,7 @@ export function ReportsClient({
   };
 
   const handlePrintPdf = () => {
-    window.print();
+    setPrintModalOpen(true);
   };
 
   return (
@@ -540,6 +542,20 @@ export function ReportsClient({
           />
         )}
       </div>
+
+      {/* Executive Printable Report Modal (PDF) */}
+      <ReportsPrintModal
+        open={printModalOpen}
+        onOpenChange={setPrintModalOpen}
+        activeTab={activeTab}
+        filter={filter}
+        mainData={mainData}
+        peakData={peakData}
+        empData={empData}
+        brandName={brands.find((b) => b.id === filter.brandId)?.name}
+        platformName={platforms.find((p) => p.id === filter.platformId)?.name}
+        formatCurrency={formatCurrency}
+      />
     </div>
   );
 }
