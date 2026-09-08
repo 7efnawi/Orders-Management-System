@@ -10,6 +10,21 @@
 |---|---|---|
 | القائمة النهائية للمنصات | ✅ حُسمت (Talabat, InstaShop, Harry App, Elmenus, Facebook, Phone) | Platform seed & Visual Tokens |
 
+## [2026-09-08] خدمات ونقاط نهاية تقارير ساعات الذروة والموظفين ومقارنة الفترات (Task 2: Reports Services & API Routes)
+**النوع:** Backend Feature & API Design
+**اللي اتعمل:**
+- تحديث `src/services/reports.ts`:
+  - إضافة حساب مقارنة الفترة السابقة تلقائياً بالتوازي عبر `Promise.all` وحساب `% deltas` لبطاقات الـ KPI دون أي overhead إضافي.
+  - إضافة خدمة `getPeakHoursData` لتجميع طلبات ساعات الذروة ومصفوفة الـ Heatmap.
+  - إضافة خدمة `getEmployeesData` لتجميع أداء الموظفين وسجل الخصومات.
+- إنشاء نقاط نهاية API آمنة تحت `requireApiRole("OWNER", "MANAGER")`:
+  - `GET /api/reports/peak-hours`: لاسترجاع بيانات ساعات الذروة والـ heatmap.
+  - `GET /api/reports/employees`: لاسترجاع بيانات أداء الكاشيرية وسجل الخصومات.
+- **بوابات الجودة:** اجتياز `npm run typecheck` (0 أخطاء)، واجتياز `npm run test:e2e` بنجاح 100% (197/197 اختبار).
+**الملفات المتأثرة:** `src/services/reports.ts`, `src/app/api/reports/peak-hours/route.ts`, `src/app/api/reports/employees/route.ts`, `PROJECT_LOG.md`
+
+---
+
 ## [2026-09-08] محرك تحليلات التقارير — ساعات الذروة، الموظفون، ومقارنة الفترات (Task 1: Reports Engine Extensions)
 **النوع:** Feature & Domain Modeling (TDD)
 **اللي اتعمل:**
