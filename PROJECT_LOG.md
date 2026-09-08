@@ -10,6 +10,19 @@
 |---|---|---|
 | القائمة النهائية للمنصات | ✅ حُسمت (Talabat, InstaShop, Harry App, Elmenus, Facebook, Phone) | Platform seed & Visual Tokens |
 
+## [2026-09-08] إعادة هيكلة الحاوية الرئيسية لصفحة التقارير وميزة التصدير (Task 7: ReportsClient Rewrite & Export Engine)
+**النوع:** Frontend Architecture & UI/UX Redesign
+**اللي اتعمل:**
+- إعادة كتابة `src/components/reports/reports-client.tsx` بالكامل:
+  - تحويل الشاشة إلى مركز تحليلات منظم بـ 7 تبويبات متخصصة تفصل البيانات وتمنع التشتت والازدحام البصري.
+  - دعم التحميل الكسول (Lazy Loading) لبيانات ساعات الذروة (`/api/reports/peak-hours`) والموظفين (`/api/reports/employees`) عند التبديل فقط لحفظ الذاكرة والسرعة.
+  - دعم تصدير ملفات Microsoft Excel بتنسيق UTF-8 BOM لحماية الحروف العربية من التشوه، مع تصدير ديناميكي حسب محتوى التبويب النشط.
+  - دعم الطباعة والتصدير كـ PDF عبر `window.print()` مع تنسيقات `@media print` واستثناء الأزرار وشريط الفلاتر.
+- **بوابات الجودة:** اجتياز `npm run typecheck` (0 أخطاء)، واجتياز `npm run test:e2e` بنجاح 100% (197/197 اختبار).
+**الملفات المتأثرة:** `src/components/reports/reports-client.tsx`, `PROJECT_LOG.md`
+
+---
+
 ## [2026-09-08] مكونات التبويبات السبعة المتخصصة للتقارير (Task 6: Specialized Report Tab Components)
 **النوع:** Frontend Architecture & UI Components
 **اللي اتعمل:**
