@@ -861,7 +861,16 @@
       "operationsSignature": "Operations Management Approval",
       "financeSignature": "Financial Controller Approval",
       "printAction": "Print Report / Save PDF",
-      "closeAction": "Close Preview"
+      "closeAction": "Close Preview",
+      "zoomIn": "Zoom In",
+      "zoomOut": "Zoom Out",
+      "zoomReset": "Reset Zoom (100%)",
+      "standardWidth": "Standard A4",
+      "fitWidth": "Wide Reading View",
+      "maximize": "Maximize Screen",
+      "restore": "Restore Size",
+      "paperBadge": "Standard A4 • Live Preview",
+      "shortcutHint": "Ctrl + P for fast print"
     },
     "errors": {
       "invalidDateRange": "Start date must be on or before end date",

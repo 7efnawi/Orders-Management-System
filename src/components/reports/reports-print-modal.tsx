@@ -2,15 +2,24 @@
 
 import * as React from "react";
 import { useTranslations } from "next-intl";
-import { Printer, X, FileText, CheckCircle2 } from "lucide-react";
+import {
+  Printer,
+  X,
+  FileText,
+  CheckCircle2,
+  ZoomIn,
+  ZoomOut,
+  Maximize2,
+  Minimize2,
+} from "lucide-react";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import type {
   ReportsPayload,
   PeakHoursPayload,
@@ -60,6 +69,10 @@ export function ReportsPrintModal({
   const t = useTranslations("reports");
   const tModal = useTranslations("reports.printModal");
 
+  const [zoomLevel, setZoomLevel] = React.useState<number>(100);
+  const [isMaximized, setIsMaximized] = React.useState<boolean>(false);
+  const [paperWidthMode, setPaperWidthMode] = React.useState<"standard" | "wide">("standard");
+
   const now = new Date();
   const formattedTimestamp = now.toLocaleDateString("ar-EG", {
     year: "numeric",
@@ -69,7 +82,7 @@ export function ReportsPrintModal({
     minute: "2-digit",
   });
 
-  const getReportTitle = () => {
+  const getReportTitle = React.useCallback(() => {
     switch (activeTab) {
       case "sales":
         return "تقرير المبيعات والتحليلات اليومية";
@@ -86,9 +99,9 @@ export function ReportsPrintModal({
       default:
         return "تقرير المؤشرات الشاملة والأداء العام للمطعم";
     }
-  };
+  }, [activeTab]);
 
-  const handlePrint = () => {
+  const handlePrint = React.useCallback(() => {
     const tableHtml = generateReportTableHtml(activeTab, {
       mainData,
       peakData,
@@ -116,31 +129,151 @@ export function ReportsPrintModal({
     });
 
     printHtmlViaIframe(printableHtml);
-  };
+  }, [activeTab, mainData, peakData, empData, formatCurrency, getReportTitle, filter.startDate, filter.endDate, brandName, platformName, tModal, formattedTimestamp]);
+
+  // Fast keyboard shortcut: Ctrl+P triggers print while preview is open
+  React.useEffect(() => {
+    if (!open) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "p") {
+        e.preventDefault();
+        handlePrint();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [open, handlePrint]);
+
+  const handleZoomIn = () => setZoomLevel((z) => Math.min(z + 10, 150));
+  const handleZoomOut = () => setZoomLevel((z) => Math.max(z - 10, 60));
+  const handleResetZoom = () => setZoomLevel(100);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="max-w-5xl max-h-[92vh] flex flex-col p-0 gap-0 overflow-hidden bg-background text-foreground border-border/80 shadow-2xl"
+        className={cn(
+          "w-[96vw] sm:max-w-[95vw] md:max-w-[94vw] lg:max-w-6xl xl:max-w-7xl 2xl:max-w-[1480px]",
+          isMaximized
+            ? "!w-screen !max-w-none !h-screen !max-h-none !rounded-none !inset-0 !top-0 !start-0 !translate-x-0 rtl:!translate-x-0 !translate-y-0 z-[60]"
+            : "h-[94vh] max-h-[94vh] rounded-2xl",
+          "flex flex-col p-0 gap-0 overflow-hidden bg-background text-foreground border-border/80 shadow-2xl transition-all duration-200"
+        )}
         showCloseButton={false}
       >
-
-        {/* Modal Top Action Bar (Hidden in Print) */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border/60 bg-muted/30">
+        {/* Modal Top Action & Controls Toolbar */}
+        <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 border-b border-border/60 bg-muted/40 backdrop-blur-sm shrink-0">
+          {/* Document Title & Badge */}
           <div className="flex items-center gap-3">
-            <div className="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary border border-primary/20">
-              <FileText className="size-4" />
+            <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary border border-primary/25 shadow-xs shrink-0">
+              <FileText className="size-5" />
             </div>
             <div>
-              <DialogTitle className="text-base font-bold text-foreground">
-                {tModal("title")}
-              </DialogTitle>
-              <DialogDescription className="text-xs text-muted-foreground">
-                {tModal("subtitle")}
+              <div className="flex items-center gap-2">
+                <DialogTitle className="text-base font-bold text-foreground">
+                  {tModal("title")}
+                </DialogTitle>
+                <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-primary/10 text-primary border border-primary/20">
+                  {tModal("paperBadge")}
+                </span>
+              </div>
+              <DialogDescription className="text-xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
+                <span className="font-semibold text-foreground/80">{getReportTitle()}</span>
+                <span className="text-muted-foreground/50">•</span>
+                <span className="font-mono text-[11px]" dir="ltr">
+                  {filter.startDate} → {filter.endDate}
+                </span>
               </DialogDescription>
             </div>
           </div>
 
+          {/* Interactive Preview Viewport Controls (Center) */}
+          <div className="flex items-center gap-2 bg-background/80 border border-border/60 p-1 rounded-xl shadow-xs">
+            {/* Width Mode Switcher */}
+            <div className="flex items-center rounded-lg bg-muted/50 p-0.5">
+              <button
+                type="button"
+                onClick={() => setPaperWidthMode("standard")}
+                className={cn(
+                  "px-2.5 py-1 text-xs font-semibold rounded-md transition-all cursor-pointer",
+                  paperWidthMode === "standard"
+                    ? "bg-background text-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+                title={tModal("standardWidth")}
+              >
+                {tModal("standardWidth")}
+              </button>
+              <button
+                type="button"
+                onClick={() => setPaperWidthMode("wide")}
+                className={cn(
+                  "px-2.5 py-1 text-xs font-semibold rounded-md transition-all cursor-pointer",
+                  paperWidthMode === "wide"
+                    ? "bg-background text-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+                title={tModal("fitWidth")}
+              >
+                {tModal("fitWidth")}
+              </button>
+            </div>
+
+            <div className="h-4 w-px bg-border/80" />
+
+            {/* Zoom Controls */}
+            <div className="flex items-center gap-1">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={handleZoomOut}
+                disabled={zoomLevel <= 60}
+                className="size-7 text-muted-foreground hover:text-foreground"
+                title={tModal("zoomOut")}
+              >
+                <ZoomOut className="size-3.5" />
+              </Button>
+              <button
+                type="button"
+                onClick={handleResetZoom}
+                className="px-2 py-0.5 rounded text-xs font-mono font-bold text-foreground hover:bg-muted transition-colors cursor-pointer"
+                title={tModal("zoomReset")}
+              >
+                {zoomLevel}%
+              </button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={handleZoomIn}
+                disabled={zoomLevel >= 150}
+                className="size-7 text-muted-foreground hover:text-foreground"
+                title={tModal("zoomIn")}
+              >
+                <ZoomIn className="size-3.5" />
+              </Button>
+            </div>
+
+            <div className="h-4 w-px bg-border/80" />
+
+            {/* Maximize / Restore Toggle */}
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsMaximized((m) => !m)}
+              className="size-7 text-muted-foreground hover:text-foreground"
+              title={isMaximized ? tModal("restore") : tModal("maximize")}
+            >
+              {isMaximized ? (
+                <Minimize2 className="size-3.5" />
+              ) : (
+                <Maximize2 className="size-3.5" />
+              )}
+            </Button>
+          </div>
+
+          {/* Primary Action Buttons (End) */}
           <div className="flex items-center gap-2">
             <Button
               type="button"
@@ -157,7 +290,8 @@ export function ReportsPrintModal({
               variant="default"
               size="sm"
               onClick={handlePrint}
-              className="text-xs font-bold shadow-xs bg-primary text-primary-foreground hover:bg-primary/90"
+              title={tModal("shortcutHint")}
+              className="text-xs font-bold shadow-xs bg-primary text-primary-foreground hover:bg-primary/90 px-4"
             >
               <Printer className="size-3.5 ms-1.5" />
               {tModal("printAction")}
@@ -165,13 +299,19 @@ export function ReportsPrintModal({
           </div>
         </div>
 
-        {/* Scrollable Preview Area */}
-        <div className="flex-1 overflow-y-auto p-6 bg-slate-100 dark:bg-zinc-950/80">
+        {/* Scrollable Preview Canvas */}
+        <div className="flex-1 overflow-auto p-4 sm:p-8 lg:p-10 bg-slate-200/85 dark:bg-zinc-950/90 flex justify-center items-start">
           {/* Official Printable Document Paper */}
           <div
             id="printable-report-area"
             dir="rtl"
-            className="w-full max-w-[820px] mx-auto bg-white text-slate-900 border border-slate-200 shadow-md rounded-xl p-8 sm:p-10 text-right font-sans"
+            style={{
+              zoom: `${zoomLevel}%`,
+            }}
+            className={cn(
+              "w-full bg-white text-slate-900 border border-slate-300 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.18),0_0_1px_rgba(0,0,0,0.12)] ring-1 ring-slate-900/5 rounded-xl p-8 sm:p-12 md:p-14 text-right font-sans shrink-0 transition-[max-width] duration-200",
+              paperWidthMode === "standard" ? "max-w-[880px]" : "max-w-[1140px]"
+            )}
           >
             {/* 1. Official Header */}
             <div className="flex items-start justify-between border-b-2 border-slate-900 pb-5 mb-6">

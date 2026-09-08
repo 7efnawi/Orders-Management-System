@@ -10,6 +10,26 @@
 |---|---|---|
 | القائمة النهائية للمنصات | ✅ حُسمت (Talabat, InstaShop, Harry App, Elmenus, Facebook, Phone) | Platform seed & Visual Tokens |
 
+## [2026-09-09] توسيع وضبط نافذة معاينة طباعة الـ PDF وأدوات التكبير والعرض (Enlarge & Polish PDF Preview Modal with Zoom & Viewport Controls)
+**النوع:** UI/UX Excellence & Interactive Preview Tooling (TDD)
+**اللي اتعمل:**
+- حل مشكلة ضيق وتقييد نافذة المعاينة السابقة:
+  - معالجة التقييد الافتراضي `sm:max-w-sm` الموروث من `DialogContent` عبر تطبيق استجابة عريضة فاخرة:
+    `w-[96vw] sm:max-w-[95vw] md:max-w-[94vw] lg:max-w-6xl xl:max-w-7xl 2xl:max-w-[1480px] h-[94vh] max-h-[94vh]`
+    مما يتيح مساحة قراءة رحبة وتنفيذية على كافة شاشات الحواسيب والأجهزة اللوحية دون أي انضغاط.
+  - إضافة زر ملء الشاشة الفوري (Maximize/Restore Toggle) بنقرة زر واحدة للتمدد الكامل `100vw × 100vh`.
+- بناء شريط أدوات تحكم تفاعلي ذكي في رأس نافذة المعاينة:
+  - محوّل نمط عرض الصفحة: التبديل بين "حجم A4 قياسي" (`max-w-[880px]`) و"عرض عريض للقراءة" (`max-w-[1140px]`).
+  - أدوات التكبير والتصغير المباشرة (Live Zoom Controls): تكبير وتصغير سلس بنطاق من 60% إلى 150% مع زر إعادة الضبط السريع `[ 100% ]` الذي يعتمد على خاصية الـ CSS `zoom` النظيفة لمنع تشويه النصوص أو قص الأطراف.
+  - دعم اختصار لوحة المفاتيح السريع: الضغط على `Ctrl + P` (أو `Cmd + P`) أثناء فتح المعاينة يشغّل الطباعة فوراً.
+- تحسين المظهر البصري لورقة التقرير: ظل ناعم عميق (`shadow-[0_20px_60px_-15px_rgba(0,0,0,0.18)]`) مع إطار خفيف يعكس تجربة مستند تنفيذي رسمي حقيقي.
+- إضافة مفاتيح الترجمة المعيارية في `src/messages/ar.json` و `src/messages/en.json` (`zoomIn`, `zoomOut`, `zoomReset`, `standardWidth`, `fitWidth`, `maximize`, `restore`, `paperBadge`, `shortcutHint`).
+- إضافة اختبار TDD المعياري `C7.12` في `tests/e2e/tier3-cross-feature.test.ts`.
+- **بوابات الجودة:** اجتياز `npm run typecheck` (0 أخطاء)، واجتياز `npm run test:e2e` بنجاح 100% (204/204 اختبار).
+**الملفات المتأثرة:** `src/components/reports/reports-print-modal.tsx`, `src/messages/ar.json`, `src/messages/en.json`, `tests/e2e/tier3-cross-feature.test.ts`, `PROJECT_LOG.md`
+
+---
+
 ## [2026-09-09] إعادة تصميم رسم وترتيب أفضل الأصناف مبيعاً (Top Products Leaderboard & Chart Redesign)
 **النوع:** UI/UX Excellence & Data Visualization Redesign (TDD)
 **اللي اتعمل:**

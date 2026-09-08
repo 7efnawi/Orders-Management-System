@@ -416,5 +416,22 @@ export async function runTier3Tests(): Promise<TestRunner> {
     assert.ok(en.reports.charts?.barChart, "en.reports.charts.barChart must exist");
   });
 
+  await runner.test("C7.12: Reports print modal zoom and view mode translation keys exist in ar.json and en.json", async () => {
+    const fs = await import("fs");
+    const ar = JSON.parse(fs.readFileSync("src/messages/ar.json", "utf-8"));
+    const en = JSON.parse(fs.readFileSync("src/messages/en.json", "utf-8"));
+
+    assert.ok(ar.reports.printModal?.zoomIn, "ar.reports.printModal.zoomIn must exist");
+    assert.ok(en.reports.printModal?.zoomIn, "en.reports.printModal.zoomIn must exist");
+    assert.ok(ar.reports.printModal?.zoomOut, "ar.reports.printModal.zoomOut must exist");
+    assert.ok(en.reports.printModal?.zoomOut, "en.reports.printModal.zoomOut must exist");
+    assert.ok(ar.reports.printModal?.standardWidth, "ar.reports.printModal.standardWidth must exist");
+    assert.ok(en.reports.printModal?.standardWidth, "en.reports.printModal.standardWidth must exist");
+    assert.ok(ar.reports.printModal?.fitWidth, "ar.reports.printModal.fitWidth must exist");
+    assert.ok(en.reports.printModal?.fitWidth, "en.reports.printModal.fitWidth must exist");
+    assert.ok(ar.reports.printModal?.maximize, "ar.reports.printModal.maximize must exist");
+    assert.ok(en.reports.printModal?.maximize, "en.reports.printModal.maximize must exist");
+  });
+
   return runner;
 }

@@ -861,7 +861,16 @@
       "operationsSignature": "اعتماد إدارة التشغيل",
       "financeSignature": "اعتماد الإدارة المالية",
       "printAction": "طباعة المستند / حفظ PDF",
-      "closeAction": "إغلاق المعاينة"
+      "closeAction": "إغلاق المعاينة",
+      "zoomIn": "تكبير",
+      "zoomOut": "تصغير",
+      "zoomReset": "إعادة ضبط (100%)",
+      "standardWidth": "حجم A4 قياسي",
+      "fitWidth": "عرض عريض للقراءة",
+      "maximize": "ملء الشاشة",
+      "restore": "استعادة الحجم",
+      "paperBadge": "ورق A4 قياسي • معاينة مباشرة",
+      "shortcutHint": "Ctrl + P للطباعة السريعة"
     },
     "errors": {
       "invalidDateRange": "تاريخ البداية يجب أن يكون قبل أو يساوي تاريخ النهاية",
