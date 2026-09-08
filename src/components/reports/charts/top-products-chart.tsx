@@ -10,6 +10,7 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
+  LabelList,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Award } from "lucide-react";
@@ -79,10 +80,13 @@ export function TopProductsChart({ data, formatCurrency }: TopProductsChartProps
     );
   }
 
-  // Display top 6 for clean visual chart representation
+  // Display top 6 with full name up to 28 characters for clear Arabic readability
   const topItems = data.slice(0, 6).map((item) => ({
     ...item,
-    shortName: item.productName.length > 14 ? `${item.productName.slice(0, 12)}…` : item.productName,
+    displayName:
+      item.productName.length > 28
+        ? `${item.productName.slice(0, 26)}…`
+        : item.productName,
   }));
 
   return (
@@ -102,7 +106,7 @@ export function TopProductsChart({ data, formatCurrency }: TopProductsChartProps
             <BarChart
               data={topItems}
               layout="vertical"
-              margin={{ top: 5, right: 20, left: 10, bottom: 0 }}
+              margin={{ top: 10, right: 35, left: 10, bottom: 5 }}
             >
               <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--border)" opacity={0.6} />
 
@@ -117,12 +121,13 @@ export function TopProductsChart({ data, formatCurrency }: TopProductsChartProps
 
               <YAxis
                 type="category"
-                dataKey="shortName"
+                dataKey="displayName"
                 stroke="var(--muted-foreground)"
                 fontSize={11}
                 tickLine={false}
                 axisLine={{ stroke: "var(--border)" }}
-                width={90}
+                width={165}
+                tick={{ textAnchor: "end", className: "text-xs fill-foreground font-medium" }}
               />
 
               <Tooltip
@@ -140,7 +145,13 @@ export function TopProductsChart({ data, formatCurrency }: TopProductsChartProps
                 fill="#8b5cf6"
                 radius={[0, 4, 4, 0]}
                 maxBarSize={22}
-              />
+              >
+                <LabelList
+                  dataKey="quantity"
+                  position="right"
+                  className="fill-foreground font-bold text-xs"
+                />
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </div>

@@ -10,6 +10,19 @@
 |---|---|---|
 | القائمة النهائية للمنصات | ✅ حُسمت (Talabat, InstaShop, Harry App, Elmenus, Facebook, Phone) | Platform seed & Visual Tokens |
 
+## [2026-09-08] إصلاح اقتطاع أسماء المنتجات وتوسيع المحور Y في الرسم البياني لأعلى الأصناف (Task 2: Fix Top Products Chart Labels Truncation & Expand Y-Axis Width)
+**النوع:** UI/UX Polish & Data Visualization
+**اللي اتعمل:**
+- تعديل مكوّن `src/components/reports/charts/top-products-chart.tsx`:
+  - إزالة الاقتطاع القسري القديم (12 حرفاً) واستبداله بعرض الاسم كاملاً حتى 28 حرفاً مع نقط الحذف اللطيفة للأطول، مما يسمح بظهور أسماء الرولات المركبة ("سالمون كافيار كريمي", "فيلادلفيا رول كلاسيك", "كريسبي كاليفورنيا").
+  - توسيع عرض المحور الرأسي `YAxis` من 90px إلى 165px مع تطبيق محاذاة النص العربية الصحيحة `textAnchor="end"` و `className="text-xs fill-foreground font-medium"`.
+  - تحديث هوامش الرسم البياني `margin={{ top: 10, right: 35, left: 10, bottom: 5 }}` لمنع أي تداخل مع الأرقام الجانبية.
+  - إضافة `LabelList` من `recharts` فوق أعمدة المبيعات مباشرة بموقع `position="right"` لإظهار عدد القطع المباعة بدقة بجوار كل شريط.
+- **بوابات الجودة:** اجتياز `npm run typecheck` (0 أخطاء)، واجتياز `npm run test:e2e` بنجاح 100% (201/201 اختبار).
+**الملفات المتأثرة:** `src/components/reports/charts/top-products-chart.tsx`, `PROJECT_LOG.md`
+
+---
+
 ## [2026-09-08] تنظيف منصات وبراندات التيست وحصر التقارير على المنصات والبراندات الـ 6 القياسية (Task 1: Eliminate Test Platforms & Enforce Canonical Matrix)
 **النوع:** Data Integrity & Reports Architecture (TDD)
 **اللي اتعمل:**
