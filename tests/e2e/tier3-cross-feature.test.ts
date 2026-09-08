@@ -318,5 +318,13 @@ export async function runTier3Tests(): Promise<TestRunner> {
     assert.strictEqual(comp.netProfitDeltaPct, 20, "Net profit +20%");
   });
 
+  await runner.test("C7.6: isQuickRangeActive detects matching date range preset accurately", async () => {
+    const { getQuickRange, isQuickRangeActive } = await import("../../src/components/reports/reports-filter-bar");
+    const todayRange = getQuickRange("today");
+    assert.strictEqual(isQuickRangeActive("today", todayRange.startDate, todayRange.endDate), true, "today preset should be active");
+    assert.strictEqual(isQuickRangeActive("yesterday", todayRange.startDate, todayRange.endDate), false, "yesterday preset should be inactive");
+    assert.strictEqual(isQuickRangeActive("today", "2020-01-01", "2020-01-02"), false, "mismatched dates should be inactive");
+  });
+
   return runner;
 }

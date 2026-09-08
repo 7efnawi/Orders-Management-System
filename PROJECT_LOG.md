@@ -10,6 +10,17 @@
 |---|---|---|
 | القائمة النهائية للمنصات | ✅ حُسمت (Talabat, InstaShop, Harry App, Elmenus, Facebook, Phone) | Platform seed & Visual Tokens |
 
+## [2026-09-08] تمييز الفترة الزمنية المختارة في شريط فلاتر التقارير (Reports Quick Range Highlighting)
+**النوع:** Frontend UX & UI Polish (TDD)
+**اللي اتعمل:**
+- إضافة دالة `isQuickRangeActive` في `src/components/reports/reports-filter-bar.tsx` لمطابقة التواريخ المحددة مع الفترات السريعة (اليوم، أمس، آخر 7 أيام، هذا الشهر، الشهر السابق).
+- تطبيق تمييز بصري فوري للزر المختار (`bg-primary text-primary-foreground font-bold shadow-xs ring-1 ring-primary/40`) ليوضح للمستخدم بلمحة واحدة الفترة الزمنية النشطة حالياً.
+- إضافة اختبار TDD `C7.6` في `tests/e2e/tier3-cross-feature.test.ts` والتحقق من دقته (198/198 اختبار).
+- **بوابات الجودة:** اجتياز `npm run typecheck` (0 أخطاء)، واجتياز `npm run test:e2e` بنجاح 100% (198/198 اختبار).
+**الملفات المتأثرة:** `src/components/reports/reports-filter-bar.tsx`, `tests/e2e/tier3-cross-feature.test.ts`, `PROJECT_LOG.md`
+
+---
+
 ## [2026-09-08] تحديث مفاتيح الترجمة العربية والإنجليزية واختبارات التحقق (Task 8: Reports Translations & i18n E2E Tests)
 **النوع:** Localization & i18n (TDD)
 **اللي اتعمل:**

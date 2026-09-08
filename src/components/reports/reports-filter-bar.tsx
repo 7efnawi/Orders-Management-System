@@ -56,6 +56,15 @@ export function getQuickRange(type: QuickRange): { startDate: string; endDate: s
   return { startDate: fmtIso(s), endDate: fmtIso(e) };
 }
 
+export function isQuickRangeActive(
+  type: QuickRange,
+  currentStart: string,
+  currentEnd: string
+): boolean {
+  const range = getQuickRange(type);
+  return range.startDate === currentStart && range.endDate === currentEnd;
+}
+
 export function ReportsFilterBar({
   brands,
   platforms,
@@ -84,18 +93,26 @@ export function ReportsFilterBar({
           </CardTitle>
 
           <div className="flex items-center gap-1.5 flex-wrap">
-            {(["today", "yesterday", "last7Days", "thisMonth", "lastMonth"] as QuickRange[]).map((q) => (
-              <Button
-                key={q}
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => applyQuick(q)}
-                className="h-7 text-xs px-2.5 rounded-full"
-              >
-                {t(`quick.${q}`)}
-              </Button>
-            ))}
+            {(["today", "yesterday", "last7Days", "thisMonth", "lastMonth"] as QuickRange[]).map((q) => {
+              const active = isQuickRangeActive(q, value.startDate, value.endDate);
+              return (
+                <Button
+                  key={q}
+                  type="button"
+                  variant={active ? "default" : "secondary"}
+                  size="sm"
+                  onClick={() => applyQuick(q)}
+                  className={cn(
+                    "h-7 text-xs px-3 rounded-full transition-all duration-150",
+                    active
+                      ? "bg-primary text-primary-foreground font-bold shadow-xs ring-1 ring-primary/40"
+                      : "bg-muted/70 text-muted-foreground hover:bg-muted hover:text-foreground font-medium"
+                  )}
+                >
+                  {t(`quick.${q}`)}
+                </Button>
+              );
+            })}
           </div>
         </div>
       </CardHeader>
