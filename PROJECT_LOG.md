@@ -10,6 +10,23 @@
 |---|---|---|
 | القائمة النهائية للمنصات | ✅ حُسمت (Talabat, InstaShop, Harry App, Elmenus, Facebook, Phone) | Platform seed & Visual Tokens |
 
+## [2026-09-08] مكونات التبويبات السبعة المتخصصة للتقارير (Task 6: Specialized Report Tab Components)
+**النوع:** Frontend Architecture & UI Components
+**اللي اتعمل:**
+- تحديث `ReportsKpiGrid` لدعم شارات مقارنة الفترات (% deltas) مع مؤشرات صعود/هبوط ملونة.
+- إنشاء 7 تبويبات مستقلة في `src/components/reports/tabs/`:
+  - `overview-tab.tsx`: بطاقات المؤشرات المالية ومخططي الإيراد والمنصات.
+  - `sales-tab.tsx`: بطاقات ملخص المبيعات الخام والخصومات، ومسار الإيراد، وجدول التحليل اليومي الشامل.
+  - `products-tab.tsx`: مخطط أعلى 10 أصناف مبيعاً ومقارنة البراندات، وجدول تفصيلي بالحصص المئوية.
+  - `peak-hours-tab.tsx`: دمج مصفوفة ومخطط ساعات الذروة والـ Heatmap.
+  - `order-sources-tab.tsx`: الحصص السوقية للتطبيقات ومصفوفة المنصات × البراندات.
+  - `payment-tab.tsx`: مخطط طرق الدفع الدائري مع جدول الإيراد والنقدية.
+  - `employees-tab.tsx`: أداء فريق الكاشيرية وسجل الخصومات (Approved / Rejected) مع إمكانية التبديل السريع.
+- **بوابات الجودة:** اجتياز `npm run typecheck` (0 أخطاء)، واجتياز `npm run test:e2e` بنجاح 100% (197/197 اختبار).
+**الملفات المتأثرة:** `src/components/reports/reports-kpi-grid.tsx`, `src/components/reports/tabs/*`, `PROJECT_LOG.md`
+
+---
+
 ## [2026-09-08] مخطط تحليل وتوزيع طرق الدفع (Task 5: Payment Breakdown Donut Chart)
 **النوع:** Frontend Feature & Data Visualization
 **اللي اتعمل:**

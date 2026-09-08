@@ -14,15 +14,38 @@ import {
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import type { SalesSummary } from "@/lib/reports";
+import type { SalesSummary, SalesComparison } from "@/lib/reports";
 import { cn } from "@/lib/utils";
 
 interface ReportsKpiGridProps {
   summary: SalesSummary;
+  comparison?: SalesComparison;
   formatCurrency: (amount: number) => string;
 }
 
-export function ReportsKpiGrid({ summary, formatCurrency }: ReportsKpiGridProps) {
+function DeltaBadge({ delta }: { delta?: number }) {
+  if (delta === undefined || isNaN(delta)) return null;
+  const isPositive = delta > 0;
+  const isZero = delta === 0;
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center text-[10px] font-bold font-mono px-1.5 py-0.5 rounded-full",
+        isPositive
+          ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
+          : isZero
+          ? "bg-muted text-muted-foreground"
+          : "bg-rose-500/15 text-rose-600 dark:text-rose-400"
+      )}
+      dir="ltr"
+    >
+      {isPositive ? "↑ +" : isZero ? "→ " : "↓ "}
+      {delta.toFixed(1)}%
+    </span>
+  );
+}
+
+export function ReportsKpiGrid({ summary, comparison, formatCurrency }: ReportsKpiGridProps) {
   const t = useTranslations("reports.kpis");
 
   // Profit Margin %
@@ -59,8 +82,11 @@ export function ReportsKpiGrid({ summary, formatCurrency }: ReportsKpiGridProps)
             <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               {t("netRevenue")}
             </CardTitle>
-            <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-500 ring-1 ring-emerald-500/20">
-              <TrendingUp className="size-4.5" />
+            <div className="flex items-center gap-1.5">
+              <DeltaBadge delta={comparison?.netRevenueDeltaPct} />
+              <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-500 ring-1 ring-emerald-500/20">
+                <TrendingUp className="size-4.5" />
+              </div>
             </div>
           </CardHeader>
           <CardContent className="space-y-2">
@@ -88,8 +114,11 @@ export function ReportsKpiGrid({ summary, formatCurrency }: ReportsKpiGridProps)
             <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               {t("netProfit")}
             </CardTitle>
-            <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-500 ring-1 ring-indigo-500/20">
-              <Wallet className="size-4.5" />
+            <div className="flex items-center gap-1.5">
+              <DeltaBadge delta={comparison?.netProfitDeltaPct} />
+              <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-500 ring-1 ring-indigo-500/20">
+                <Wallet className="size-4.5" />
+              </div>
             </div>
           </CardHeader>
           <CardContent className="space-y-2">
@@ -154,8 +183,11 @@ export function ReportsKpiGrid({ summary, formatCurrency }: ReportsKpiGridProps)
             <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               {t("totalOrders")}
             </CardTitle>
-            <div className="p-2 rounded-lg bg-sky-500/10 text-sky-500 ring-1 ring-sky-500/20">
-              <ShoppingBag className="size-4.5" />
+            <div className="flex items-center gap-1.5">
+              <DeltaBadge delta={comparison?.ordersDeltaPct} />
+              <div className="p-2 rounded-lg bg-sky-500/10 text-sky-500 ring-1 ring-sky-500/20">
+                <ShoppingBag className="size-4.5" />
+              </div>
             </div>
           </CardHeader>
           <CardContent className="space-y-2">
