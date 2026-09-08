@@ -10,6 +10,17 @@
 |---|---|---|
 | القائمة النهائية للمنصات | ✅ حُسمت (Talabat, InstaShop, Harry App, Elmenus, Facebook, Phone) | Platform seed & Visual Tokens |
 
+## [2026-09-08] مخطط تحليل وتوزيع طرق الدفع (Task 5: Payment Breakdown Donut Chart)
+**النوع:** Frontend Feature & Data Visualization
+**اللي اتعمل:**
+- إنشاء مكوّن `src/components/reports/charts/payment-breakdown-chart.tsx`:
+  - مخطط دائري مجوف (Donut Chart) مبني بـ Recharts يوضح حصص الدفع: كاش (زمردي)، فيزا (أزرق)، وأونلاين (بنفسجي).
+  - قائمة إحصائية مفصلة بالنسب المئوية وقيم المبالغ مع تلميحات بالعملة المترجمة `ج.م` / `EGP`.
+- **بوابات الجودة:** اجتياز `npm run typecheck` (0 أخطاء)، واجتياز `npm run test:e2e` بنجاح 100% (197/197 اختبار).
+**الملفات المتأثرة:** `src/components/reports/charts/payment-breakdown-chart.tsx`, `PROJECT_LOG.md`
+
+---
+
 ## [2026-09-08] مخطط ساعات الذروة والـ Heatmap (Task 4: Peak Hours Heatmap Chart)
 **النوع:** Frontend Feature & Data Visualization
 **اللي اتعمل:**
