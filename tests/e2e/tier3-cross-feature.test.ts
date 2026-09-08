@@ -326,5 +326,39 @@ export async function runTier3Tests(): Promise<TestRunner> {
     assert.strictEqual(isQuickRangeActive("today", "2020-01-01", "2020-01-02"), false, "mismatched dates should be inactive");
   });
 
+  await runner.test("C7.7: generateExcelSpreadsheetHtml produces valid styled Excel HTML document with headers, KPIs, and totals", async () => {
+    const { generateExcelSpreadsheetHtml } = await import("../../src/lib/exportExcel");
+    const html = generateExcelSpreadsheetHtml({
+      title: "تقرير مبيعات السوشي",
+      dateRange: { startDate: "2026-09-01", endDate: "2026-09-08" },
+      brandName: "Sushi Flower",
+      platformName: "Talabat",
+      kpis: [
+        { label: "إجمالي المبيعات", value: "15,000 ج.م" },
+        { label: "عدد الطلبات", value: 120 },
+      ],
+      columns: [
+        { header: "التاريخ", key: "date", align: "center" },
+        { header: "الطلبات", key: "orders", align: "center" },
+        { header: "المبيعات", key: "sales", align: "left" },
+      ],
+      rows: [
+        { date: "2026-09-01", orders: 15, sales: 2500 },
+        { date: "2026-09-02", orders: 20, sales: 3200 },
+      ],
+      totalsRow: { date: "الإجمالي", orders: 35, sales: 5700 },
+    });
+
+    assert.ok(html.includes("xmlns:x=\"urn:schemas-microsoft-com:office:excel\""), "Should contain Excel XML namespace");
+    assert.ok(html.includes("dir=\"rtl\""), "Should support RTL Arabic direction");
+    assert.ok(html.includes("تقرير مبيعات السوشي"), "Should include report title");
+    assert.ok(html.includes("Sushi Flower"), "Should include brand name");
+    assert.ok(html.includes("15,000 ج.م"), "Should include KPI value");
+    assert.ok(html.includes("2026-09-01"), "Should include row date");
+    assert.ok(html.includes("الإجمالي"), "Should include totals row label");
+    assert.ok(html.includes("5700"), "Should include totals sales");
+    assert.ok(html.includes("background-color"), "Should include CSS styling");
+  });
+
   return runner;
 }

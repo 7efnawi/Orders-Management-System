@@ -10,7 +10,25 @@
 |---|---|---|
 | القائمة النهائية للمنصات | ✅ حُسمت (Talabat, InstaShop, Harry App, Elmenus, Facebook, Phone) | Platform seed & Visual Tokens |
 
-## [2026-09-08] ضخ بيانات اختبارية واقعية لمطعم سوشي حقيقي (Task 2: Realistic Dark Kitchen Dataset Seeding)
+## [2026-09-08] محرك تصدير Excel الاحترافي المنسق (Task 3: Professional Formatted Excel Export Engine)
+**النوع:** Core Feature & Export Architecture (TDD)
+**اللي اتعمل:**
+- إنشاء محرك التصدير الاحترافي `src/lib/exportExcel.ts`:
+  - استبدال التصدير البدائي النصي (Raw CSV) بتوليد مستند Excel رسمي غني (`.xls` بتنسيق XML/HTML Spreadsheet المتوافق مع Microsoft Excel و Google Sheets).
+  - دعم التوجيه العربي `dir="rtl"` وتصدير UTF-8 BOM لحماية النصوص العربية من أي تشوه.
+  - ترويسة رسمية للمطعم بشعار واسم البراند `Sushi Flower — Dark Kitchen Order Control System` وعنوان التقرير وزمن الاستخراج الدقيق.
+  - شريط ميتا للفلاتر المطبقة (الفترة الزمنية المحددة، البراند، والمنصة).
+  - بطاقات ملخص إحصائي (KPI Summary Cards) بأهم الأرقام في أعلى ورقة العمل.
+  - جدول بيانات رئيسي بتصميم فاخر: رؤوس أعمدة كحلية أنيقة (`#0f172a`) بخط أبيض عريض، حدود خلايا واضحة، صفوف متبادلة الألوان (Zebra striping)، ومحاذاة مناسبة للمبالغ والأرقام والنصوص.
+  - صف إجمالي سفلي بخط عريض وإطار مزدوج مميز (`border-bottom: 3px double #0f172a`).
+- ربط المحرك في `src/components/reports/reports-client.tsx` لدعم كافة التبويبات (المبيعات اليومية، المنتجات، المنصات والبراندات، طرق الدفع، ساعات الذروة، الموظفون، والنظرة العامة).
+- إضافة اختبار TDD `C7.7` في `tests/e2e/tier3-cross-feature.test.ts` والتحقق من صحة المستند المُولّد.
+- **بوابات الجودة:** اجتياز `npm run typecheck` (0 أخطاء)، واجتياز `npm run test:e2e` بنجاح 100% (199/199 اختبار).
+**الملفات المتأثرة:** `src/lib/exportExcel.ts`, `src/components/reports/reports-client.tsx`, `tests/e2e/tier3-cross-feature.test.ts`, `PROJECT_LOG.md`
+
+---
+
+
 **النوع:** Developer Tooling & Realistic Dataset
 **اللي اتعمل:**
 - إنشاء وتشغيل سكربت `scripts/seed-realistic-reports-data.ts`:

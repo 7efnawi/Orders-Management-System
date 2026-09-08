@@ -20,6 +20,7 @@ import type {
   PeakHoursPayload,
   EmployeesPayload,
 } from "@/services/reports";
+import { exportReportToExcel, type ExcelExportOptions } from "@/lib/exportExcel";
 import { ReportsFilterBar, type ReportsFilterState } from "./reports-filter-bar";
 import { OverviewTab } from "./tabs/overview-tab";
 import { SalesTab } from "./tabs/sales-tab";
@@ -165,83 +166,287 @@ export function ReportsClient({
     }
   };
 
-  // Export CSV handler for Excel
+  // Professional formatted Excel export handler
   const handleExportCsv = () => {
     try {
-      let csvContent = "";
-      const filename = `report_${activeTab}_${filter.startDate}_to_${filter.endDate}.csv`;
+      const selectedBrand = brands.find((b) => b.id === filter.brandId)?.name;
+      const selectedPlatform = platforms.find((p) => p.id === filter.platformId)?.name;
+      const dateRange = { startDate: filter.startDate, endDate: filter.endDate };
+      const filename = `تقرير_${activeTab}_${filter.startDate}_إلى_${filter.endDate}.xls`;
+
+      let options: ExcelExportOptions;
 
       if (activeTab === "sales") {
-        csvContent =
-          "التاريخ,الطلبات,المسلمة,الملغاة,المبيعات,رسوم التوصيل,المصروفات,الصافي\n" +
-          mainData.dailyBreakdown
-            .map(
-              (r) =>
-                `"${r.date}",${r.orders},${r.delivered},${r.cancelled},${r.sales},${r.deliveryFees},${r.expenses},${r.net}`
-            )
-            .join("\n");
+        const totalOrders = mainData.dailyBreakdown.reduce((s, r) => s + r.orders, 0);
+        const totalDelivered = mainData.dailyBreakdown.reduce((s, r) => s + r.delivered, 0);
+        const totalCancelled = mainData.dailyBreakdown.reduce((s, r) => s + r.cancelled, 0);
+        const totalSales = mainData.dailyBreakdown.reduce((s, r) => s + r.sales, 0);
+        const totalDeliveryFees = mainData.dailyBreakdown.reduce((s, r) => s + r.deliveryFees, 0);
+        const totalExpenses = mainData.dailyBreakdown.reduce((s, r) => s + r.expenses, 0);
+        const totalNet = mainData.dailyBreakdown.reduce((s, r) => s + r.net, 0);
+
+        options = {
+          title: "تقرير المبيعات التفصيلي اليومي",
+          sheetName: "المبيعات اليومية",
+          dateRange,
+          brandName: selectedBrand,
+          platformName: selectedPlatform,
+          kpis: [
+            { label: "صافي الإيرادات", value: mainData.summary.netRevenue.toLocaleString("ar-EG"), unit: "ج.م" },
+            { label: "إجمالي الطلبات", value: mainData.summary.totalOrders },
+            { label: "إجمالي المصروفات", value: mainData.summary.totalExpenses.toLocaleString("ar-EG"), unit: "ج.م" },
+            { label: "صافي الأرباح", value: mainData.summary.netProfit.toLocaleString("ar-EG"), unit: "ج.م" },
+          ],
+          columns: [
+            { header: "التاريخ", key: "date", align: "center" },
+            { header: "إجمالي الطلبات", key: "orders", align: "center" },
+            { header: "المسلمة", key: "delivered", align: "center" },
+            { header: "الملغاة", key: "cancelled", align: "center" },
+            { header: "المبيعات (ج.م)", key: "sales", align: "left" },
+            { header: "رسوم التوصيل (ج.م)", key: "deliveryFees", align: "left" },
+            { header: "المصروفات (ج.م)", key: "expenses", align: "left" },
+            { header: "صافي الإيراد (ج.م)", key: "net", align: "left" },
+          ],
+          rows: mainData.dailyBreakdown.map((r) => ({
+            date: r.date,
+            orders: r.orders,
+            delivered: r.delivered,
+            cancelled: r.cancelled,
+            sales: r.sales.toLocaleString("ar-EG"),
+            deliveryFees: r.deliveryFees.toLocaleString("ar-EG"),
+            expenses: r.expenses.toLocaleString("ar-EG"),
+            net: r.net.toLocaleString("ar-EG"),
+          })),
+          totalsRow: {
+            date: "الإجمالي العام",
+            orders: totalOrders,
+            delivered: totalDelivered,
+            cancelled: totalCancelled,
+            sales: totalSales.toLocaleString("ar-EG"),
+            deliveryFees: totalDeliveryFees.toLocaleString("ar-EG"),
+            expenses: totalExpenses.toLocaleString("ar-EG"),
+            net: totalNet.toLocaleString("ar-EG"),
+          },
+        };
       } else if (activeTab === "products") {
-        csvContent =
-          "الترتيب,المنتج,الكمية المباعة,عدد الطلبات,إجمالي الإيراد\n" +
-          mainData.topProducts
-            .map(
-              (p, idx) =>
-                `${idx + 1},"${p.productName.replace(/"/g, '""')}",${p.quantity},${p.ordersCount},${p.revenue}`
-            )
-            .join("\n");
+        const totalQty = mainData.topProducts.reduce((s, p) => s + p.quantity, 0);
+        const totalOrdersCount = mainData.topProducts.reduce((s, p) => s + p.ordersCount, 0);
+        const totalRevenue = mainData.topProducts.reduce((s, p) => s + p.revenue, 0);
+
+        options = {
+          title: "تقرير أداء ومبيعات أصناف السوشي",
+          sheetName: "المنتجات",
+          dateRange,
+          brandName: selectedBrand,
+          platformName: selectedPlatform,
+          kpis: [
+            { label: "عدد الأصناف المباعة", value: mainData.topProducts.length },
+            { label: "إجمالي الكمية المباعة", value: totalQty, unit: "وجبة/قطعة" },
+            { label: "إجمالي الإيرادات", value: totalRevenue.toLocaleString("ar-EG"), unit: "ج.م" },
+          ],
+          columns: [
+            { header: "#", key: "rank", align: "center", width: 40 },
+            { header: "اسم الصنف", key: "productName", align: "right" },
+            { header: "الكمية المباعة", key: "quantity", align: "center" },
+            { header: "عدد مرات الطلب", key: "ordersCount", align: "center" },
+            { header: "إجمالي الإيراد (ج.م)", key: "revenue", align: "left" },
+          ],
+          rows: mainData.topProducts.map((p, idx) => ({
+            rank: idx + 1,
+            productName: p.productName,
+            quantity: p.quantity,
+            ordersCount: p.ordersCount,
+            revenue: p.revenue.toLocaleString("ar-EG"),
+          })),
+          totalsRow: {
+            rank: "",
+            productName: "الإجمالي العام",
+            quantity: totalQty,
+            ordersCount: totalOrdersCount,
+            revenue: totalRevenue.toLocaleString("ar-EG"),
+          },
+        };
       } else if (activeTab === "order-sources") {
-        csvContent =
-          "المنصة,البراند,عدد الطلبات,إجمالي المبيعات\n" +
-          mainData.platformBrand
-            .map(
-              (pb) =>
-                `"${pb.platformName}","${pb.brandName}",${pb.orders},${pb.sales}`
-            )
-            .join("\n");
+        const totalOrders = mainData.platformBrand.reduce((s, pb) => s + pb.orders, 0);
+        const totalSales = mainData.platformBrand.reduce((s, pb) => s + pb.sales, 0);
+
+        options = {
+          title: "تقرير قنوات البيع ومنصات التوصيل والبراندات",
+          sheetName: "قنوات البيع",
+          dateRange,
+          brandName: selectedBrand,
+          platformName: selectedPlatform,
+          kpis: [
+            { label: "إجمالي طلبات القنوات", value: totalOrders },
+            { label: "إجمالي مبيعات القنوات", value: totalSales.toLocaleString("ar-EG"), unit: "ج.م" },
+          ],
+          columns: [
+            { header: "المنصة", key: "platformName", align: "center" },
+            { header: "البراند", key: "brandName", align: "center" },
+            { header: "عدد الطلبات", key: "orders", align: "center" },
+            { header: "إجمالي المبيعات (ج.م)", key: "sales", align: "left" },
+          ],
+          rows: mainData.platformBrand.map((pb) => ({
+            platformName: pb.platformName,
+            brandName: pb.brandName,
+            orders: pb.orders,
+            sales: pb.sales.toLocaleString("ar-EG"),
+          })),
+          totalsRow: {
+            platformName: "الإجمالي",
+            brandName: "-",
+            orders: totalOrders,
+            sales: totalSales.toLocaleString("ar-EG"),
+          },
+        };
       } else if (activeTab === "payment") {
-        csvContent =
-          "طريقة الدفع,الإيراد المحصل\n" +
-          `"كاش",${mainData.summary.cashTotal}\n` +
-          `"فيزا",${mainData.summary.visaTotal}\n` +
-          `"أونلاين",${mainData.summary.onlineTotal}\n` +
-          `"الإجمالي",${mainData.summary.netRevenue}\n`;
+        const netRev = mainData.summary.netRevenue || 1;
+        const cashPct = Math.round((mainData.summary.cashTotal / netRev) * 100);
+        const visaPct = Math.round((mainData.summary.visaTotal / netRev) * 100);
+        const onlinePct = Math.round((mainData.summary.onlineTotal / netRev) * 100);
+
+        options = {
+          title: "تقرير طرق الدفع والتحصيل المالي",
+          sheetName: "طرق الدفع",
+          dateRange,
+          brandName: selectedBrand,
+          platformName: selectedPlatform,
+          kpis: [
+            { label: "كاش", value: mainData.summary.cashTotal.toLocaleString("ar-EG"), unit: "ج.م" },
+            { label: "فيزا", value: mainData.summary.visaTotal.toLocaleString("ar-EG"), unit: "ج.م" },
+            { label: "أونلاين", value: mainData.summary.onlineTotal.toLocaleString("ar-EG"), unit: "ج.م" },
+            { label: "الإجمالي", value: mainData.summary.netRevenue.toLocaleString("ar-EG"), unit: "ج.م" },
+          ],
+          columns: [
+            { header: "طريقة الدفع", key: "method", align: "center" },
+            { header: "المبلغ المحصل (ج.م)", key: "amount", align: "left" },
+            { header: "النسبة المئوية", key: "percentage", align: "center" },
+          ],
+          rows: [
+            { method: "كاش (نقدي)", amount: mainData.summary.cashTotal.toLocaleString("ar-EG"), percentage: `${cashPct}%` },
+            { method: "فيزا (بطاقة ائتمانية)", amount: mainData.summary.visaTotal.toLocaleString("ar-EG"), percentage: `${visaPct}%` },
+            { method: "أونلاين (دفع إلكتروني)", amount: mainData.summary.onlineTotal.toLocaleString("ar-EG"), percentage: `${onlinePct}%` },
+          ],
+          totalsRow: {
+            method: "الإجمالي المحصل",
+            amount: mainData.summary.netRevenue.toLocaleString("ar-EG"),
+            percentage: "100%",
+          },
+        };
       } else if (activeTab === "employees" && empData) {
-        csvContent =
-          "الكاشير,إجمالي الطلبات,الملغاة,الإيراد,متوسط الطلب,خصومات معتمدة\n" +
-          empData.employees
-            .map(
-              (e) =>
-                `"${e.cashierName}",${e.totalOrders},${e.cancelledOrders},${e.totalRevenue},${e.avgOrderValue},${e.discountsApproved}`
-            )
-            .join("\n");
+        const totalOrders = empData.employees.reduce((s, e) => s + e.totalOrders, 0);
+        const totalCancelled = empData.employees.reduce((s, e) => s + e.cancelledOrders, 0);
+        const totalRev = empData.employees.reduce((s, e) => s + e.totalRevenue, 0);
+        const totalDiscounts = empData.employees.reduce((s, e) => s + e.discountsApprovedValue, 0);
+
+        options = {
+          title: "تقرير كفاءة وإنتاجية الكاشيرية وفريق العمل",
+          sheetName: "الموظفون",
+          dateRange,
+          brandName: selectedBrand,
+          platformName: selectedPlatform,
+          columns: [
+            { header: "اسم الكاشير", key: "cashierName", align: "right" },
+            { header: "إجمالي الطلبات", key: "totalOrders", align: "center" },
+            { header: "الطلبات الملغاة", key: "cancelledOrders", align: "center" },
+            { header: "إجمالي الإيراد (ج.م)", key: "totalRevenue", align: "left" },
+            { header: "متوسط الطلب (ج.م)", key: "avgOrderValue", align: "left" },
+            { header: "خصومات معتمدة (عدد)", key: "discountsApproved", align: "center" },
+            { header: "قيمة الخصومات (ج.م)", key: "discountsApprovedValue", align: "left" },
+          ],
+          rows: empData.employees.map((e) => ({
+            cashierName: e.cashierName,
+            totalOrders: e.totalOrders,
+            cancelledOrders: e.cancelledOrders,
+            totalRevenue: e.totalRevenue.toLocaleString("ar-EG"),
+            avgOrderValue: e.avgOrderValue.toLocaleString("ar-EG"),
+            discountsApproved: e.discountsApproved,
+            discountsApprovedValue: e.discountsApprovedValue.toLocaleString("ar-EG"),
+          })),
+          totalsRow: {
+            cashierName: "الإجمالي العام",
+            totalOrders,
+            cancelledOrders: totalCancelled,
+            totalRevenue: totalRev.toLocaleString("ar-EG"),
+            avgOrderValue: "-",
+            discountsApproved: "-",
+            discountsApprovedValue: totalDiscounts.toLocaleString("ar-EG"),
+          },
+        };
+      } else if (activeTab === "peak-hours" && peakData) {
+        const totalOrders = peakData.hourly.reduce((s, h) => s + h.orders, 0);
+        const totalRevenue = peakData.hourly.reduce((s, h) => s + h.revenue, 0);
+        const busiestHour = [...peakData.hourly].sort((a, b) => b.orders - a.orders)[0];
+
+        options = {
+          title: "تقرير ساعات وأيام الذروة التشغيلية",
+          sheetName: "ساعات الذروة",
+          dateRange,
+          brandName: selectedBrand,
+          platformName: selectedPlatform,
+          kpis: [
+            { label: "ساعة الذروة العظمى", value: busiestHour ? `${String(busiestHour.hour).padStart(2, "0")}:00 (${busiestHour.orders} طلب)` : "-" },
+            { label: "إجمالي طلبات الساعات", value: totalOrders },
+          ],
+          columns: [
+            { header: "الساعة", key: "hourLabel", align: "center" },
+            { header: "عدد الطلبات", key: "orders", align: "center" },
+            { header: "المبيعات (ج.م)", key: "revenue", align: "left" },
+            { header: "متوسط الطلب (ج.م)", key: "aov", align: "left" },
+          ],
+          rows: peakData.hourly.map((h) => {
+            const avg = h.orders > 0 ? Math.round(h.revenue / h.orders) : 0;
+            return {
+              hourLabel: `${String(h.hour).padStart(2, "0")}:00 - ${String(h.hour + 1).padStart(2, "0")}:00`,
+              orders: h.orders,
+              revenue: h.revenue.toLocaleString("ar-EG"),
+              aov: avg.toLocaleString("ar-EG"),
+            };
+          }),
+          totalsRow: {
+            hourLabel: "الإجمالي",
+            orders: totalOrders,
+            revenue: totalRevenue.toLocaleString("ar-EG"),
+            aov: "-",
+          },
+        };
       } else {
         // Overview default export
-        csvContent =
-          "البند,القيمة\n" +
-          `"إجمالي المبيعات الخام",${mainData.summary.grossSales}\n` +
-          `"إجمالي الخصومات",${mainData.summary.totalDiscounts}\n` +
-          `"رسوم التوصيل",${mainData.summary.totalDeliveryFees}\n` +
-          `"صافي الإيرادات",${mainData.summary.netRevenue}\n` +
-          `"إجمالي المصروفات",${mainData.summary.totalExpenses}\n` +
-          `"صافي الأرباح",${mainData.summary.netProfit}\n` +
-          `"إجمالي الطلبات",${mainData.summary.totalOrders}\n` +
-          `"الطلبات المسلمة",${mainData.summary.deliveredOrders}\n` +
-          `"الطلبات الملغاة",${mainData.summary.cancelledOrders}\n` +
-          `"متوسط قيمة الطلب",${mainData.summary.aov}\n`;
+        options = {
+          title: "تقرير المؤشرات الشاملة والأداء العام",
+          sheetName: "نظرة عامة",
+          dateRange,
+          brandName: selectedBrand,
+          platformName: selectedPlatform,
+          kpis: [
+            { label: "صافي الإيرادات", value: mainData.summary.netRevenue.toLocaleString("ar-EG"), unit: "ج.م" },
+            { label: "إجمالي الطلبات", value: mainData.summary.totalOrders },
+            { label: "إجمالي المصروفات", value: mainData.summary.totalExpenses.toLocaleString("ar-EG"), unit: "ج.م" },
+            { label: "صافي الأرباح", value: mainData.summary.netProfit.toLocaleString("ar-EG"), unit: "ج.م" },
+          ],
+          columns: [
+            { header: "المؤشر المالي / التشغيلي", key: "metric", align: "right" },
+            { header: "القيمة المحققة", key: "value", align: "left" },
+          ],
+          rows: [
+            { metric: "إجمالي المبيعات الخام (Gross Sales)", value: `${mainData.summary.grossSales.toLocaleString("ar-EG")} ج.م` },
+            { metric: "إجمالي الخصومات الممنوحة", value: `${mainData.summary.totalDiscounts.toLocaleString("ar-EG")} ج.م` },
+            { metric: "إجمالي رسوم التوصيل المحصلة", value: `${mainData.summary.totalDeliveryFees.toLocaleString("ar-EG")} ج.م` },
+            { metric: "صافي الإيرادات (Net Revenue)", value: `${mainData.summary.netRevenue.toLocaleString("ar-EG")} ج.م` },
+            { metric: "إجمالي المصروفات التشغيلية", value: `${mainData.summary.totalExpenses.toLocaleString("ar-EG")} ج.م` },
+            { metric: "صافي الأرباح التشغيلية (Net Profit)", value: `${mainData.summary.netProfit.toLocaleString("ar-EG")} ج.م` },
+            { metric: "إجمالي عدد الطلبات المسجلة", value: String(mainData.summary.totalOrders) },
+            { metric: "الطلبات المسلمة بنجاح", value: String(mainData.summary.deliveredOrders) },
+            { metric: "الطلبات الملغاة", value: String(mainData.summary.cancelledOrders) },
+            { metric: "متوسط قيمة الطلب (AOV)", value: `${mainData.summary.aov.toLocaleString("ar-EG")} ج.م` },
+            { metric: "مبيعات الدفع النقدي (كاش)", value: `${mainData.summary.cashTotal.toLocaleString("ar-EG")} ج.م` },
+            { metric: "مبيعات بطاقات الدفع (فيزا)", value: `${mainData.summary.visaTotal.toLocaleString("ar-EG")} ج.م` },
+            { metric: "مبيعات الدفع الإلكتروني (أونلاين)", value: `${mainData.summary.onlineTotal.toLocaleString("ar-EG")} ج.م` },
+          ],
+        };
       }
 
-      // Prepend UTF-8 BOM so Arabic displays correctly in Microsoft Excel
-      const blob = new Blob(["\uFEFF" + csvContent], {
-        type: "text/csv;charset=utf-8;",
-      });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.setAttribute("href", url);
-      link.setAttribute("download", filename);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+      exportReportToExcel(options, filename);
       toast.success(t("exportSuccess"));
     } catch {
       toast.error(t("errors.generic"));
