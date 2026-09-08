@@ -10,6 +10,25 @@
 |---|---|---|
 | القائمة النهائية للمنصات | ✅ حُسمت (Talabat, InstaShop, Harry App, Elmenus, Facebook, Phone) | Platform seed & Visual Tokens |
 
+## [2026-09-08] تنظيف منصات وبراندات التيست وحصر التقارير على المنصات والبراندات الـ 6 القياسية (Task 1: Eliminate Test Platforms & Enforce Canonical Matrix)
+**النوع:** Data Integrity & Reports Architecture (TDD)
+**اللي اتعمل:**
+- تحديث `src/lib/reports.ts`:
+  - تصدير قوائم المنصات والبراندات الرسمية المعتمدة: `STANDARD_PLATFORM_NAMES` (Talabat, InstaShop, Harry App, Elmenus, Facebook, Phone) و `STANDARD_BRAND_NAMES` (Flower, Mastery, Niwa, Tobiko).
+  - إضافة دوال توحيد التسميات `normalizePlatformName` و `normalizeBrandName` (توحيد `elmenus` إلى `Elmenus` القياسية).
+  - تحديث دالة `groupSalesByPlatformBrand(orders, standardOnly = true)` لدعم الفلترة الحصرية وعزل أي منصات أو براندات تجريبية/اختبارية تلقائياً عن التقارير الإدارية والمالية.
+- تحديث `src/services/reports.ts` لضمان إرسال `standardOnly: true` في مصفوفة مبيعات المنصات والبراندات.
+- إنشاء وتشغيل سكربت التطهير لقاعدة البيانات `scripts/cleanup-test-platforms.ts`:
+  - ترحيل 6 طلبات من `Verification Talabat` إلى منصة `Talabat` الرسمية وحذف منصة التيست.
+  - ترحيل طلبات `Phase 5 Direct` و `Phase 7 Direct Platform` إلى منصة `Phone` الرسمية وحذف منصات التيست.
+  - ترحيل 18 طلباً من منصة `elmenus` الصغيرة إلى `Elmenus` الرسمية وحذف المنصة المكررة.
+  - ترحيل طلبات وأصناف براندات التيست (`Verification Brand Sushi`, `Phase 5 Brand Sushi`, `Phase 7 Verification Brand`, `Flower Sushi`, `وايت`) إلى براند `Flower` الرسمي وحذفها بالكامل.
+- إضافة اختبار TDD `C7.9` في `tests/e2e/tier3-cross-feature.test.ts`.
+- **بوابات الجودة:** اجتياز `npm run typecheck` (0 أخطاء)، واجتياز `npm run test:e2e` بنجاح 100% (201/201 اختبار).
+**الملفات المتأثرة:** `src/lib/reports.ts`, `src/services/reports.ts`, `scripts/cleanup-test-platforms.ts`, `tests/e2e/tier3-cross-feature.test.ts`, `PROJECT_LOG.md`
+
+---
+
 ## [2026-09-08] مستند ومعاينة التقرير الرسمي المطبوع للـ PDF (Task 4: Executive PDF Printable Report Modal)
 **النوع:** Core Feature & Printable Document Architecture (TDD)
 **اللي اتعمل:**

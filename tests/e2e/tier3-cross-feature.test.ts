@@ -373,5 +373,19 @@ export async function runTier3Tests(): Promise<TestRunner> {
     assert.ok(en.reports.printModal?.systemLetterhead, "en.reports.printModal.systemLetterhead must exist");
   });
 
+  await runner.test("C7.9: groupSalesByPlatformBrand strictly excludes test platforms and test brands", async () => {
+    const { groupSalesByPlatformBrand } = await import("../../src/lib/reports");
+    const testOrders = [
+      { id: "1", subtotal: 100, platformName: "Talabat", brandName: "Flower", status: "DELIVERED" },
+      { id: "2", subtotal: 200, platformName: "Verification Talabat", brandName: "Flower", status: "DELIVERED" },
+      { id: "3", subtotal: 150, platformName: "Phase 5 Direct", brandName: "Phase 5 Brand Sushi", status: "DELIVERED" },
+      { id: "4", subtotal: 300, platformName: "Elmenus", brandName: "Mastery", status: "DELIVERED" },
+    ];
+    const result = groupSalesByPlatformBrand(testOrders as any, true);
+    assert.strictEqual(result.length, 2, "Should only contain standard platforms and brands");
+    assert.ok(!result.some((r) => r.platformName.includes("Verification")), "No verification platform");
+    assert.ok(!result.some((r) => r.platformName.includes("Phase 5")), "No Phase 5 platform");
+  });
+
   return runner;
 }

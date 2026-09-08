@@ -53,6 +53,44 @@ export interface SalesSummary {
   onlineTotal: number;
 }
 
+export const STANDARD_PLATFORM_NAMES = [
+  "Talabat",
+  "InstaShop",
+  "Harry App",
+  "Elmenus",
+  "Facebook",
+  "Phone",
+] as const;
+
+export type StandardPlatformName = (typeof STANDARD_PLATFORM_NAMES)[number];
+
+export const STANDARD_BRAND_NAMES = [
+  "Flower",
+  "Mastery",
+  "Niwa",
+  "Tobiko",
+] as const;
+
+export type StandardBrandName = (typeof STANDARD_BRAND_NAMES)[number];
+
+export function normalizePlatformName(name?: string | null): string {
+  if (!name) return "—";
+  const trimmed = name.trim();
+  const matched = STANDARD_PLATFORM_NAMES.find(
+    (p) => p.toLowerCase() === trimmed.toLowerCase()
+  );
+  return matched ?? trimmed;
+}
+
+export function normalizeBrandName(name?: string | null): string {
+  if (!name) return "—";
+  const trimmed = name.trim();
+  const matched = STANDARD_BRAND_NAMES.find(
+    (b) => b.toLowerCase() === trimmed.toLowerCase()
+  );
+  return matched ?? trimmed;
+}
+
 export interface PlatformBrandRow {
   platformName: string;
   brandName: string;
@@ -255,16 +293,27 @@ export function calculateSalesSummary(
 
 /**
  * المبيعات مجمعة حسب منصة × براند (بدون الملغي) — مرتبة تنازليًا بالمبيعات
+ * عند تفعيل standardOnly (الافتراضي true) يتم استبعاد منصات وبراندات التيست
  */
 export function groupSalesByPlatformBrand(
-  orders: ReportOrderInput[] = []
+  orders: ReportOrderInput[] = [],
+  standardOnly = true
 ): PlatformBrandRow[] {
   const map = new Map<string, PlatformBrandRow>();
 
   for (const order of orders) {
     if (isCancelled(order)) continue;
-    const platformName = order.platformName || "—";
-    const brandName = order.brandName || "—";
+    const platformName = normalizePlatformName(order.platformName);
+    const brandName = normalizeBrandName(order.brandName);
+
+    if (standardOnly) {
+      const isStandardPlatform = (STANDARD_PLATFORM_NAMES as readonly string[]).includes(platformName);
+      const isStandardBrand = (STANDARD_BRAND_NAMES as readonly string[]).includes(brandName);
+      if (!isStandardPlatform || !isStandardBrand) {
+        continue;
+      }
+    }
+
     const key = `${platformName}||${brandName}`;
     const row = map.get(key) ?? {
       platformName,
