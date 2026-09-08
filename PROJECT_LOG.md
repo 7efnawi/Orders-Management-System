@@ -10,6 +10,18 @@
 |---|---|---|
 | القائمة النهائية للمنصات | ✅ حُسمت (Talabat, InstaShop, Harry App, Elmenus, Facebook, Phone) | Platform seed & Visual Tokens |
 
+## [2026-09-08] مخطط ساعات الذروة والـ Heatmap (Task 4: Peak Hours Heatmap Chart)
+**النوع:** Frontend Feature & Data Visualization
+**اللي اتعمل:**
+- إنشاء مكوّن `src/components/reports/charts/peak-hours-heatmap.tsx`:
+  - مصفوفة تفاعلية متجاوبة 7 أيام × 24 ساعة تعرض أعداد الطلبات بتدرجات لونية معبرة عن الكثافة (Heatmap intensity).
+  - تحديد دقيق لساعة الذروة (Peak Hour) وأيام الضغط في الـ dark kitchen لمساعدة الإدارة في توزيع الشفتات والعمالة.
+  - مخطط أعمدة إحصائي للساعات مع تلميحات (Tooltips) لقيمة الإيراد وأعداد الطلبات لكل ساعة.
+- **بوابات الجودة:** اجتياز `npm run typecheck` (0 أخطاء)، واجتياز `npm run test:e2e` بنجاح 100% (197/197 اختبار).
+**الملفات المتأثرة:** `src/components/reports/charts/peak-hours-heatmap.tsx`, `PROJECT_LOG.md`
+
+---
+
 ## [2026-09-08] شريط فلاتر التقارير الموحد وتصدير البيانات (Task 3: Shared Reports Filter Bar & Export)
 **النوع:** Frontend Feature & UI Components
 **اللي اتعمل:**
