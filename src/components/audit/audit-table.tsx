@@ -14,7 +14,11 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { computeAuditDiff, type AuditLogWithUser } from "@/lib/auditDiff";
+import {
+  formatHumanSummary,
+  formatHumanEntityId,
+  type AuditLogWithUser,
+} from "@/lib/auditDiff";
 import { cn } from "@/lib/utils";
 
 interface AuditTableProps {
@@ -75,49 +79,6 @@ const ROLE_STYLES: Record<Role, { badgeClass: string; avatarClass: string }> = {
   },
 };
 
-function getSummarySnippet(log: AuditLogWithUser, isAr: boolean): string {
-  if (log.action === "CREATE") {
-    return isAr ? "إنشاء سجل جديد" : "Created new entity record";
-  }
-  if (log.action === "CANCEL") {
-    const reason = log.newValue?.cancelReason || log.oldValue?.cancelReason;
-    return reason
-      ? `${isAr ? "سبب الإلغاء" : "Cancel reason"}: ${reason}`
-      : isAr ? "إلغاء الطلب" : "Order cancelled";
-  }
-  if (log.action === "DISCOUNT_APPROVE") {
-    const amount = log.newValue?.discountAmount ?? log.oldValue?.discountAmount;
-    return amount != null
-      ? `${isAr ? "اعتماد خصم" : "Approved discount"}: ${amount} EGP`
-      : isAr ? "اعتماد الخصم" : "Discount approved";
-  }
-  if (log.action === "DISCOUNT_REJECT") {
-    return isAr ? "رفض طلب الخصم" : "Discount request rejected";
-  }
-  if (log.action === "STATUS_CHANGE") {
-    const oldStatus = log.oldValue?.status;
-    const newStatus = log.newValue?.status;
-    if (oldStatus && newStatus) {
-      return `${oldStatus} ➔ ${newStatus}`;
-    }
-  }
-
-  const diffs = computeAuditDiff(log.oldValue, log.newValue);
-  if (diffs.length === 1) {
-    const d = diffs[0];
-    const fieldName = isAr ? d.labelAr : d.labelEn;
-    const oldVal = d.oldValue != null ? String(d.oldValue) : "—";
-    const newVal = d.newValue != null ? String(d.newValue) : "—";
-    return `${fieldName}: ${oldVal} ➔ ${newVal}`;
-  }
-  if (diffs.length > 1) {
-    const names = diffs.slice(0, 2).map((d) => (isAr ? d.labelAr : d.labelEn)).join(", ");
-    const extra = diffs.length > 2 ? ` (+${diffs.length - 2})` : "";
-    return `${isAr ? "تعديل" : "Modified"}: ${names}${extra}`;
-  }
-  return "—";
-}
-
 export function AuditTable({
   logs,
   total,
@@ -142,15 +103,15 @@ export function AuditTable({
     <div className="rounded-xl border border-border/80 bg-card overflow-hidden shadow-xs flex flex-col">
       {/* Table Body */}
       <div className="overflow-x-auto">
-        <table className="w-full text-start text-xs sm:text-sm">
+        <table className="table-fixed w-full text-start text-xs sm:text-sm divide-y divide-border/60">
           <thead>
             <tr className="border-b border-border/80 bg-muted/40 text-muted-foreground text-xs uppercase tracking-wider">
-              <th className="px-4 py-3.5 text-start font-semibold">{t("table.timestamp")}</th>
-              <th className="px-4 py-3.5 text-start font-semibold">{t("table.user")}</th>
-              <th className="px-4 py-3.5 text-start font-semibold">{t("table.action")}</th>
-              <th className="px-4 py-3.5 text-start font-semibold">{t("table.entity")}</th>
-              <th className="px-4 py-3.5 text-start font-semibold hidden md:table-cell">{t("table.summary")}</th>
-              <th className="px-4 py-3.5 text-end font-semibold">{t("table.details")}</th>
+              <th className="w-[15%] min-w-[130px] px-4 py-3.5 text-start font-semibold">{t("table.timestamp")}</th>
+              <th className="w-[17%] min-w-[150px] px-4 py-3.5 text-start font-semibold">{t("table.user")}</th>
+              <th className="w-[11%] min-w-[95px] px-4 py-3.5 text-start font-semibold">{t("table.action")}</th>
+              <th className="w-[17%] min-w-[150px] px-4 py-3.5 text-start font-semibold">{t("table.entity")}</th>
+              <th className="w-[28%] min-w-[200px] px-4 py-3.5 text-start font-semibold">{t("table.summary")}</th>
+              <th className="w-[12%] min-w-[100px] px-4 py-3.5 text-center font-semibold">{t("table.details")}</th>
             </tr>
           </thead>
           <tbody className={cn("divide-y divide-border/60 transition-opacity", isLoading && "opacity-60")}>
@@ -190,7 +151,8 @@ export function AuditTable({
                   second: "2-digit",
                 });
 
-                const summaryText = getSummarySnippet(log, isAr);
+                const summaryText = formatHumanSummary(log, isAr);
+                const formattedId = formatHumanEntityId(log);
 
                 return (
                   <tr key={log.id} className="hover:bg-muted/30 transition-colors">
@@ -229,7 +191,7 @@ export function AuditTable({
                     <td className="px-4 py-3 align-middle whitespace-nowrap">
                       <Badge
                         variant="outline"
-                        className={cn("gap-1.5 px-2 py-0.5 text-xs font-semibold", actionStyle.badgeClass)}
+                        className={cn("gap-1.5 px-2 py-1 text-xs font-semibold w-24 justify-center shadow-2xs", actionStyle.badgeClass)}
                       >
                         <span className={cn("size-1.5 rounded-full", actionStyle.dotClass)} />
                         {t(`actions.${log.action}`)}
@@ -237,32 +199,36 @@ export function AuditTable({
                     </td>
 
                     {/* Entity Column */}
-                    <td className="px-4 py-3 align-middle whitespace-nowrap">
-                      <div className="flex items-center gap-1.5">
-                        <Badge variant="outline" className="bg-secondary/50 text-secondary-foreground text-3xs font-medium border-border/70">
+                    <td className="px-4 py-3 align-middle whitespace-nowrap overflow-hidden">
+                      <div className="flex items-center gap-1.5 overflow-hidden">
+                        <Badge variant="outline" className="bg-secondary/50 text-secondary-foreground text-3xs font-medium border-border/70 shrink-0">
                           {t.has(`entities.${log.entityType}`) ? t(`entities.${log.entityType}`) : log.entityType}
                         </Badge>
-                        <span className="font-mono text-3xs text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded border border-border/40">
-                          #{log.entityId}
+                        <span
+                          dir="ltr"
+                          className="font-mono tabular-nums text-3xs text-muted-foreground bg-muted/70 px-1.5 py-0.5 rounded border border-border/40 truncate"
+                          title={formattedId.full}
+                        >
+                          {formattedId.display}
                         </span>
                       </div>
                     </td>
 
                     {/* Summary Column */}
-                    <td className="px-4 py-3 align-middle hidden md:table-cell max-w-xs">
+                    <td className="px-4 py-3 align-middle overflow-hidden">
                       <span className="text-xs text-foreground/90 truncate block" title={summaryText}>
                         {summaryText}
                       </span>
                     </td>
 
                     {/* Action Button */}
-                    <td className="px-4 py-3 align-middle text-end whitespace-nowrap">
+                    <td className="px-4 py-3 align-middle text-center whitespace-nowrap">
                       <Button
                         type="button"
                         variant="outline"
                         size="sm"
                         onClick={() => onViewDiff(log)}
-                        className="h-8 px-2.5 text-xs font-semibold gap-1 hover:bg-primary/10 hover:text-primary hover:border-primary/40 transition-colors"
+                        className="h-8 px-2.5 text-xs font-semibold gap-1 hover:bg-primary/10 hover:text-primary hover:border-primary/40 transition-colors mx-auto"
                       >
                         <Eye className="size-3.5" />
                         <span>{t("table.viewDiff")}</span>

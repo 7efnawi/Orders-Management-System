@@ -476,6 +476,14 @@ export async function runTier3Tests(): Promise<TestRunner> {
     assert.ok(ar.audit?.entities?.DeliveryDriver, "ar.audit.entities.DeliveryDriver must exist");
   });
 
+  await runner.test("C7.16: AuditTable uses fixed table layout and direction-safe entity chips", async () => {
+    const fs = await import("fs");
+    const tableCode = fs.readFileSync("src/components/audit/audit-table.tsx", "utf-8");
+    assert.ok(tableCode.includes("table-fixed"), "AuditTable must use table-fixed for column width stability");
+    assert.ok(tableCode.includes("dir=\"ltr\""), "AuditTable must enforce dir=ltr on code chips to avoid BiDi flips");
+    assert.ok(tableCode.includes("formatHumanSummary"), "AuditTable must use formatHumanSummary");
+  });
+
   return runner;
 }
 
