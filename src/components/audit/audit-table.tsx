@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { computeAuditDiff, type AuditLogWithUser } from "@/services/audit";
+import { computeAuditDiff, type AuditLogWithUser } from "@/lib/auditDiff";
 import { cn } from "@/lib/utils";
 
 interface AuditTableProps {

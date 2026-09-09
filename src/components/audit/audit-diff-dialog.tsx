@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { computeAuditDiff, type AuditLogWithUser, type FieldDiff } from "@/services/audit";
+import { computeAuditDiff, type AuditLogWithUser, type FieldDiff } from "@/lib/auditDiff";
 import { cn } from "@/lib/utils";
 
 interface AuditDiffDialogProps {

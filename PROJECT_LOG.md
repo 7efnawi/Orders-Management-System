@@ -10,6 +10,47 @@
 |---|---|---|
 | القائمة النهائية للمنصات | ✅ حُسمت (Talabat, InstaShop, Harry App, Elmenus, Facebook, Phone) | Platform seed & Visual Tokens |
 
+## [2026-09-09] اكتمال المرحلة 10 — سجل تدقيق العمليات ومراقبة الأنشطة وبوابة التحقق الآلي (Phase 10: Audit Log UI & Activity Monitoring Completion)
+**النوع:** Quality Assurance & Automated Gate Verification (TDD)
+**اللي اتعمل:**
+- إنشاء سكربت بوابة التحقق الآلي الشامل للمرحلة العاشرة `scripts/verify-phase10.ts` مع تنفيذ 6 خطوات فحص تكاملي وعدائي بنسبة نجاح 100%:
+  1. **الخطوة 1: التهيئة والنظافة البيئية والتجهيز (Setup & Pre-verification Cleanliness):**
+     - إنشاء وتأمين مستخدمي الاختبار الثلاثة: المالك (`owner-verify-phase10@sushi.local`)، المدير (`manager-verify-phase10@sushi.local`)، والكاشير (`cashier-verify-phase10@sushi.local`).
+     - تهيئة التبعيات (البراند، التصنيف، المنتج، المنصة، ونوع المصروف).
+  2. **الخطوة 2: توليد سجل التدقيق الذري لعمليات الأعمال الحقيقية (Atomic Audit Generation on Real Workflows):**
+     - إنشاء طلب عبر خدمة `createOrder` بواسطة الكاشير مع طلب خصم (`PENDING`) والتحقق من حفظ سجل `CREATE` للطلب ذرّيًا.
+     - تدرج حالة الطلب (`NEW -> CONFIRMED -> PREPARING`) عبر `transitionOrderStatus` والتحقق من تسجيل سجلين ذرّيين من نوع `STATUS_CHANGE` بالحالات السابقة والجديدة بدقة.
+     - اعتماد الخصم بواسطة المالك عبر `decideDiscount` والتحقق من توليد سجل ذرّي من نوع `DISCOUNT_APPROVE`.
+     - تسجيل مصروف بواسطة الكاشير عبر `createExpense` والتحقق من سجل التدقيق `CREATE` لمصروفات التشغيل.
+     - ترقية دور الكاشير إلى مدير بواسطة المالك عبر `updateUser` والتحقق من سجل `UPDATE` مع الفوارق الدلالية (`CASHIER -> MANAGER`).
+  3. **الخطوة 3: التحقق من استعلامات وفلاتر الخدمة متعددة المعايير (Multi-Criteria Service Filtering):**
+     - فحص الفلترة بنوع الإجراء (`action: "STATUS_CHANGE"`).
+     - فحص الفلترة بنوع الكيان (`entityType: "Order"` مقابل `entityType: "User"`).
+     - فحص الفلترة بمعرّف المستخدم (`userId: cashierUserId`).
+     - فحص الفلترة بالنطاق الزمني (`startDate`/`endDate`).
+     - فحص الترقيم (`page: 1, limit: 2` مع `totalPages`).
+     - فحص دقة إحصائيات `getAuditStats` التجميعية (`totalLogs`, `todayCount`, `statusChangeCount`, `criticalCount`).
+  4. **الخطوة 4: التحقق الصارم من التحكم في الوصول والصلاحيات (FR-AUD-03 RBAC):**
+     - التحقق من قبول `requireRole("OWNER")` لجلسة المالك.
+     - التحقق من رفض `requireRole("OWNER")` لجلسات المدراء والكاشيرات ورمي استثناء `AuthError("FORBIDDEN")`.
+     - التحقق من رفض الراوت `GET /api/audit` لغير المالكين وإرجاع HTTP 403 مع رمز `"FORBIDDEN"`.
+     - التحقق من استجابة `GET /api/audit` بنجاح HTTP 200 وحمولة البيانات للمالك.
+  5. **الخطوة 5: التحقق من عدم القابلية للتعديل بتاتاً (FR-AUD-02 Absolute Immutability):**
+     - التحقق من خلو طبقة الخدمة `src/services/audit.ts` تماماً من أي دوال حذف أو تعديل (صفر دوال `delete`/`update`/`clear`/`purge`).
+     - التحقق من حظر كافة طرق التعديل في واجهة البرمجة (`POST`, `PUT`, `PATCH`, `DELETE`) وإرجاع كود الاستجابة الموحد `405 Method Not Allowed` مع `"METHOD_NOT_ALLOWED"`.
+  6. **الخطوة 6: دقة محرك الفوارق الدلالية (Semantic Diff Engine Precision):**
+     - فحص دقة `computeAuditDiff` عبر حقول الحالة والخصومات وتغييرات الأدوار مع المعجم العربي الدقيق (`حالة الطلب`، `مبلغ الخصم`، `الدور الصلاحي`).
+     - فصل محرك الفوارق والأدوات الآمنة للعميل في `src/lib/auditDiff.ts` لتفادي حزم حزم قاعدة البيانات (`pg` و `fs`) داخل متصفح العميل أثناء بناء الإنتاج.
+  - التنظيف التلقائي الشامل لكافة بيانات وسجلات الاختبار في كتلة `finally`.
+- **بوابات الجودة الصارمة:**
+  - اجتياز سكربت الفحص الآلي `scripts/verify-phase10.ts` بنسبة 100%.
+  - اجتياز الفحص النمطي `npm run typecheck` (`tsc --noEmit`) بنجاح (0 أخطاء).
+  - اجتياز سويت الاختبارات الكامل `npm run test:e2e` بنسبة 100% (211/211 اختبار بنجاح تام).
+  - اجتياز بناء الإنتاج `npm run build` لكافة المسارات الـ 46 بنجاح.
+**الملفات المتأثرة:** `scripts/verify-phase10.ts`, `src/lib/auditDiff.ts`, `src/services/audit.ts`, `src/lib/auth.ts`, `src/components/audit/audit-diff-dialog.tsx`, `src/components/audit/audit-table.tsx`, `src/components/audit/audit-client.tsx`, `docs/plans/2026-09-09-phase10-audit-plan.md`, `PROJECT_LOG.md`
+
+---
+
 ## [2026-09-09] المرحلة 10 — واجهة سجل المراقبة ومفتش الفوارق البصري والتنقل الحصري (Task 10.3: Audit UI, Diff Modal & Navigation)
 **النوع:** UI/UX Excellence & Frontend Architecture (TDD)
 **اللي اتعمل:**

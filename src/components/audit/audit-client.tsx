@@ -20,7 +20,7 @@ import {
 } from "@/components/audit/audit-filter-bar";
 import { AuditTable } from "@/components/audit/audit-table";
 import { AuditDiffDialog } from "@/components/audit/audit-diff-dialog";
-import type { AuditLogWithUser, AuditSummaryStats } from "@/services/audit";
+import type { AuditLogWithUser, AuditSummaryStats } from "@/lib/auditDiff";
 import { cn } from "@/lib/utils";
 
 interface AuditClientProps {

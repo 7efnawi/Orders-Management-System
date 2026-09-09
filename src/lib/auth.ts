@@ -20,8 +20,18 @@ export class AuthError extends Error {
   }
 }
 
+let mockSessionUser: SessionUser | null | undefined = undefined;
+
+/** للتحقق البرمجي والاختبارات الآلية — يسمح بمحاكاة جلسة مستخدم محدد */
+export function __setMockSessionUser(user: SessionUser | null | undefined) {
+  mockSessionUser = user;
+}
+
 /** يُخزَّن لكل request — كل استدعاءات نفس الريكويست بتشارك نتيجة واحدة */
 export const getSessionUser = cache(async (): Promise<SessionUser | null> => {
+  if (mockSessionUser !== undefined) {
+    return mockSessionUser;
+  }
   const supabase = await createClient();
   const {
     data: { user },
