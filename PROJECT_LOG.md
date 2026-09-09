@@ -10,6 +10,34 @@
 |---|---|---|
 | القائمة النهائية للمنصات | ✅ حُسمت (Talabat, InstaShop, Harry App, Elmenus, Facebook, Phone) | Platform seed & Visual Tokens |
 
+## [2026-09-09] المرحلة 10 — مسار API سجل المراقبة المحمي للمالك وفرض عدم التعديل (Task 10.2: Protected Audit API Route)
+**النوع:** Core Feature & Security Architecture (TDD)
+**اللي اتعمل:**
+- إنشاء وتأمين مسار API لسجل المراقبة والتدقيق `src/app/api/audit/route.ts` وفق متطلبات المرحلة العاشرة (Audit Log UI & Activity Monitoring — FR-AUD-02 & FR-AUD-03):
+  - حراسة المسار بصلاحيات المالك حصراً (`FR-AUD-03`):
+    - فحص الصلاحية في أول سطر عبر `requireRole("OWNER")`.
+    - إرجاع خطأ `401 Unauthorized` للمستخدمين غير المسجلين، و `403 Forbidden` (`Forbidden: Owner role required`) لغير المالكين (المدراء والكاشيرات).
+  - التحقق الصارم من معايير الاستعلام (Query Validation Schema):
+    - تصدير مخطط الفحص `auditQuerySchema` باستخدام Zod للتحقق من:
+      - رقم الصفحة والحد الأقصى (`page` الافتراضي 1، و `limit` الافتراضي 25 ومقيد بحد أقصى 100).
+      - نوع الإجراء المقبول (`action` من `AuditAction`).
+      - نوع الكيان (`entityType`) ومعرّف الكيان أو البحث النصي (`search`/`entityId`).
+      - معرّف المستخدم (`userId` كـ UUID).
+      - التواريخ بتنسيق ISO صالح (`startDate`, `endDate` بتنسيق `YYYY-MM-DD`).
+    - إرجاع `400 Validation Error` مع تفاصيل الأخطاء عند تمرير معايير غير صالحة.
+  - تكامل طبقة الخدمة وإرجاع البيانات:
+    - تفويض الاستعلام إلى `listAuditLogs(query)` و `getAuditStats(...)` بالتوازي عبر `Promise.all`.
+    - إرجاع استجابة قياسية منسقة تتضمن: السجلات مع بيانات المستخدم، الإجمالي، رقم الصفحة، الحد، إجمالي الصفحات، والإحصائيات التجميعية للمؤشرات الرئيسية (`stats`).
+  - فرض عدم القابلية للتعديل المطلقة (`FR-AUD-02` — Immutability Enforcement):
+    - حظر كافة طلبات التعديل أو الحذف أو الإضافة عبر تصدير معالجات `POST` و `PUT` و `PATCH` و `DELETE` وإرجاع `405 Method Not Allowed` مع رسالة صريحة بأن سجل التدقيق إلحاقي فقط وغير قابل للتعديل برمجياً.
+- إضافة اختبار TDD المعياري `F16.6` في `tests/e2e/tier1-feature-coverage.test.ts` للتحقق من صحة المخطط، والقيم الافتراضية، وقيد الحد الأقصى (clamp max 100)، ورفض الإجراءات غير المعرفة.
+- **بوابات الجودة:**
+  - اجتياز `npm run typecheck` بنجاح (0 أخطاء).
+  - اجتياز `npm run test:e2e` بنجاح 100% (210/210 اختبار — Red -> Green).
+**الملفات المتأثرة:** `src/app/api/audit/route.ts`, `tests/e2e/tier1-feature-coverage.test.ts`, `PROJECT_LOG.md`
+
+---
+
 ## [2026-09-09] المرحلة 10 — طبقة خدمة سجل المراقبة ومحرك فحص الفوارق (Task 10.1: Audit Service Layer & Semantic Diff Engine)
 **النوع:** Core Feature & Security Architecture (TDD)
 **اللي اتعمل:**

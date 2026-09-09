@@ -1103,5 +1103,33 @@ export async function runTier1Tests(): Promise<TestRunner> {
     assert.strictEqual(where.entityId?.contains, "ORD-999");
   });
 
+  await runner.test("F16.6: Audit API query schema validation and role enforcement rules (FR-AUD-03)", async () => {
+    const { auditQuerySchema } = await import("../../src/app/api/audit/route");
+
+    // Valid query
+    const valid = auditQuerySchema.parse({
+      page: "2",
+      limit: "50",
+      action: "STATUS_CHANGE",
+      entityType: "Order",
+      startDate: "2026-09-01",
+      endDate: "2026-09-08",
+    });
+    assert.strictEqual(valid.page, 2);
+    assert.strictEqual(valid.limit, 50);
+    assert.strictEqual(valid.action, "STATUS_CHANGE");
+
+    // Default values
+    const defaults = auditQuerySchema.parse({});
+    assert.strictEqual(defaults.page, 1);
+    assert.strictEqual(defaults.limit, 25);
+
+    // Limit clamp: maximum 100
+    assert.throws(() => auditQuerySchema.parse({ limit: "500" }), /limit/);
+
+    // Invalid action
+    assert.throws(() => auditQuerySchema.parse({ action: "INVALID_ACTION" }), /action/);
+  });
+
   return runner;
 }
