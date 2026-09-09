@@ -1131,5 +1131,36 @@ export async function runTier1Tests(): Promise<TestRunner> {
     assert.throws(() => auditQuerySchema.parse({ action: "INVALID_ACTION" }), /action/);
   });
 
+  await runner.test("F16.7: formatHumanSummary converts boolean and status diffs into natural Arabic", async () => {
+    const { formatHumanSummary, formatHumanEntityId } = await import("../../src/lib/auditDiff");
+    
+    // Boolean deactivation
+    const deactivationLog = {
+      action: "UPDATE",
+      entityType: "User",
+      entityId: "8c0f2069-6121-4e44-8193-ce8233595841",
+      oldValue: { isActive: true },
+      newValue: { isActive: false },
+    };
+    const deactSummary = formatHumanSummary(deactivationLog as any, true);
+    assert.strictEqual(deactSummary, "إيقاف النشاط (تعطيل الحساب)");
+
+    // Status change
+    const statusLog = {
+      action: "STATUS_CHANGE",
+      entityType: "Order",
+      entityId: "ord-1",
+      oldValue: { status: "NEW" },
+      newValue: { status: "CONFIRMED" },
+    };
+    const statusSummary = formatHumanSummary(statusLog as any, true);
+    assert.strictEqual(statusSummary, "تحديث الحالة: جديد ➔ مؤكد");
+
+    // Clean entity ID formatting
+    const formattedId = formatHumanEntityId(deactivationLog as any);
+    assert.strictEqual(formattedId.display, "#8c0f2069");
+    assert.strictEqual(formattedId.full, "8c0f2069-6121-4e44-8193-ce8233595841");
+  });
+
   return runner;
 }

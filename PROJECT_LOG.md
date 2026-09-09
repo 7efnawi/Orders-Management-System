@@ -10,6 +10,29 @@
 |---|---|---|
 | القائمة النهائية للمنصات | ✅ حُسمت (Talabat, InstaShop, Harry App, Elmenus, Facebook, Phone) | Platform seed & Visual Tokens |
 
+## [2026-09-09] سجل المراقبة — محرك الصياغة البشرية باللغة العربية وتنسيق معرّفات الكيانات الآمن للاتجاه (Human-Centric Arabic Summary Engine & Direction-Safe Entity Formatter)
+**النوع:** Core Domain Engine & Human Experience Architecture (TDD, Task 2)
+**الدافع والمشكلة:**
+- كانت شاشات المراقبة تعرض نصوصًا برمجية خام وقيم Boolean جافة (`true -> false`) وأسماء حقول ومعرّفات UUID طويلة تفيض خارج حدود الخلايا وتسبب تشوهات بصرية، بالإضافة إلى انقلاب علامة `#` في اتجاه RTL لعدم عزل اتجاه النصوص البرمجية (`dir="ltr"`).
+- الحاجة إلى محرك ذكي يحوّل أحداث التدقيق التقنية فوراً إلى لغة عربية طبيعية فصيحة ومباشرة (مثل: "إيقاف النشاط (تعطيل الحساب)"، "تحديث الحالة: جديد ➔ مؤكد"، "تعديل الدور: كاشير ➔ مدير").
+**اللي اتعمل:**
+- **تحديث وتوسيع قاموس حقول النطاق `AUDIT_FIELD_DICTIONARY` في `src/lib/auditDiff.ts`:**
+  - تعديل ترجمة `isActive` إلى "حالة الحساب" (`labelAr: "حالة الحساب"`).
+  - إضافة كافة حقول النطاق الناقصة: `shift`, `driver`, `customer`, `shiftId`, `closedAt`, `openedAt`, `actualCash`, `expectedCash`, `difference`.
+- **بناء دالة تحويل قيم النطاق `formatDomainValue`:**
+  - ترجمة الحالات والأدوار والقيم المنطقية والعملات (`EGP` و `ج.م`) تلقائيًا مع منع تسرب أي مصطلحات برمجية.
+- **بناء محرك الملخص البشري الطبيعي `formatHumanSummary`:**
+  - صياغة سردية عربية ذكية لعمليات: `CREATE`, `STATUS_CHANGE`, `CANCEL`, `DISCOUNT_APPROVE`, `DISCOUNT_REJECT`, `DISCOUNT_REQUEST`, و `UPDATE`.
+  - معالجة ذكية لتغييرات `isActive` (تفعيل الحساب / تعطيل الحساب) وتغييرات الحالات باستخدام الأسهم النظيفة `➔` دون أي تشوه في الترتيب (Zero BiDi flips).
+- **بناء منسق معرّفات الكيانات الذكي `formatHumanEntityId`:**
+  - التعرف على أرقام الطلبات وعرضها مسبوقة بـ `#`.
+  - اختصار معرّفات UUID الطويلة (36 حرفاً) إلى شريحة موجزة `#8c0f2069` مع حفظ المعرّف الكامل في خاصية `full`.
+- **الاختبارات وبوابات الجودة (TDD):**
+  - إضافة الاختبار التراجعي `F16.7` في `tests/e2e/tier1-feature-coverage.test.ts` والتحقق من طور الفشل (Red) ثم النجاح (Green).
+  - اجتياز فحص الأنواع `npm run typecheck` بنسبة 100% (0 أخطاء).
+  - اجتياز سويت الاختبارات الشامل `npm run test:e2e` بنجاح (214/214 اختبار).
+**الملفات المتأثرة:** `src/lib/auditDiff.ts`, `tests/e2e/tier1-feature-coverage.test.ts`, `PROJECT_LOG.md`
+
 ## [2026-09-09] سجل المراقبة — إزالة تصدير CSV وتوسيع ترجمات الكيانات الشاملة (Audit UI: Remove CSV Export & Expand Entity Translations)
 **النوع:** UI Refinement & i18n Completeness (TDD, Task 1)
 **الدافع والمشكلة:**
