@@ -10,6 +10,40 @@
 |---|---|---|
 | القائمة النهائية للمنصات | ✅ حُسمت (Talabat, InstaShop, Harry App, Elmenus, Facebook, Phone) | Platform seed & Visual Tokens |
 
+## [2026-09-09] المرحلة 10 — واجهة سجل المراقبة ومفتش الفوارق البصري والتنقل الحصري (Task 10.3: Audit UI, Diff Modal & Navigation)
+**النوع:** UI/UX Excellence & Frontend Architecture (TDD)
+**اللي اتعمل:**
+- بناء واجهة سجل التدقيق والمراقبة الشاملة للمالك حصراً وفق معايير `ui-ux-pro-max` وتصميم الـ Dark Kitchen عالي التباين:
+  - مفتش الفوارق البصري (`AuditDiffDialog` في `src/components/audit/audit-diff-dialog.tsx`):
+    - مقارنة تفاعلية حقل بحقل بين الحالة القديمة والجديدة مستندة إلى `computeAuditDiff`.
+    - تمييز لوني دقيق: بطاقة القيمة السابقة (`-`) باللون الأحمر الخافت، وسهم الانتقال الحركي المتجاوب مع اتجاه القراءة RTL، وبطاقة القيمة الجديدة (`+`) باللون الأخضر الزمرّدي البارز.
+    - تنسيق ذكي مخصص حسب نوع الحقل: العملات (`EGP`)، الحالات (`Status Badges`)، الصلاحيات (`Role Badges`)، والمنطق (`Active/Inactive`).
+    - نافذة متقدمة قابلة للطي لفحص حمولة JSON الأصلية (Raw JSON Disclosure) مع أزرار نسخ فوري للحافظة.
+  - شريط الفلترة متعدد المعايير (`AuditFilterBar` في `src/components/audit/audit-filter-bar.tsx`):
+    - أزرار الفترات الزمنية السريعة (اليوم، أمس، آخر 7 أيام، هذا الشهر، كل الأوقات).
+    - قوائم منسدلة لاختيار نوع العملية (`AuditAction`)، نوع الكيان (`Order`, `Expense`, `User`, إلخ)، ومستخدم النظام.
+    - حقل بحث فوري مع تأخير ذكي (Debounced Search بـ 300ms) للبحث بمعرّف الكيان أو رقم الأوردر.
+    - أزرار إعادة ضبط الفلاتر والتحديث اللحظي مع مؤشر تحميل دوّار.
+  - جدول السجلات عالي الاستجابة (`AuditTable` في `src/components/audit/audit-table.tsx`):
+    - أعمدة: الوقت والتاريخ (مع التوقيت اللحظي بدقة الثواني)، المستخدم (الأيقونة، الاسم، وصلاحية الدور)، العملية (أوسمة ملونة)، الكيان والمعرّف، ملخص التغيير الدلالي، وزر فحص الفارق ("فحص الفارق" مع أيقونة `Eye`).
+    - شريط تذييل وترقيم كامل (Pagination): مؤشر النطاق المعروض، محدد حجم الصفحة (15، 25، 50)، وأزرار التنقل بين الصفحات السابقة والتالية.
+  - المنسق التفاعلي للعميل (`AuditClient` في `src/components/audit/audit-client.tsx`):
+    - 4 بطاقات مؤشرات تنفيذية عليا (KPIs): إجمالي العمليات (`Activity`)، نشاط اليوم (`Clock`)، تغييرات الحالات (`ArrowRightLeft`)، والعمليات الحساسة (`ShieldAlert`).
+    - زر تصدير CSV فوري بترميز UTF-8 مع BOM (`\uFEFF`) لضمان التوافق التام مع اللغة العربية في Microsoft Excel.
+  - حماية صفحة الخادم (`src/app/[locale]/(dashboard)/audit/page.tsx`):
+    - حراسة المسار عبر `requirePageUser()` وإعادة توجيه أي مستخدم غير مالك (`user.role !== "OWNER"`) فوراً إلى الصفحة الرئيسية `/`.
+    - جلب البيانات الأولية من الخادم (`listAuditLogs`, `getAuditStats`, وقائمة المستخدمين).
+  - تحديث شريط التنقل الرئيسي (`src/components/layout/dashboard-header.tsx`):
+    - إضافة تبويب "سجل المراقبة" (`/audit`) بأيقونة `ShieldCheck` حصراً لدور المالك (`roles: ["OWNER"]`) في شريط الحواسيب والقائمة الجانبية للأجهزة المحمولة.
+  - اكتمال المعجم اللغوي الثنائي المتطابق في `src/messages/ar.json` و `src/messages/en.json` تحت نطاق `audit`.
+- إضافة اختبار TDD التوافقي `C7.13` في `tests/e2e/tier3-cross-feature.test.ts`.
+- **بوابات الجودة:**
+  - اجتياز `npm run typecheck` بنجاح (0 أخطاء).
+  - اجتياز `npm run test:e2e` بنجاح 100% (211/211 اختبار — Red -> Green).
+**الملفات المتأثرة:** `src/components/audit/audit-diff-dialog.tsx`, `src/components/audit/audit-filter-bar.tsx`, `src/components/audit/audit-table.tsx`, `src/components/audit/audit-client.tsx`, `src/app/[locale]/(dashboard)/audit/page.tsx`, `src/components/layout/dashboard-header.tsx`, `src/messages/ar.json`, `src/messages/en.json`, `tests/e2e/tier3-cross-feature.test.ts`, `PROJECT_LOG.md`
+
+---
+
 ## [2026-09-09] المرحلة 10 — مسار API سجل المراقبة المحمي للمالك وفرض عدم التعديل (Task 10.2: Protected Audit API Route)
 **النوع:** Core Feature & Security Architecture (TDD)
 **اللي اتعمل:**

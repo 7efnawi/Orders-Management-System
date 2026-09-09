@@ -150,6 +150,13 @@ export function DashboardHeader({ user, locale }: DashboardHeaderProps) {
       isActive: pathname === "/reports" || pathname.startsWith("/reports"),
     },
     {
+      href: "/audit",
+      label: tNav("audit"),
+      icon: ShieldCheck,
+      roles: ["OWNER"] as Role[],
+      isActive: pathname === "/audit" || pathname.startsWith("/audit"),
+    },
+    {
       href: "/users",
       label: tNav("users"),
       icon: Users,

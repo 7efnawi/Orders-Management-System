@@ -1040,5 +1040,87 @@
       "forbiddenDelete": "You do not have permission to delete this user",
       "error": "An error occurred while processing the request"
     }
+  },
+  "audit": {
+    "title": "Audit Log & Activity",
+    "subtitle": "Immutable tracking for all critical operations and state transitions across the system",
+    "kpis": {
+      "totalLogs": "Total Operations",
+      "todayEvents": "Today's Events",
+      "statusTransitions": "Status Changes",
+      "criticalOps": "Critical Operations",
+      "criticalOpsDesc": "Cancellations and discount approvals"
+    },
+    "filters": {
+      "searchPlaceholder": "Search by Entity ID (Order #, Expense #...)",
+      "allActions": "All Actions",
+      "allEntities": "All Entities",
+      "allUsers": "All Users",
+      "quick": {
+        "today": "Today",
+        "yesterday": "Yesterday",
+        "last7Days": "Last 7 Days",
+        "thisMonth": "This Month",
+        "allTime": "All Time"
+      },
+      "reset": "Reset",
+      "refresh": "Refresh"
+    },
+    "actions": {
+      "CREATE": "Create",
+      "UPDATE": "Update",
+      "CANCEL": "Cancel",
+      "STATUS_CHANGE": "Status Change",
+      "DISCOUNT_REQUEST": "Discount Request",
+      "DISCOUNT_APPROVE": "Discount Approve",
+      "DISCOUNT_REJECT": "Discount Reject"
+    },
+    "entities": {
+      "Order": "Order",
+      "User": "User",
+      "Product": "Product",
+      "Category": "Category",
+      "Expense": "Expense",
+      "ExpenseType": "Expense Type",
+      "DailyClosing": "Daily Closing",
+      "Driver": "Driver",
+      "DeliveryZone": "Delivery Zone"
+    },
+    "table": {
+      "timestamp": "Date & Time",
+      "user": "User",
+      "action": "Action",
+      "entity": "Entity & ID",
+      "summary": "Change Summary",
+      "details": "Details",
+      "viewDiff": "Inspect Diff",
+      "empty": "No audit records match the selected filters or search",
+      "showingResults": "Showing {from} to {to} of {total} operations",
+      "page": "Page",
+      "of": "of",
+      "perPage": "Per page",
+      "previous": "Previous",
+      "next": "Next"
+    },
+    "diffDialog": {
+      "title": "Visual Diff Inspector",
+      "subtitle": "Detailed field-level comparison between previous state and new state",
+      "metaActor": "Actor",
+      "metaAction": "Action Type",
+      "metaEntity": "Affected Entity",
+      "metaTime": "Timestamp",
+      "field": "Field",
+      "previousValue": "Previous Value",
+      "newValue": "New Value",
+      "noChanges": "No field-level changes recorded for this event",
+      "rawJson": "View Raw JSON Payload",
+      "close": "Close"
+    },
+    "export": {
+      "csvAction": "Export CSV",
+      "exporting": "Exporting...",
+      "exportSuccess": "Audit log exported successfully",
+      "exportError": "Failed to export audit log"
+    }
   }
 }

@@ -433,5 +433,20 @@ export async function runTier3Tests(): Promise<TestRunner> {
     assert.ok(en.reports.printModal?.maximize, "en.reports.printModal.maximize must exist");
   });
 
+  await runner.test("C7.13: Audit Log UI translation keys exist symmetrically in ar.json and en.json", async () => {
+    const fs = await import("fs");
+    const ar = JSON.parse(fs.readFileSync("src/messages/ar.json", "utf-8"));
+    const en = JSON.parse(fs.readFileSync("src/messages/en.json", "utf-8"));
+
+    assert.ok(ar.audit?.title, "ar.audit.title must exist");
+    assert.ok(en.audit?.title, "en.audit.title must exist");
+    assert.ok(ar.audit?.kpis?.totalLogs, "ar.audit.kpis.totalLogs must exist");
+    assert.ok(en.audit?.kpis?.totalLogs, "en.audit.kpis.totalLogs must exist");
+    assert.ok(ar.audit?.actions?.STATUS_CHANGE, "ar.audit.actions.STATUS_CHANGE must exist");
+    assert.ok(en.audit?.actions?.STATUS_CHANGE, "en.audit.actions.STATUS_CHANGE must exist");
+    assert.ok(ar.audit?.diffDialog?.title, "ar.audit.diffDialog.title must exist");
+    assert.ok(en.audit?.diffDialog?.title, "en.audit.diffDialog.title must exist");
+  });
+
   return runner;
 }

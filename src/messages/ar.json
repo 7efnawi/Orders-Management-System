@@ -1040,5 +1040,87 @@
       "forbiddenDelete": "ليس لديك صلاحية حذف هذا المستخدم",
       "error": "حدث خطأ أثناء تنفيذ العملية"
     }
+  },
+  "audit": {
+    "title": "سجل المراقبة والنشاط",
+    "subtitle": "مراقبة غير قابلة للتعديل لجميع العمليات والانتقالات الحساسة في النظام",
+    "kpis": {
+      "totalLogs": "إجمالي العمليات",
+      "todayEvents": "نشاط اليوم",
+      "statusTransitions": "تغييرات الحالات",
+      "criticalOps": "العمليات الحساسة",
+      "criticalOpsDesc": "الإلغاءات واعتمادات الخصومات"
+    },
+    "filters": {
+      "searchPlaceholder": "بحث برقم المعرّف (أوردر، مصروف...)",
+      "allActions": "كل العمليات",
+      "allEntities": "كل الكيانات",
+      "allUsers": "كل المستخدمين",
+      "quick": {
+        "today": "اليوم",
+        "yesterday": "أمس",
+        "last7Days": "آخر 7 أيام",
+        "thisMonth": "هذا الشهر",
+        "allTime": "كل الأوقات"
+      },
+      "reset": "إعادة ضبط",
+      "refresh": "تحديث"
+    },
+    "actions": {
+      "CREATE": "إنشاء",
+      "UPDATE": "تعديل",
+      "CANCEL": "إلغاء",
+      "STATUS_CHANGE": "تغيير حالة",
+      "DISCOUNT_REQUEST": "طلب خصم",
+      "DISCOUNT_APPROVE": "اعتماد خصم",
+      "DISCOUNT_REJECT": "رفض خصم"
+    },
+    "entities": {
+      "Order": "طلب",
+      "User": "مستخدم",
+      "Product": "منتج",
+      "Category": "تصنيف",
+      "Expense": "مصروف",
+      "ExpenseType": "نوع مصروف",
+      "DailyClosing": "إغلاق يومي",
+      "Driver": "سائق",
+      "DeliveryZone": "منطقة توصيل"
+    },
+    "table": {
+      "timestamp": "الوقت والتاريخ",
+      "user": "المستخدم",
+      "action": "العملية",
+      "entity": "الكيان والمعرّف",
+      "summary": "ملخص التغيير",
+      "details": "التفاصيل",
+      "viewDiff": "فحص الفارق",
+      "empty": "لا توجد سجلات مطابقة للبحث أو الفلترة المحددة",
+      "showingResults": "عرض {from} إلى {to} من أصل {total} عملية",
+      "page": "صفحة",
+      "of": "من",
+      "perPage": "لكل صفحة",
+      "previous": "السابق",
+      "next": "التالي"
+    },
+    "diffDialog": {
+      "title": "فاحص الفوارق البصري",
+      "subtitle": "مقارنة دقيقة ومفصلة بين الحالة السابقة والحالة الجديدة للكيان",
+      "metaActor": "المنفّذ",
+      "metaAction": "نوع الإجراء",
+      "metaEntity": "الكيان المتأثر",
+      "metaTime": "وقت العملية",
+      "field": "الحقل",
+      "previousValue": "القيمة السابقة",
+      "newValue": "القيمة الجديدة",
+      "noChanges": "لا توجد حقول متغيرة أو مسجلة في هذا الحدث",
+      "rawJson": "عرض بيانات JSON الخام",
+      "close": "إغلاق"
+    },
+    "export": {
+      "csvAction": "تصدير CSV",
+      "exporting": "جارٍ التصدير...",
+      "exportSuccess": "تم تصدير سجل المراقبة بنجاح",
+      "exportError": "فشل تصدير سجل المراقبة"
+    }
   }
 }
