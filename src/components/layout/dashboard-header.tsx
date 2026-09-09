@@ -49,10 +49,12 @@ export function DashboardHeader({ user, locale }: DashboardHeaderProps) {
 
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [userMenuOpen, setUserMenuOpen] = React.useState(false);
+  const [adminMenuOpen, setAdminMenuOpen] = React.useState(false);
   const [loggingOut, setLoggingOut] = React.useState(false);
   const userMenuRef = React.useRef<HTMLDivElement>(null);
+  const adminMenuRef = React.useRef<HTMLDivElement>(null);
 
-  // Close user menu on outside click or Escape
+  // Close user menu and admin menu on outside click or Escape
   React.useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
@@ -61,14 +63,21 @@ export function DashboardHeader({ user, locale }: DashboardHeaderProps) {
       ) {
         setUserMenuOpen(false);
       }
+      if (
+        adminMenuRef.current &&
+        !adminMenuRef.current.contains(event.target as Node)
+      ) {
+        setAdminMenuOpen(false);
+      }
     }
     function onKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") {
         setUserMenuOpen(false);
+        setAdminMenuOpen(false);
         setMobileMenuOpen(false);
       }
     }
-    if (userMenuOpen) {
+    if (userMenuOpen || adminMenuOpen) {
       document.addEventListener("mousedown", handleClickOutside);
     }
     window.addEventListener("keydown", onKeyDown);
@@ -76,7 +85,14 @@ export function DashboardHeader({ user, locale }: DashboardHeaderProps) {
       document.removeEventListener("mousedown", handleClickOutside);
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [userMenuOpen]);
+  }, [userMenuOpen, adminMenuOpen]);
+
+  // Close open dropdowns on route change
+  React.useEffect(() => {
+    setUserMenuOpen(false);
+    setAdminMenuOpen(false);
+    setMobileMenuOpen(false);
+  }, [pathname]);
 
   // Lock body scroll when mobile drawer is open
   React.useEffect(() => {
@@ -103,8 +119,8 @@ export function DashboardHeader({ user, locale }: DashboardHeaderProps) {
 
   const isHomeActive = pathname === "/" || pathname === "";
 
-  // Navigation items for desktop (excludes Home tab since Brand Logo & Title links directly to "/")
-  const desktopNavItems = [
+  // Core operational desktop navigation items
+  const coreDesktopNavItems = [
     {
       href: "/orders",
       label: tNav("orders"),
@@ -149,6 +165,10 @@ export function DashboardHeader({ user, locale }: DashboardHeaderProps) {
       roles: ["OWNER", "MANAGER"] as Role[],
       isActive: pathname === "/reports" || pathname.startsWith("/reports"),
     },
+  ];
+
+  // Administrative / Governance desktop navigation items
+  const adminDesktopNavItems = [
     {
       href: "/audit",
       label: tNav("audit"),
@@ -165,6 +185,19 @@ export function DashboardHeader({ user, locale }: DashboardHeaderProps) {
     },
   ];
 
+  const allowedCoreNavItems = coreDesktopNavItems.filter((item) =>
+    item.roles.includes(user.role)
+  );
+
+  const allowedAdminNavItems = adminDesktopNavItems.filter((item) =>
+    item.roles.includes(user.role)
+  );
+
+  const allowedDesktopNavItems = [
+    ...allowedCoreNavItems,
+    ...allowedAdminNavItems,
+  ];
+
   // Navigation items for mobile slide-over drawer (includes explicit Home link at top)
   const mobileNavItems = [
     {
@@ -174,16 +207,14 @@ export function DashboardHeader({ user, locale }: DashboardHeaderProps) {
       roles: ["OWNER", "MANAGER", "CASHIER"] as Role[],
       isActive: isHomeActive,
     },
-    ...desktopNavItems,
+    ...allowedDesktopNavItems,
   ];
-
-  const allowedDesktopNavItems = desktopNavItems.filter((item) =>
-    item.roles.includes(user.role)
-  );
 
   const allowedMobileNavItems = mobileNavItems.filter((item) =>
     item.roles.includes(user.role)
   );
+
+  const isAdminActive = allowedAdminNavItems.some((item) => item.isActive);
 
   const roleStyles: Record<
     Role,
@@ -228,14 +259,14 @@ export function DashboardHeader({ user, locale }: DashboardHeaderProps) {
   return (
     <>
       <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/95 backdrop-blur-md supports-backdrop-filter:bg-background/85 transition-colors">
-        <div className="mx-auto flex h-16 max-w-[1536px] items-center justify-between gap-2 sm:gap-4 px-3 sm:px-6 lg:px-8">
+        <div className="mx-auto flex h-15 xl:h-16 max-w-[1536px] items-center justify-between gap-1.5 sm:gap-3 lg:gap-3.5 px-2.5 sm:px-4 lg:px-6">
           {/* Left / Brand + Nav Section */}
-          <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3 lg:gap-4">
+          <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3 lg:gap-3.5">
             {/* Mobile Menu Trigger */}
             <Button
               variant="ghost"
               size="icon"
-              className="lg:hidden size-10 rounded-lg text-foreground hover:bg-muted/80 shrink-0"
+              className="lg:hidden size-9 rounded-lg text-foreground hover:bg-muted/80 shrink-0"
               onClick={() => setMobileMenuOpen(true)}
               aria-label={tNav("openNavigation")}
             >
@@ -245,36 +276,37 @@ export function DashboardHeader({ user, locale }: DashboardHeaderProps) {
             {/* Brand Logo & Title (Clean, Sharp Restaurant Identity) */}
             <Link
               href="/"
-              className="group flex shrink-0 items-center gap-2.5 outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl py-1 px-1.5 transition-opacity hover:opacity-90 active:scale-[0.98]"
+              className="group flex shrink-0 items-center gap-2 sm:gap-2.5 outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl py-1 px-1 transition-opacity hover:opacity-90 active:scale-[0.98]"
               aria-label={tCommon("appName")}
               title={tCommon("appName")}
             >
-              <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-rose-500 via-pink-600 to-amber-500 text-white shadow-xs shadow-pink-500/20 transition-transform group-hover:scale-105">
-                <Flame className="size-5" />
+              <div className="flex size-8 sm:size-8.5 xl:size-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-rose-500 via-pink-600 to-amber-500 text-white shadow-xs shadow-pink-500/20 transition-transform group-hover:scale-105">
+                <Flame className="size-4 sm:size-4.5 xl:size-5" />
               </div>
               <div className="flex flex-col min-w-0">
-                <span className="truncate text-sm sm:text-base font-bold tracking-tight text-foreground transition-colors group-hover:text-primary leading-tight">
+                <span className="truncate text-xs sm:text-sm xl:text-base font-bold tracking-tight text-foreground transition-colors group-hover:text-primary leading-tight">
                   {tCommon("appName")}
                 </span>
-                <span className="hidden xl:inline truncate text-[10px] xl:text-[11px] font-semibold text-muted-foreground tracking-wider uppercase leading-tight">
+                <span className="hidden 2xl:inline truncate text-[10px] xl:text-[11px] font-semibold text-muted-foreground tracking-wider uppercase leading-tight">
                   {tNav("brandTag")}
                 </span>
               </div>
             </Link>
 
-            {/* Desktop Navigation Tabs (Generous spacing & zero text clipping) */}
+            {/* Desktop Navigation Tabs (Responsive & zero overlap) */}
             <nav
-              className="hidden lg:flex items-center gap-1 xl:gap-1.5 ps-3 border-s border-border/60 py-0.5"
+              className="hidden lg:flex items-center min-w-0 overflow-x-auto no-scrollbar scroll-smooth gap-0.5 xl:gap-1 ps-2 xl:ps-3 border-s border-border/60 py-0.5"
               aria-label={tNav("dashboard")}
             >
-              {allowedDesktopNavItems.map((item) => {
+              {/* Operational items */}
+              {allowedCoreNavItems.map((item) => {
                 const Icon = item.icon;
                 return (
                   <Link
                     key={item.href}
                     href={item.href}
                     className={cn(
-                      "flex items-center gap-1.5 xl:gap-2 px-2.5 xl:px-3 py-1.5 rounded-lg text-xs xl:text-sm font-medium transition-all duration-150 h-9 whitespace-nowrap shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                      "flex items-center gap-1 xl:gap-1.5 px-2 xl:px-2.5 py-1 rounded-lg text-xs xl:text-[13px] font-medium transition-all duration-150 h-8 xl:h-8.5 whitespace-nowrap shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-primary",
                       item.isActive
                         ? "bg-primary text-primary-foreground font-semibold shadow-xs shadow-primary/20"
                         : "text-muted-foreground hover:text-foreground hover:bg-muted/80"
@@ -292,56 +324,153 @@ export function DashboardHeader({ user, locale }: DashboardHeaderProps) {
                   </Link>
                 );
               })}
+
+              {/* Administrative items: on lg:max-xl collapsed into «الإدارة ▾» dropdown; on xl:flex shown as individual tabs */}
+              {allowedAdminNavItems.length > 0 && (
+                <>
+                  {/* Dropdown for compact desktop viewports (lg:max-xl) */}
+                  <div
+                    className="relative inline-block text-start xl:hidden shrink-0"
+                    ref={adminMenuRef}
+                  >
+                    <button
+                      type="button"
+                      className={cn(
+                        "flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs font-medium transition-all duration-150 h-8 whitespace-nowrap shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer",
+                        isAdminActive
+                          ? "bg-primary text-primary-foreground font-semibold shadow-xs shadow-primary/20"
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted/80"
+                      )}
+                      onClick={() => setAdminMenuOpen((prev) => !prev)}
+                      aria-expanded={adminMenuOpen}
+                      aria-haspopup="true"
+                      aria-label={tNav("management")}
+                    >
+                      <ShieldCheck
+                        className={cn(
+                          "size-3.5 shrink-0",
+                          isAdminActive
+                            ? "text-primary-foreground"
+                            : "text-muted-foreground"
+                        )}
+                      />
+                      <span>{tNav("management")}</span>
+                      <ChevronDown
+                        className={cn(
+                          "size-3 transition-transform duration-150 shrink-0",
+                          adminMenuOpen && "rotate-180"
+                        )}
+                      />
+                    </button>
+
+                    {adminMenuOpen && (
+                      <div
+                        role="menu"
+                        aria-orientation="vertical"
+                        className="absolute start-0 mt-1.5 w-44 z-50 rounded-xl border border-border bg-popover/95 backdrop-blur-md p-1.5 shadow-xl ring-1 ring-black/5 animate-in fade-in-0 zoom-in-95 duration-150 text-popover-foreground"
+                      >
+                        {allowedAdminNavItems.map((item) => {
+                          const Icon = item.icon;
+                          return (
+                            <Link
+                              key={item.href}
+                              href={item.href}
+                              role="menuitem"
+                              className={cn(
+                                "flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer",
+                                item.isActive
+                                  ? "bg-primary/10 text-primary font-semibold"
+                                  : "text-foreground hover:bg-muted"
+                              )}
+                              onClick={() => setAdminMenuOpen(false)}
+                            >
+                              <Icon className="size-3.5 shrink-0 text-muted-foreground" />
+                              <span>{item.label}</span>
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Individual tabs for wide desktop viewports (xl:flex) */}
+                  {allowedAdminNavItems.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        className={cn(
+                          "hidden xl:flex items-center gap-1 xl:gap-1.5 px-2 xl:px-2.5 py-1 rounded-lg text-xs xl:text-[13px] font-medium transition-all duration-150 h-8 xl:h-8.5 whitespace-nowrap shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                          item.isActive
+                            ? "bg-primary text-primary-foreground font-semibold shadow-xs shadow-primary/20"
+                            : "text-muted-foreground hover:text-foreground hover:bg-muted/80"
+                        )}
+                      >
+                        <Icon
+                          className={cn(
+                            "size-3.5 xl:size-4 shrink-0",
+                            item.isActive
+                              ? "text-primary-foreground"
+                              : "text-muted-foreground"
+                          )}
+                        />
+                        <span>{item.label}</span>
+                      </Link>
+                    );
+                  })}
+                </>
+              )}
             </nav>
           </div>
 
           {/* Right Action & User Controls */}
-          <div className="flex shrink-0 items-center gap-2 sm:gap-2.5 ms-2">
+          <div className="flex shrink-0 items-center gap-1.5 sm:gap-2 ms-2 z-10">
             {/* Persistent "+ New Order" CTA Button */}
             <Link href="/orders/new" className="shrink-0">
               <Button
                 className={cn(
-                  "h-9 xl:h-10 px-3 sm:px-3.5 text-xs sm:text-sm font-semibold rounded-lg shadow-xs transition-all duration-150 active:scale-[0.98] gap-1.5 shrink-0 cursor-pointer",
+                  "h-8.5 xl:h-9 px-2.5 sm:px-3 text-xs sm:text-sm font-semibold rounded-lg shadow-xs transition-all duration-150 active:scale-[0.98] gap-1.5 shrink-0 cursor-pointer",
                   isNewOrderActive
                     ? "bg-primary/90 ring-2 ring-primary ring-offset-2 ring-offset-background text-primary-foreground"
                     : "bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/25"
                 )}
                 aria-label={tNav("newOrderCTA")}
               >
-                <Plus className="size-4 shrink-0" />
+                <Plus className="size-3.5 sm:size-4 shrink-0" />
                 <span className="hidden sm:inline">{tNav("newOrderCTA")}</span>
               </Button>
             </Link>
 
             {/* Modern User Profile Dropdown (Sleek Avatar + Quick Menu) */}
-            <div className="relative inline-block text-start" ref={userMenuRef}>
+            <div className="relative inline-block text-start shrink-0" ref={userMenuRef}>
               <button
                 type="button"
                 className={cn(
-                  "flex items-center gap-2 h-9 xl:h-10 px-2 rounded-lg border border-border/70 bg-card/60 shadow-2xs backdrop-blur-xs transition-all cursor-pointer hover:bg-muted/80 focus-visible:ring-2 focus-visible:ring-primary outline-none",
+                  "flex items-center gap-1.5 xl:gap-2 h-8.5 xl:h-9 px-1.5 xl:px-2 rounded-lg border border-border/70 bg-card/60 shadow-2xs backdrop-blur-xs transition-all cursor-pointer hover:bg-muted/80 focus-visible:ring-2 focus-visible:ring-primary outline-none",
                   userMenuOpen && "bg-muted border-border ring-1 ring-primary/30"
                 )}
                 onClick={() => setUserMenuOpen((prev) => !prev)}
                 aria-expanded={userMenuOpen}
                 aria-haspopup="true"
                 aria-label={tNav("userProfile")}
+                title={user.name}
               >
                 <div
                   className={cn(
-                    "relative flex size-7 shrink-0 items-center justify-center rounded-full font-bold text-xs border shadow-2xs",
+                    "relative flex size-6.5 xl:size-7 shrink-0 items-center justify-center rounded-full font-bold text-xs border shadow-2xs",
                     userRoleStyle.avatarClass
                   )}
-                  title={user.name}
                 >
                   {initials}
                   <span
                     className={cn(
-                      "absolute -bottom-0.5 -end-0.5 size-2.5 rounded-full ring-2 ring-background",
+                      "absolute -bottom-0.5 -end-0.5 size-2 xl:size-2.5 rounded-full ring-2 ring-background",
                       userRoleStyle.dotClass
                     )}
                   />
                 </div>
-                <div className="hidden sm:flex flex-col min-w-0 max-w-[100px] xl:max-w-[130px] text-start">
+                <div className="hidden 2xl:flex flex-col min-w-0 max-w-[130px] text-start">
                   <span className="truncate text-xs font-semibold text-foreground leading-tight">
                     {user.name}
                   </span>
@@ -351,7 +480,7 @@ export function DashboardHeader({ user, locale }: DashboardHeaderProps) {
                 </div>
                 <ChevronDown
                   className={cn(
-                    "size-3.5 text-muted-foreground transition-transform duration-200 shrink-0",
+                    "size-3 xl:size-3.5 text-muted-foreground transition-transform duration-200 shrink-0",
                     userMenuOpen && "rotate-180 text-foreground"
                   )}
                 />
@@ -398,6 +527,17 @@ export function DashboardHeader({ user, locale }: DashboardHeaderProps) {
                   {/* Navigation Shortcuts in Dropdown */}
                   <div className="space-y-0.5 border-b border-border/60 pb-1.5 mb-1.5">
                     {user.role === "OWNER" && (
+                      <Link
+                        href="/audit"
+                        role="menuitem"
+                        className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-foreground hover:bg-muted transition-colors cursor-pointer"
+                        onClick={() => setUserMenuOpen(false)}
+                      >
+                        <ShieldCheck className="size-3.5 text-muted-foreground" />
+                        <span>{tNav("audit")}</span>
+                      </Link>
+                    )}
+                    {(user.role === "OWNER" || user.role === "MANAGER") && (
                       <Link
                         href="/users"
                         role="menuitem"

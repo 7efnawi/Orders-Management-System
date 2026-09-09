@@ -448,5 +448,23 @@ export async function runTier3Tests(): Promise<TestRunner> {
     assert.ok(en.audit?.diffDialog?.title, "en.audit.diffDialog.title must exist");
   });
 
+  await runner.test("C7.14: Responsive navbar ensures zero-overlap layout invariants and management translations", async () => {
+    const fs = await import("fs");
+    const ar = JSON.parse(fs.readFileSync("src/messages/ar.json", "utf-8"));
+    const en = JSON.parse(fs.readFileSync("src/messages/en.json", "utf-8"));
+
+    // Verify translations
+    assert.ok(ar.nav?.management, "ar.nav.management must exist");
+    assert.ok(en.nav?.management, "en.nav.management must exist");
+
+    // Verify dashboard-header.tsx contains defensive overflow protection
+    const headerCode = fs.readFileSync("src/components/layout/dashboard-header.tsx", "utf-8");
+    assert.ok(headerCode.includes("min-w-0"), "Nav container must have min-w-0 to prevent flex blowout");
+    assert.ok(headerCode.includes("no-scrollbar"), "Nav container must use no-scrollbar utility for clean scroll");
+    assert.ok(headerCode.includes("overflow-x-auto"), "Nav container must enable horizontal scrolling without overflow bleed");
+    assert.ok(headerCode.includes("hidden 2xl:flex"), "User profile text must be hidden below 2xl to prevent navbar collision");
+  });
+
   return runner;
 }
+
