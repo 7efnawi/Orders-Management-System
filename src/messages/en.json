@@ -1085,7 +1085,12 @@
       "ExpenseType": "Expense Type",
       "DailyClosing": "Daily Closing",
       "Driver": "Driver",
-      "DeliveryZone": "Delivery Zone"
+      "DeliveryZone": "Delivery Zone",
+      "Shift": "Shift",
+      "DeliveryDriver": "Delivery Driver",
+      "Customer": "Customer",
+      "Brand": "Brand",
+      "Platform": "Platform"
     },
     "table": {
       "timestamp": "Date & Time",

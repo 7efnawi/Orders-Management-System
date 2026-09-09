@@ -1085,7 +1085,12 @@
       "ExpenseType": "نوع مصروف",
       "DailyClosing": "إغلاق يومي",
       "Driver": "سائق",
-      "DeliveryZone": "منطقة توصيل"
+      "DeliveryZone": "منطقة توصيل",
+      "Shift": "وردية تشغيل",
+      "DeliveryDriver": "سائق توصيل",
+      "Customer": "عميل",
+      "Brand": "براند",
+      "Platform": "منصة"
     },
     "table": {
       "timestamp": "الوقت والتاريخ",

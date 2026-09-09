@@ -10,6 +10,28 @@
 |---|---|---|
 | القائمة النهائية للمنصات | ✅ حُسمت (Talabat, InstaShop, Harry App, Elmenus, Facebook, Phone) | Platform seed & Visual Tokens |
 
+## [2026-09-09] سجل المراقبة — إزالة تصدير CSV وتوسيع ترجمات الكيانات الشاملة (Audit UI: Remove CSV Export & Expand Entity Translations)
+**النوع:** UI Refinement & i18n Completeness (TDD, Task 1)
+**الدافع والمشكلة:**
+- بناءً على طلب المستخدم وإعادة تركيز واجهة سجل المراقبة كأداة مراقبة حية تنفيذية فورية للمالك، تم استبعاد ميزة تصدير CSV لتقليل التعقيد والحفاظ على نظافة وترتيب الشريط العلوي.
+- وجود بعض الكيانات التشغيلية في النظام مثل الورديات (`Shift`)، مناديب التوصيل (`DeliveryDriver`)، العملاء (`Customer`)، البراندات (`Brand`)، والمنصات (`Platform`) تفتقر إلى ترجمات متناظرة مخصصة في قاموس سجل التدقيق، مما كان يسبب ظهور الأسماء البرمجية بالإنجليزية في شاشات المراقبة.
+**اللي اتعمل:**
+- **إزالة تصدير CSV بالكامل من `src/components/audit/audit-client.tsx`:**
+  - إزالة أيقونة `Download` وحالة التحميل `isExporting` ودالة التصدير `handleExportCsv`.
+  - إزالة زر التصدير من شريط الهيدر لتحقيق صفاء بصري متناسق يركز على مؤشرات الأداء الحيوية (KPIs) وجدول السجلات.
+- **توسيع قاموس الكيانات في ملفات الترجمة `src/messages/ar.json` و `src/messages/en.json`:**
+  - إضافة ترجمات متناظرة لجميع الكيانات الناقصة:
+    - `"Shift"`: "وردية تشغيل" / "Shift"
+    - `"DeliveryDriver"`: "سائق توصيل" / "Delivery Driver"
+    - `"Customer"`: "عميل" / "Customer"
+    - `"Brand"`: "براند" / "Brand"
+    - `"Platform"`: "منصة" / "Platform"
+- **الاختبارات وبوابات الجودة (TDD):**
+  - كتابة الاختبار التراجعي `C7.15` في `tests/e2e/tier3-cross-feature.test.ts` والتحقق من طور الفشل (Red) ثم النجاح (Green).
+  - اجتياز فحص الأنواع `npm run typecheck` بنسبة 100% (0 أخطاء).
+  - اجتياز سويت الاختبارات الشامل `npm run test:e2e` بنجاح (213/213 اختبار).
+**الملفات المتأثرة:** `src/components/audit/audit-client.tsx`, `src/messages/ar.json`, `src/messages/en.json`, `tests/e2e/tier3-cross-feature.test.ts`, `PROJECT_LOG.md`
+
 ## [2026-09-09] إصلاح التجاوز والتداخل في شريط التنقل العلوي وتصميم متجاوب محكم (Navbar Responsive Overflow & Zero-Overlap Architecture)
 **النوع:** Bugfix & Responsive Architecture Refinement (TDD, UI/UX Pro Max)
 **الدافع والمشكلة:**

@@ -465,6 +465,17 @@ export async function runTier3Tests(): Promise<TestRunner> {
     assert.ok(headerCode.includes("hidden 2xl:flex"), "User profile text must be hidden below 2xl to prevent navbar collision");
   });
 
+  await runner.test("C7.15: Audit UI removed CSV export and provides natural human-friendly translations", async () => {
+    const fs = await import("fs");
+    const clientCode = fs.readFileSync("src/components/audit/audit-client.tsx", "utf-8");
+    assert.ok(!clientCode.includes("handleExportCsv"), "AuditClient must not contain handleExportCsv");
+    assert.ok(!clientCode.includes("csvAction"), "AuditClient must not render csvAction button");
+
+    const ar = JSON.parse(fs.readFileSync("src/messages/ar.json", "utf-8"));
+    assert.ok(ar.audit?.entities?.Shift, "ar.audit.entities.Shift must exist");
+    assert.ok(ar.audit?.entities?.DeliveryDriver, "ar.audit.entities.DeliveryDriver must exist");
+  });
+
   return runner;
 }
 

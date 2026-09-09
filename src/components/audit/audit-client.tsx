@@ -2,17 +2,14 @@
 
 import * as React from "react";
 import { useTranslations } from "next-intl";
-import { Role, AuditAction } from "@prisma/client";
+import { Role } from "@prisma/client";
 import {
   Activity,
   Clock,
   ArrowRightLeft,
   ShieldAlert,
-  Download,
   ShieldCheck,
 } from "lucide-react";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
 import {
   AuditFilterBar,
   type AuditFilterState,
@@ -21,7 +18,6 @@ import {
 import { AuditTable } from "@/components/audit/audit-table";
 import { AuditDiffDialog } from "@/components/audit/audit-diff-dialog";
 import type { AuditLogWithUser, AuditSummaryStats } from "@/lib/auditDiff";
-import { cn } from "@/lib/utils";
 
 interface AuditClientProps {
   currentUser: {
@@ -70,7 +66,6 @@ export function AuditClient({
   const [filters, setFilters] = React.useState<AuditFilterState>({});
   const [activePreset, setActivePreset] = React.useState<AuditDatePreset>("allTime");
   const [isLoading, setIsLoading] = React.useState(false);
-  const [isExporting, setIsExporting] = React.useState(false);
 
   // Selected Log for Diff Modal
   const [selectedLog, setSelectedLog] = React.useState<AuditLogWithUser | null>(null);
@@ -208,90 +203,6 @@ export function AuditClient({
     setDiffDialogOpen(true);
   };
 
-  // Export CSV with UTF-8 BOM for Arabic compatibility in Excel
-  const handleExportCsv = async () => {
-    setIsExporting(true);
-    try {
-      // Fetch matching logs up to 1000 records
-      const params = new URLSearchParams();
-      params.set("page", "1");
-      params.set("limit", "1000");
-
-      if (filters.action) params.set("action", filters.action);
-      if (filters.entityType) params.set("entityType", filters.entityType);
-      if (filters.userId) params.set("userId", filters.userId);
-      if (filters.startDate) params.set("startDate", filters.startDate);
-      if (filters.endDate) params.set("endDate", filters.endDate);
-      if (filters.search) params.set("search", filters.search);
-
-      const res = await fetch(`/api/audit?${params.toString()}`);
-      if (!res.ok) throw new Error("Export failed");
-      const json = await res.json();
-      const exportLogs: AuditLogWithUser[] = json.data?.logs || logs;
-
-      const escapeCell = (val: any): string => {
-        if (val == null) return '""';
-        let str = typeof val === "object" ? JSON.stringify(val) : String(val);
-        str = str.replace(/"/g, '""');
-        return `"${str}"`;
-      };
-
-      const headers = [
-        "معرّف الحدث (Event ID)",
-        "الوقت والتاريخ (Timestamp)",
-        "المستخدم (User)",
-        "البريد الإلكتروني (Email)",
-        "الصلاحية (Role)",
-        "نوع الإجراء (Action)",
-        "الكيان (Entity)",
-        "معرّف الكيان (Entity ID)",
-        "القيمة السابقة (Old Value)",
-        "القيمة الجديدة (New Value)",
-      ];
-
-      const csvRows = [headers.map(escapeCell).join(",")];
-
-      for (const item of exportLogs) {
-        csvRows.push(
-          [
-            item.id,
-            new Date(item.timestamp).toISOString(),
-            item.user.name,
-            item.user.email,
-            item.user.role,
-            item.action,
-            item.entityType,
-            item.entityId,
-            item.oldValue,
-            item.newValue,
-          ]
-            .map(escapeCell)
-            .join(",")
-        );
-      }
-
-      // Add UTF-8 BOM (\uFEFF)
-      const csvString = "\uFEFF" + csvRows.join("\r\n");
-      const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
-
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `audit-log-${formatDateString(new Date())}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-
-      toast.success(t("export.exportSuccess"));
-    } catch (err) {
-      console.error(err);
-      toast.error(t("export.exportError"));
-    } finally {
-      setIsExporting(false);
-    }
-  };
-
   return (
     <div className="mx-auto flex w-full max-w-[1536px] flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-8">
       {/* Header Section */}
@@ -308,21 +219,6 @@ export function AuditClient({
           <p className="text-sm text-muted-foreground mt-1 ps-11">
             {t("subtitle")}
           </p>
-        </div>
-
-        {/* CSV Export Button */}
-        <div className="flex items-center gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={handleExportCsv}
-            disabled={isExporting}
-            className="h-9 px-3.5 text-xs sm:text-sm font-semibold gap-1.5 shadow-2xs border-border/80 hover:bg-muted/80"
-          >
-            <Download className={cn("size-4", isExporting && "animate-bounce")} />
-            <span>{isExporting ? t("export.exporting") : t("export.csvAction")}</span>
-          </Button>
         </div>
       </div>
 
