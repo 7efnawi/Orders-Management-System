@@ -10,6 +10,27 @@
 |---|---|---|
 | القائمة النهائية للمنصات | ✅ حُسمت (Talabat, InstaShop, Harry App, Elmenus, Facebook, Phone) | Platform seed & Visual Tokens |
 
+## [2026-09-09] سجل المراقبة — توسيع نافذة فحص الفوارق وإزالة فاحص JSON والمصطلحات التقنية (Spacious max-w-4xl Diff Modal & Elimination of Raw JSON & Tech Jargon)
+**النوع:** UI/UX Excellence & Human-Centric Dialogue Design (TDD, Task 4)
+**الدافع والمشكلة:**
+- كانت نافذة فحص الفوارق السابقة ضيقة نسبيًا (`max-w-2xl`)، وتحتوي على مفتش بيانات JSON الخام مع أزرار نسخ ورموز برمجية غير موجهة لرجال الأعمال والإدارة.
+- ظهور أسماء الحقول الإنجليزية البرمجية (`field`) كشرائح داخل بنود المقارنة وقيم الحالات والأدوار كأكواد غير مترجمة، مما يشتت المالك ويقلل من سلاسة التجربة التنفيذية.
+**اللي اتعمل:**
+- **توسيع أبعاد النافذة إلى `max-w-4xl` في `src/components/audit/audit-diff-dialog.tsx`:**
+  - زيادة العرض إلى `max-w-4xl max-h-[85vh]` مع مساحات تنفس وحشوات واسعة `p-4 sm:p-7` وبطاقات مقارنة رحبة من عمودين بتصميم عالي التباين والأناقة.
+- **إزالة مفتش بيانات JSON الخام بالكامل:**
+  - التخلص من حالة `showRawJson` ودوال النسخ للحافظة `copyToClipboard` والأيقونات البرمجية والكتلة القابلة للطي.
+- **تطهير واجهة المقارنة من الأكواد التقنية والمصطلحات البرمجية:**
+  - إزالة شريحة اسم الحقل الإنجليزي (`diff.field`) والاكتفاء بالاسم العربي الفصيح (`diff.labelAr`).
+  - تنسيق قيم الحالات (`status`) والأدوار (`role`) والقيم المنطقية (`isActive -> نشط / معطل`) والعملات النقدية باستخدام محرك `formatDomainValue` التلقائي.
+- **تنسيق معرّف الكيان في الترويسة:**
+  - استدعاء `formatHumanEntityId` وعرض المعرّف بشكل معزول الاتجاه `dir="ltr"` مع حفظ المعرّف الكامل في تلميح الفأرة `title`.
+- **الاختبارات وبوابات الجودة (TDD):**
+  - كتابة الاختبار التراجعي `C7.17` في `tests/e2e/tier3-cross-feature.test.ts` والتحقق من طور الفشل (Red) ثم النجاح (Green).
+  - اجتياز فحص الأنواع `npm run typecheck` بنسبة 100% (0 أخطاء).
+  - اجتياز سويت الاختبارات الشامل `npm run test:e2e` بنجاح (216/216 اختبار).
+**الملفات المتأثرة:** `src/components/audit/audit-diff-dialog.tsx`, `tests/e2e/tier3-cross-feature.test.ts`, `PROJECT_LOG.md`
+
 ## [2026-09-09] سجل المراقبة — تصميم شبكي متناظر ومحكم للجدول مع حماية الاتجاه (Symmetric Table-Fixed Grid & Direction-Safe Entity Layout)
 **النوع:** UI/UX Balance & Tabular Architecture Refinement (TDD, Task 3)
 **الدافع والمشكلة:**

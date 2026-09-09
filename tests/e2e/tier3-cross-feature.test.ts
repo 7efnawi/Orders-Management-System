@@ -484,6 +484,15 @@ export async function runTier3Tests(): Promise<TestRunner> {
     assert.ok(tableCode.includes("formatHumanSummary"), "AuditTable must use formatHumanSummary");
   });
 
+  await runner.test("C7.17: AuditDiffDialog is spacious and excludes raw JSON viewer and code keys", async () => {
+    const fs = await import("fs");
+    const dialogCode = fs.readFileSync("src/components/audit/audit-diff-dialog.tsx", "utf-8");
+    assert.ok(dialogCode.includes("max-w-4xl"), "DialogContent must use spacious max-w-4xl width");
+    assert.ok(!dialogCode.includes("showRawJson"), "DialogContent must not contain showRawJson");
+    assert.ok(!dialogCode.includes("rawJson"), "DialogContent must not render rawJson button");
+    assert.ok(!dialogCode.includes("{diff.field}"), "DialogContent must not display raw English field names");
+  });
+
   return runner;
 }
 
