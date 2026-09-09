@@ -10,6 +10,31 @@
 |---|---|---|
 | القائمة النهائية للمنصات | ✅ حُسمت (Talabat, InstaShop, Harry App, Elmenus, Facebook, Phone) | Platform seed & Visual Tokens |
 
+## [2026-09-09] سجل المراقبة — تجاوز قيد العرض التجاوبي وتوسيع نافذة فحص الفوارق لشاشات سطح المكتب والتناظر التام (Audit Diff Modal Responsive Max-Width Override & Symmetrical Layout)
+**النوع:** UI/UX Bugfix & Layout Engineering (TDD)
+**الدافع والمشكلة:**
+- بالرغم من تعيين `max-w-4xl` على `AuditDiffDialog` سابقاً، كانت النافذة تظل تترندر بحجم صغير ضيق (384px فقط) على شاشات الكمبيوتر والتابلت للمستخدم.
+- التحليل الجذري كشف أن المكون الأساسي `DialogContent` في `src/components/ui/dialog.tsx` يحتوي على الصنف الافتراضي `sm:max-w-sm`. وبسبب قواعد أسبقية ميديا كويري في CSS وTailwind، فإن تعيين `max-w-4xl` بدون بادئة `sm:` لم يكن يلغي `sm:max-w-sm` عند نقاط توقف الشاشات الأكبر من 640px، مما أبقى النافذة محصورة في عرض 24rem (384px) فقط!
+**اللي اتعمل:**
+- **تجاوز قيد العرض التجاوبي في `src/components/audit/audit-diff-dialog.tsx`:**
+  - تعيين `w-[95vw] sm:max-w-3xl md:max-w-4xl lg:max-w-5xl max-h-[88vh]`:
+    - على الموبايل: عرض `w-[95vw]` لاستغلال المساحة المتاحة.
+    - على أجهزة التابلت الصغيرة (`sm`): إلغاء `sm:max-w-sm` فورياً والتوسيع إلى `sm:max-w-3xl` (768px).
+    - على التابلت والشاشات المتوسطة (`md`): التوسيع إلى `md:max-w-4xl` (896px).
+    - على شاشات سطح المكتب (`lg` و`xl`): التوسيع إلى `lg:max-w-5xl` (1024px) لتوفير نافذة تنفيذية رحبة وواسعة جداً.
+- **إعادة هندسة تناظر وتوازن بطاقات مقارنة الفوارق:**
+  - تطبيق شبكة `grid grid-cols-1 md:grid-cols-[1fr,auto,1fr] items-stretch gap-3 sm:gap-4`:
+    - تمدد البطاقتين (القيمة السابقة والقيمة الجديدة) بنفس الارتفاع الدقيق (`items-stretch`).
+    - تساوي عرض العمودين بنسبة 50/50 على شاشات التابلت والكمبيوتر (`1fr` لكل بطاقة) مع توسيط أيقونة الانتقال في عقدة دائرية أنيقة.
+    - إضافة بادج `-` و`+` مميز بألوان هادئة ومتناسقة مع تباين عالي للأرقام والنصوص.
+    - تنسيق شريط ترويسة البيانات الوصفية (Metadata Summary Banner) بشبكة من 4 أعمدة متوازنة على `md+`.
+- **الاختبارات وبوابات الجودة (TDD):**
+  - إضافة الاختبار التراجعي `C7.18` في `tests/e2e/tier3-cross-feature.test.ts` والتحقق من طور الفشل (Red) ثم النجاح (Green).
+  - اجتياز فحص الأنواع `npm run typecheck` بنسبة 100% (0 أخطاء).
+  - اجتياز سويت الاختبارات الشامل `npm run test:e2e` بنجاح (217/217 اختبار، 100%).
+  - اجتياز سكربت الفحص المخصص للمرحلة 10 `scripts/verify-phase10.ts` بنجاح (6/6 خطوات).
+**الملفات المتأثرة:** `src/components/audit/audit-diff-dialog.tsx`, `tests/e2e/tier3-cross-feature.test.ts`, `PROJECT_LOG.md`
+
 ## [2026-09-09] سجل المراقبة — توسيع نافذة فحص الفوارق وإزالة فاحص JSON والمصطلحات التقنية (Spacious max-w-4xl Diff Modal & Elimination of Raw JSON & Tech Jargon)
 **النوع:** UI/UX Excellence & Human-Centric Dialogue Design (TDD, Task 4)
 **الدافع والمشكلة:**

@@ -493,6 +493,24 @@ export async function runTier3Tests(): Promise<TestRunner> {
     assert.ok(!dialogCode.includes("{diff.field}"), "DialogContent must not display raw English field names");
   });
 
+  await runner.test("C7.18: AuditDiffDialog explicitly overrides sm:max-w-sm to expand diff modal across tablet and desktop", async () => {
+    const fs = await import("fs");
+    const dialogCode = fs.readFileSync("src/components/audit/audit-diff-dialog.tsx", "utf-8");
+    // Must contain sm:max-w- to explicitly override base sm:max-w-sm in dialog.tsx
+    assert.ok(
+      dialogCode.includes("sm:max-w-3xl") || dialogCode.includes("sm:max-w-4xl"),
+      "DialogContent must use sm:max-w-3xl or sm:max-w-4xl to override dialog.tsx sm:max-w-sm default"
+    );
+    assert.ok(
+      dialogCode.includes("lg:max-w-5xl") || dialogCode.includes("lg:max-w-4xl"),
+      "DialogContent must provide spacious desktop max-width"
+    );
+    assert.ok(
+      dialogCode.includes("md:grid-cols-[1fr,auto,1fr]"),
+      "Diff comparison cards must use responsive balanced grid on desktop"
+    );
+  });
+
   return runner;
 }
 

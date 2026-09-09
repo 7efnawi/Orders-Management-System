@@ -200,7 +200,7 @@ export function AuditDiffDialog({ open, onOpenChange, log }: AuditDiffDialogProp
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto flex flex-col gap-5 p-4 sm:p-7">
+      <DialogContent className="w-[95vw] sm:max-w-3xl md:max-w-4xl lg:max-w-5xl max-h-[88vh] overflow-y-auto flex flex-col gap-5 p-5 sm:p-8">
         <DialogHeader className="gap-2.5 border-b border-border/60 pb-3.5">
           <div className="flex flex-wrap items-center justify-between gap-2.5">
             <div className="flex flex-wrap items-center gap-2">
@@ -237,11 +237,11 @@ export function AuditDiffDialog({ open, onOpenChange, log }: AuditDiffDialogProp
         </DialogHeader>
 
         {/* Metadata Summary Banner */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3.5 rounded-xl bg-muted/30 border border-border/60 text-xs">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5 p-4 rounded-xl bg-muted/35 border border-border/60 text-xs">
           <div>
             <span className="text-muted-foreground block mb-1">{t("diffDialog.metaActor")}</span>
             <div className="flex items-center gap-1.5 font-semibold text-foreground truncate">
-              <UserIcon className="size-3.5 text-muted-foreground" />
+              <UserIcon className="size-3.5 text-muted-foreground shrink-0" />
               <span className="truncate">{log.user.name}</span>
             </div>
           </div>
@@ -263,7 +263,7 @@ export function AuditDiffDialog({ open, onOpenChange, log }: AuditDiffDialogProp
           <div>
             <span className="text-muted-foreground block mb-1">{t("diffDialog.metaTime")}</span>
             <span className="font-mono text-foreground truncate block tabular-nums">
-              {formattedTime}
+              {formattedDate} {formattedTime}
             </span>
           </div>
         </div>
@@ -279,40 +279,49 @@ export function AuditDiffDialog({ open, onOpenChange, log }: AuditDiffDialogProp
             diffs.map((diff, idx) => (
               <div
                 key={`diff-item-${idx}`}
-                className="flex flex-col gap-2.5 p-3.5 rounded-xl border border-border/70 bg-card/60 shadow-2xs hover:border-border transition-colors"
+                className="flex flex-col gap-3 p-4 rounded-xl border border-border/70 bg-card shadow-2xs hover:border-border transition-colors"
               >
                 {/* Field Header - Friendly label only without raw field code */}
-                <div className="flex items-center justify-between gap-2 border-b border-border/40 pb-2">
-                  <span className="text-sm font-bold text-foreground">
-                    {isAr ? diff.labelAr : diff.labelEn}
-                  </span>
+                <div className="flex items-center justify-between gap-2 border-b border-border/40 pb-2.5">
+                  <div className="flex items-center gap-2">
+                    <span className="size-2 rounded-full bg-primary/70" />
+                    <span className="text-sm font-bold text-foreground">
+                      {isAr ? diff.labelAr : diff.labelEn}
+                    </span>
+                  </div>
                 </div>
 
-                {/* Diff Comparison Row */}
-                <div className="grid grid-cols-1 sm:grid-cols-[1fr,auto,1fr] items-center gap-3 text-xs">
-                  {/* Previous Value */}
-                  <div className="flex flex-col gap-1.5 p-3 rounded-lg bg-red-500/10 dark:bg-red-950/20 border border-red-500/20 text-red-900 dark:text-red-200 min-w-0 shadow-2xs">
-                    <span className="text-3xs font-semibold text-red-600 dark:text-red-400 flex items-center gap-1">
-                      <span className="font-mono text-xs font-bold">-</span> {t("diffDialog.previousValue")}
-                    </span>
-                    <div className="mt-0.5">
+                {/* Diff Comparison Row - Symmetric balanced grid */}
+                <div className="grid grid-cols-1 md:grid-cols-[1fr,auto,1fr] items-stretch gap-3 sm:gap-4 text-xs">
+                  {/* Previous Value Card */}
+                  <div className="flex flex-col justify-between gap-2 p-3.5 sm:p-4 rounded-xl bg-rose-500/5 dark:bg-rose-950/20 border border-rose-500/20 text-foreground min-w-0 shadow-2xs">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-2xs font-bold text-rose-700 dark:text-rose-400 flex items-center gap-1.5 uppercase tracking-wider">
+                        <span className="flex size-4 items-center justify-center rounded-full bg-rose-500/20 text-rose-700 dark:text-rose-300 font-mono text-xs font-bold">-</span>
+                        {t("diffDialog.previousValue")}
+                      </span>
+                    </div>
+                    <div className="flex-1 flex items-center min-h-[36px] mt-1 text-foreground">
                       {renderFormattedValue(diff.oldValue, diff.field, diff.type)}
                     </div>
                   </div>
 
                   {/* Transition Arrow Indicator */}
-                  <div className="flex justify-center items-center py-1 sm:py-0">
-                    <div className="size-7 rounded-full bg-muted flex items-center justify-center border border-border/60 shadow-2xs">
-                      <ArrowRight className="size-4 text-muted-foreground rtl:rotate-180" />
+                  <div className="flex justify-center items-center py-1 md:py-0">
+                    <div className="size-8 rounded-full bg-muted/80 flex items-center justify-center border border-border/70 shadow-2xs text-muted-foreground shrink-0">
+                      <ArrowRight className="size-4 rtl:rotate-180" />
                     </div>
                   </div>
 
-                  {/* New Value */}
-                  <div className="flex flex-col gap-1.5 p-3 rounded-lg bg-emerald-500/10 dark:bg-emerald-950/20 border border-emerald-500/20 text-emerald-900 dark:text-emerald-200 min-w-0 shadow-2xs">
-                    <span className="text-3xs font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                      <span className="font-mono text-xs font-bold">+</span> {t("diffDialog.newValue")}
-                    </span>
-                    <div className="mt-0.5">
+                  {/* New Value Card */}
+                  <div className="flex flex-col justify-between gap-2 p-3.5 sm:p-4 rounded-xl bg-emerald-500/5 dark:bg-emerald-950/20 border border-emerald-500/20 text-foreground min-w-0 shadow-2xs">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-2xs font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5 uppercase tracking-wider">
+                        <span className="flex size-4 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 font-mono text-xs font-bold">+</span>
+                        {t("diffDialog.newValue")}
+                      </span>
+                    </div>
+                    <div className="flex-1 flex items-center min-h-[36px] mt-1 text-foreground">
                       {renderFormattedValue(diff.newValue, diff.field, diff.type)}
                     </div>
                   </div>
