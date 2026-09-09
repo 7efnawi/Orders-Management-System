@@ -1031,5 +1031,77 @@ export async function runTier1Tests(): Promise<TestRunner> {
     assert.strictEqual(inactiveSession.reason, "INACTIVE");
   });
 
+  // ═══════════════════════════════════════════════════════════════════════════
+  // FEATURE 16: Audit Log & Activity Monitoring (Phase 10 — FR-AUD-01..05)
+  // ═══════════════════════════════════════════════════════════════════════════
+  runner.setContext("F16: Audit Log & Activity Monitoring", 1);
+
+  await runner.test("F16.1: computeAuditDiff detects modified fields, additions, and domain translations", async () => {
+    const { computeAuditDiff } = await import("../../src/services/audit");
+    const oldVal = { status: "NEW", subtotal: 250, notes: "Original note" };
+    const newVal = { status: "CONFIRMED", subtotal: 250, notes: "Updated note", discountAmount: 25 };
+    const diffs = computeAuditDiff(oldVal, newVal);
+
+    assert.strictEqual(diffs.length, 3, "Only changed or added fields should appear in diff");
+    const statusDiff = diffs.find((d) => d.field === "status");
+    assert.ok(statusDiff, "status field must be identified");
+    assert.strictEqual(statusDiff?.oldValue, "NEW");
+    assert.strictEqual(statusDiff?.newValue, "CONFIRMED");
+    assert.ok(statusDiff?.labelAr, "Should have Arabic label");
+
+    const discountDiff = diffs.find((d) => d.field === "discountAmount");
+    assert.ok(discountDiff, "added discountAmount must be identified");
+    assert.strictEqual(discountDiff?.oldValue, null);
+    assert.strictEqual(discountDiff?.newValue, 25);
+  });
+
+  await runner.test("F16.2: computeAuditDiff returns empty array when objects are identical or null", async () => {
+    const { computeAuditDiff } = await import("../../src/services/audit");
+    assert.deepStrictEqual(computeAuditDiff(null, null), []);
+    assert.deepStrictEqual(computeAuditDiff({ status: "READY" }, { status: "READY" }), []);
+  });
+
+  await runner.test("F16.3: getAuditStats computes accurate groupings and critical counts", async () => {
+    const { calculateMockAuditStats } = await import("../../src/services/audit");
+    const mockLogs = [
+      { action: "CREATE", timestamp: new Date() },
+      { action: "STATUS_CHANGE", timestamp: new Date() },
+      { action: "CANCEL", timestamp: new Date() },
+      { action: "DISCOUNT_APPROVE", timestamp: new Date() },
+      { action: "UPDATE", timestamp: new Date(Date.now() - 86400000 * 3) }, // 3 days ago
+    ];
+    const stats = calculateMockAuditStats(mockLogs as any);
+    assert.strictEqual(stats.totalLogs, 5);
+    assert.strictEqual(stats.statusChangeCount, 1);
+    assert.strictEqual(stats.criticalCount, 2, "CANCEL and DISCOUNT_APPROVE are critical");
+    assert.strictEqual(stats.todayCount, 4, "4 occurred today");
+  });
+
+  await runner.test("F16.4: Audit log immutability verification (FR-AUD-02)", async () => {
+    const auditService = await import("../../src/services/audit");
+    assert.ok(!("deleteAuditLog" in auditService), "deleteAuditLog must NOT exist");
+    assert.ok(!("updateAuditLog" in auditService), "updateAuditLog must NOT exist");
+    assert.ok(!("clearAuditLogs" in auditService), "clearAuditLogs must NOT exist");
+  });
+
+  await runner.test("F16.5: Audit filter normalization and where-clause builder", async () => {
+    const { buildAuditWhereClause } = await import("../../src/services/audit");
+    const where = buildAuditWhereClause({
+      userId: "u-123",
+      action: "STATUS_CHANGE" as any,
+      entityType: "Order",
+      startDate: "2026-09-01",
+      endDate: "2026-09-08",
+      search: "ORD-999",
+    });
+
+    assert.strictEqual(where.userId, "u-123");
+    assert.strictEqual(where.action, "STATUS_CHANGE");
+    assert.strictEqual(where.entityType, "Order");
+    assert.ok(where.timestamp?.gte instanceof Date);
+    assert.ok(where.timestamp?.lte instanceof Date);
+    assert.strictEqual(where.entityId?.contains, "ORD-999");
+  });
+
   return runner;
 }

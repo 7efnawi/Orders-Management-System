@@ -10,6 +10,29 @@
 |---|---|---|
 | القائمة النهائية للمنصات | ✅ حُسمت (Talabat, InstaShop, Harry App, Elmenus, Facebook, Phone) | Platform seed & Visual Tokens |
 
+## [2026-09-09] المرحلة 10 — طبقة خدمة سجل المراقبة ومحرك فحص الفوارق (Task 10.1: Audit Service Layer & Semantic Diff Engine)
+**النوع:** Core Feature & Security Architecture (TDD)
+**اللي اتعمل:**
+- إنشاء طبقة خدمة سجل المراقبة والتدقيق `src/services/audit.ts` لدعم المرحلة العاشرة (Audit Log UI & Activity Monitoring — FR-AUD-01..05):
+  - بناء محرك حساب الفوارق الدلالي (`computeAuditDiff`):
+    - مقارنة كائني JSON القديم والجديد (`oldValue` و `newValue`) وتحليل التغييرات بدقة وتصنيفها.
+    - دعم قاموس حقول النطاق العربي والإنجليزي (`AUDIT_FIELD_DICTIONARY`) لترجمة الحقول (`status`, `role`, `discountAmount`, `cancelReason`, `notes`, `subtotal`, `total`, `isActive`, إلخ) مع تحديد نوع العرض (`status`, `currency`, `boolean`, `role`, `text`, `json`).
+    - معالجة الحقول المضافة (`oldValue: null`) والحقول المحذوفة ومطابقة الكائنات المتطابقة بإرجاع مصفوفة فارغة.
+  - حساب الإحصائيات التجميعية الحية والمحاكاة (`getAuditStats` و `calculateMockAuditStats`):
+    - إحصائيات المؤشرات التنفيذية: إجمالي السجلات (`totalLogs`)، سجلات اليوم (`todayCount`)، تغييرات الحالة (`statusChangeCount`)، والعمليات الحرجة (`criticalCount`: الإلغاء، واعتمادات ورفض الخصومات).
+  - بناء منشئ شروط البحث والاستعلام (`buildAuditWhereClause`):
+    - دعم الفلترة متعددة المعايير: المستخدم (`userId`)، نوع الإجراء (`action`)، نوع الكيان (`entityType`)، معرّف الكيان أو البحث النصي (`search`/`entityId`)، والمدى الزمني (`startDate`, `endDate`).
+  - محرك جلب السجلات والترقيم (`listAuditLogs` و `getAuditLogById`):
+    - دعم الـ Pagination (`page`, `limit`)، والترتيب التنازلي حسب الوقت (`timestamp: desc`)، وتضمين بيانات المستخدم صاحب الإجراء (`id`, `name`, `email`, `role`).
+  - إثبات خاصية عدم القابلية للتعديل (Immutability — FR-AUD-02): سجل التدقيق إلحاقي فقط (Append-Only) بدون تصدير أي دوال تعديل أو حذف (`deleteAuditLog`, `updateAuditLog`, `clearAuditLogs`).
+- إضافة حزمة اختبارات E2E للخاصية 16 (`F16.1` حتى `F16.5`) في `tests/e2e/tier1-feature-coverage.test.ts`.
+- **بوابات الجودة:**
+  - اجتياز `npm run typecheck` (0 أخطاء).
+  - اجتياز `npm run test:e2e` بنجاح 100% (209/209 اختبار — Red -> Green).
+**الملفات المتأثرة:** `src/services/audit.ts`, `tests/e2e/tier1-feature-coverage.test.ts`, `PROJECT_LOG.md`
+
+---
+
 ## [2026-09-09] توسيع وضبط نافذة معاينة طباعة الـ PDF وأدوات التكبير والعرض (Enlarge & Polish PDF Preview Modal with Zoom & Viewport Controls)
 **النوع:** UI/UX Excellence & Interactive Preview Tooling (TDD)
 **اللي اتعمل:**
