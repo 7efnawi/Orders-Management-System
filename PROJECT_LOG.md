@@ -10,6 +10,31 @@
 |---|---|---|
 | القائمة النهائية للمنصات | ✅ حُسمت (Talabat, InstaShop, Harry App, Elmenus, Facebook, Phone) | Platform seed & Visual Tokens |
 
+## [2026-09-12] إدارة العملاء — محرك حسابات النطاق وطبقة الخدمات وسجل التدقيق (Customer Domain Calculations, CRM Service Layer & Audit Trail)
+**النوع:** Core Domain & Service Layer Architecture (TDD, Task 11.1)
+**الدافع والمشكلة:**
+- تتطلب إدارة مطبخ السوشي الداكن (Dark Kitchen) سجلاً مركزياً للعملاء يربط أرقام الهواتف الفريدة بسجل الطلبات والمشاكل التشغيلية، وحساب شرائح ولاء العميل بدقة (Bronze, Silver, Gold, Platinum) وتصنيف العميل (First-Time vs Returning).
+- الحاجة لحساب مؤشرات القيمة الإجمالية للعميل (LTV و AOV والبراند المفضل) مع استبعاد الأوردرات الملغية مالياً من حسابات الإيراد، ورصد الطلبات التي واجهت مشاكل (إلغاء، مشاكل توصيل، أو جودة) لحماية تجربة العميل.
+- الالتزام التام بقواعد المشروع: حظر الحذف النهائي للعملاء (No Hard Delete)، وتسجيل كافة التعديلات في جدول `AuditLog` داخل نفس المعاملة (Transaction).
+**اللي اتعمل:**
+- **إنشاء محرك حسابات النطاق في `src/lib/customers.ts` (دوال نقية بدون أثر جانبي):**
+  - بناء `determineLoyaltyTier`: تحديد شريحة الولاء (Bronze: 1-4، Silver: 5-14، Gold: 15-29، Platinum: 30+) وتصنيف العميل كضيف جديد لأول مرة (`totalOrders <= 1`) أو عميل متكرر عائد (`totalOrders > 1`).
+  - بناء `calculateCustomerStats`: حساب إجمالي إنفاق العميل Lifetime Spent ومتوسط قيمة الطلب AOV مع استبعاد الأوردرات الملغية، وتحديد تاريخ آخر طلب، وتحديد البراند المفضل الأكثر طلباً.
+  - بناء `identifyProblemOrders`: فحص وتصنيف الطلبات التي واجهت مشاكل تشغيلية (الملغية، مشاكل التوصيل، مشاكل الجودة).
+  - بناء `formatCustomerPhone`: تنميط أرقام الهواتف المصرية (إزالة الفواصل والأكواد الدولية وتوحيد البادئة) وعزل الاتجاه بواسطة محارف `\u202A` و `\u202C` لضمان التوافق التام مع اتجاه RTL دون أي انقلاب للأرقام.
+- **توسيع طبقة الخدمات في `src/services/customers.ts`:**
+  - بناء `listCustomers`: استعلام مرقم ومفلتر (بالبحث، والشريحة، والطلبات المشاكل) مع حساب الإحصائيات التنفيذية (إجمالي العملاء، الجدد هذا الشهر، كبار العملاء VIP، ومتوسط الإنفاق).
+  - بناء `getCustomerProfile`: جلب الملف الشامل للعميل مع الأوردرات والمنتجات ومؤشرات النطاق والطلبات المشاكل وشريحة الولاء.
+  - بناء `updateCustomerNotes` و `updateCustomer`: تحديث ملاحظات وبيانات العميل داخل `prisma.$transaction` مع تسجيل الحدث في `AuditLog` (action: "UPDATE", entityType: "Customer").
+  - الحظر الصارم لأي دوال حذف لبيانات العميل (Zero delete exports).
+- **الاختبارات وبوابات الجودة (TDD):**
+  - إضافة الاختبارات `F17.1` حتى `F17.5` في `tests/e2e/tier1-feature-coverage.test.ts`.
+  - التحقق من طور الفشل (Red phase) ثم النجاح التام (Green phase).
+  - اجتياز فحص الأنواع `npm run typecheck` بنسبة 100% (0 أخطاء).
+  - اجتياز سويت الاختبارات الشامل `npm run test:e2e` بنجاح (222/222 اختبار، 100%).
+**الملفات المتأثرة:** `src/lib/customers.ts`, `src/services/customers.ts`, `tests/e2e/tier1-feature-coverage.test.ts`, `PROJECT_LOG.md`
+
+
 ## [2026-09-09] سجل المراقبة — تجاوز قيد العرض التجاوبي وتوسيع نافذة فحص الفوارق لشاشات سطح المكتب والتناظر التام (Audit Diff Modal Responsive Max-Width Override & Symmetrical Layout)
 **النوع:** UI/UX Bugfix & Layout Engineering (TDD)
 **الدافع والمشكلة:**

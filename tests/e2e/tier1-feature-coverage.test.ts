@@ -1162,5 +1162,188 @@ export async function runTier1Tests(): Promise<TestRunner> {
     assert.strictEqual(formattedId.full, "8c0f2069-6121-4e44-8193-ce8233595841");
   });
 
+  // ═══════════════════════════════════════════════════════════════════════════
+  // FEATURE 17: Customer Database & CRM (Phase 11 — FR-CUST-01..08)
+  // ═══════════════════════════════════════════════════════════════════════════
+  runner.setContext("F17: Customer Database & CRM", 1);
+
+  await runner.test("F17.1: determineLoyaltyTier classifies first-time vs returning and tiers (Bronze, Silver, Gold, Platinum)", async () => {
+    const { determineLoyaltyTier } = await import("../../src/lib/customers");
+
+    // 0 orders -> Bronze, First Time
+    const tier0 = determineLoyaltyTier(0, 0);
+    assert.strictEqual(tier0.tier, "BRONZE");
+    assert.strictEqual(tier0.isFirstTime, true);
+    assert.strictEqual(tier0.isReturning, false);
+
+    // 1 order -> Bronze, First Time
+    const tier1 = determineLoyaltyTier(1, 150);
+    assert.strictEqual(tier1.tier, "BRONZE");
+    assert.strictEqual(tier1.isFirstTime, true);
+    assert.strictEqual(tier1.isReturning, false);
+
+    // 4 orders -> Bronze, Returning
+    const tier4 = determineLoyaltyTier(4, 800);
+    assert.strictEqual(tier4.tier, "BRONZE");
+    assert.strictEqual(tier4.isFirstTime, false);
+    assert.strictEqual(tier4.isReturning, true);
+
+    // 5 orders -> Silver, Returning
+    const tier5 = determineLoyaltyTier(5, 1200);
+    assert.strictEqual(tier5.tier, "SILVER");
+    assert.strictEqual(tier5.isReturning, true);
+
+    // 14 orders -> Silver, Returning
+    const tier14 = determineLoyaltyTier(14, 3500);
+    assert.strictEqual(tier14.tier, "SILVER");
+
+    // 15 orders -> Gold, Returning
+    const tier15 = determineLoyaltyTier(15, 4500);
+    assert.strictEqual(tier15.tier, "GOLD");
+
+    // 29 orders -> Gold, Returning
+    const tier29 = determineLoyaltyTier(29, 9000);
+    assert.strictEqual(tier29.tier, "GOLD");
+
+    // 30 orders -> Platinum, Returning
+    const tier30 = determineLoyaltyTier(30, 12000);
+    assert.strictEqual(tier30.tier, "PLATINUM");
+
+    // 50 orders -> Platinum, Returning
+    const tier50 = determineLoyaltyTier(50, 25000);
+    assert.strictEqual(tier50.tier, "PLATINUM");
+  });
+
+  await runner.test("F17.2: calculateCustomerStats computes lifetime spent, AOV, last order date, and preferred brand", async () => {
+    const { calculateCustomerStats } = await import("../../src/lib/customers");
+
+    const mockOrders = [
+      {
+        id: "ord-1",
+        status: "DELIVERED",
+        subtotal: 300,
+        discount: 0,
+        deliveryFee: 20,
+        createdAt: new Date("2026-09-01T12:00:00Z"),
+        brand: { id: "b-flower", name: "Flower" },
+      },
+      {
+        id: "ord-2",
+        status: "DELIVERED",
+        subtotal: 200,
+        discount: 20,
+        deliveryFee: 0,
+        createdAt: new Date("2026-09-05T14:30:00Z"),
+        brand: { id: "b-flower", name: "Flower" },
+      },
+      {
+        id: "ord-3",
+        status: "CANCELLED",
+        subtotal: 150,
+        discount: 0,
+        deliveryFee: 15,
+        cancelReason: "CUSTOMER_CHANGED_MIND",
+        createdAt: new Date("2026-09-08T18:00:00Z"),
+        brand: { id: "b-mastery", name: "Mastery" },
+      },
+    ];
+
+    const stats = calculateCustomerStats(mockOrders as any);
+
+    // Total orders = 3, completed = 2, cancelled = 1
+    assert.strictEqual(stats.totalOrders, 3);
+    assert.strictEqual(stats.completedOrders, 2);
+    assert.strictEqual(stats.cancelledOrders, 1);
+
+    // Lifetime spent = (300 + 20) + (200 - 20) = 320 + 180 = 500 (cancelled excluded)
+    assert.strictEqual(stats.lifetimeSpent, 500);
+
+    // AOV = 500 / 2 = 250
+    assert.strictEqual(stats.aov, 250);
+
+    // Last order date = 2026-09-08
+    assert.ok(stats.lastOrderDate);
+    assert.strictEqual(new Date(stats.lastOrderDate).toISOString(), new Date("2026-09-08T18:00:00Z").toISOString());
+
+    // Preferred brand = Flower (2 orders vs 1)
+    assert.strictEqual(stats.preferredBrand, "Flower");
+  });
+
+  await runner.test("F17.3: identifyProblemOrders flags cancelled orders and orders with delivery/quality issues", async () => {
+    const { identifyProblemOrders } = await import("../../src/lib/customers");
+
+    const mixedOrders = [
+      {
+        id: "ord-p1",
+        status: "CANCELLED",
+        cancelReason: "DELIVERY_ISSUE",
+        createdAt: new Date("2026-09-02"),
+      },
+      {
+        id: "ord-p2",
+        status: "CANCELLED",
+        cancelReason: "QUALITY_ISSUE",
+        createdAt: new Date("2026-09-03"),
+      },
+      {
+        id: "ord-p3",
+        status: "CANCELLED",
+        cancelReason: "CUSTOMER_CHANGED_MIND",
+        createdAt: new Date("2026-09-04"),
+      },
+      {
+        id: "ord-ok1",
+        status: "DELIVERED",
+        cancelReason: null,
+        createdAt: new Date("2026-09-05"),
+      },
+      {
+        id: "ord-ok2",
+        status: "DELIVERED",
+        cancelReason: null,
+        createdAt: new Date("2026-09-06"),
+      },
+    ];
+
+    const problems = identifyProblemOrders(mixedOrders as any);
+
+    assert.strictEqual(problems.totalProblems, 3);
+    assert.strictEqual(problems.hasProblems, true);
+    assert.strictEqual(problems.cancelledCount, 3);
+    assert.strictEqual(problems.deliveryIssueCount, 1);
+    assert.strictEqual(problems.qualityIssueCount, 1);
+    assert.strictEqual(problems.problemOrders.length, 3);
+  });
+
+  await runner.test("F17.4: formatCustomerPhone normalizes Egyptian phone numbers and ensures direction-safe LTR output", async () => {
+    const { formatCustomerPhone } = await import("../../src/lib/customers");
+
+    // Leading +20
+    const p1 = formatCustomerPhone("+201012345678");
+    assert.strictEqual(p1.raw, "01012345678");
+    assert.ok(p1.display.includes("010 1234 5678"));
+    assert.ok(p1.display.startsWith("\u202A") || p1.display.startsWith("\u200E") || p1.display.includes("010"));
+
+    // Dashed format
+    const p2 = formatCustomerPhone("011-9876-5432");
+    assert.strictEqual(p2.raw, "01198765432");
+    assert.ok(p2.display.includes("011 9876 5432"));
+
+    // 0020 prefix
+    const p3 = formatCustomerPhone("00201234567890");
+    assert.strictEqual(p3.raw, "01234567890");
+
+    // 10 digits missing leading zero
+    const p4 = formatCustomerPhone("1512345678");
+    assert.strictEqual(p4.raw, "01512345678");
+  });
+
+  await runner.test("F17.5: Customer service exports zero delete functions (immutability of customer records)", async () => {
+    const customerService = await import("../../src/services/customers");
+    assert.ok(!("deleteCustomer" in customerService), "deleteCustomer must NOT exist");
+    assert.ok(!("removeCustomer" in customerService), "removeCustomer must NOT exist");
+    assert.ok(!("hardDeleteCustomer" in customerService), "hardDeleteCustomer must NOT exist");
+  });
+
   return runner;
 }
