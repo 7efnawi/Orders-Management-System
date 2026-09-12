@@ -604,6 +604,15 @@ export async function runTier3Tests(): Promise<TestRunner> {
     assert.ok(kpiCode.includes("atRiskCount"), "CustomerKpiCards must display atRiskCount");
   });
 
+  await runner.test("C7.24: Customer profile displays segment badge, favorite products section, and dark kitchen delivery metrics", async () => {
+    const fs = await import("fs");
+    const profileCode = fs.readFileSync("src/components/customers/customer-profile-client.tsx", "utf-8");
+    assert.ok(profileCode.includes("max-w-[1536px]"), "Customer profile must use max-w-[1536px] standard container");
+    assert.ok(profileCode.includes("favoriteProducts") || profileCode.includes("favoritesTitle"), "Customer profile must display favorite products");
+    assert.ok(profileCode.includes("preferredPlatform"), "Customer profile must display preferred platform");
+    assert.ok(profileCode.includes("segment"), "Customer profile must display customer segment");
+  });
+
   return runner;
 }
 

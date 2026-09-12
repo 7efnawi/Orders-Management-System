@@ -10,6 +10,28 @@
 |---|---|---|
 | القائمة النهائية للمنصات | ✅ حُسمت (Talabat, InstaShop, Harry App, Elmenus, Facebook, Phone) | Platform seed & Visual Tokens |
 
+## [2026-09-12] المرحلة 11 — ترقية شاشة الملف التعريفي للعميل مع الأصناف المفضلة وقنوات التوصيل (Task 5: Customer Profile Refinement)
+**النوع:** UI & UX Precision, Dark Kitchen Delivery Insights & Customer Favorites Leaderboard (TDD, Task 5)
+**الدافع والمشكلة:**
+- استكمالاً لتطوير تجربة نظام إدارة العملاء (CRM 2.0) وضبط التناظر التنفيذي لشاشات النظام.
+- ترقية شاشة الملف التعريفي للعميل (`/customers/[id]`) لتعكس نموذج عمل الدارك كيتشن السحابي (100% Delivery Only) مع إبراز قناة الطلب المفضلة ومنطقة التوصيل المعتادة.
+- استبدال أوسمة فئات الولاء القديمة بشارة الشريحة السلوكية الخماسية (`VIP`, `REGULAR`, `NEW`, `AT_RISK`, `INACTIVE`) متوافقة مع الصفرية الصارمة لنظام النقاط والمكافآت (Zero Points & Zero Rewards).
+- إبراز قسم متكامل لقائمة الأصناف الأكثر طلباً للعميل (Customer Favorites Leaderboard) مع عدد مرات الطلب وسعر كل صنف.
+- توحيد الحاوية الخارجية مع المعيار المعتمد لباقي شاشات لوحة التحكم (`mx-auto flex w-full max-w-[1536px] flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-8`).
+**اللي اتعمل:**
+- **ترقية المكوّن `src/components/customers/customer-profile-client.tsx`:**
+  - ضبط الحاوية القياسية المتناظرة `max-w-[1536px]` مع هوامش متناسقة على الموبايل والديسكتوب.
+  - استبدال شارة الولاء القديمة بشارة الشريحة التشغيلية الذكية (`renderSegmentBadge`) مستندة إلى `customer.segment` مع ألوان وأيقونات مميزة لكل شريحة (`VIP` عنبري بنجمة، `REGULAR` زمردي، `NEW` سماوي ببريق، `AT_RISK` برتقالي بتحذير، `INACTIVE` رمادي).
+  - إضافة بطاقة **الأصناف الأكثر طلباً للعميل (Customer Favorites)** بأيقونة شوكة وسكين `Utensils`، تعرض ترتيب الأصناف المفضلة للمستخدم مع اسم الصنف، سعره، ووسام عدد مرات تكراره (`timesOrdered`). في حالة عدم وجود طلبات سابقة، تظهر رسالة خالية لطيفة (`noFavorites`).
+  - إضافة بطاقة **تفضيلات التوصيل والدارك كيتشن (Dark Kitchen & Delivery Insights)** تبرز وسام التأكيد على نموذج التوصيل 100% (`deliveryOnlyNotice`)، والمنصة المفضلة للطلب (`preferredPlatform`)، ومنطقة التوصيل المعتادة (`usualDeliveryZone`) مع أيقونات توضيحية.
+  - الحفاظ التام على المكونات التشغيلية الحساسة: شريط فحص مشاكل الطلبات السابقة (`CustomerProblemOrdersBanner`)، محرر ملاحظات وتفضيلات العميل (`CustomerNotesEditor`)، وجدول سجل الطلبات الكامل (`CustomerOrderHistoryTable`).
+- **الاختبارات التلقائية والتأكد الصارم (TDD Red -> Green):**
+  - إضافة واجتياز اختبار `C7.24` في `tests/e2e/tier3-cross-feature.test.ts` للتحقق من حاوية `1536px`، وعرض الأصناف المفضلة `favoriteProducts`/`favoritesTitle`، والمنصة المفضلة `preferredPlatform`، والشريحة `segment`.
+  - التحقق من اجتياز البوابات الإلزامية:
+    - `npm run typecheck` (0 errors).
+    - `npm run test:e2e` (235/235 tests passed 100%).
+**الملفات المتأثرة:** `src/components/customers/customer-profile-client.tsx`, `tests/e2e/tier3-cross-feature.test.ts`, `PROJECT_LOG.md`
+
 ## [2026-09-12] المرحلة 11 — ضبط تناظر وتوزيع عناصر شاشة العملاء وشبكة الأعمدة المتوازنة (Task 4: Customer Directory UI & Layout Precision)
 **النوع:** UI & Layout Precision, Grid Balance & CRM 2.0 Directory (TDD, Task 4)
 **الدافع والمشكلة:**

@@ -17,6 +17,14 @@ import {
   Award,
   CircleDollarSign,
   User as UserIcon,
+  Star,
+  AlertTriangle,
+  CheckCircle2,
+  UserX,
+  Truck,
+  Bike,
+  Utensils,
+  Layers,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -33,7 +41,7 @@ interface CustomerProfileClientProps {
 
 export function CustomerProfileClient({ customer }: CustomerProfileClientProps) {
   const t = useTranslations("customers.profile");
-  const tTiers = useTranslations("customers.tiers");
+  const tSegments = useTranslations("customers.segments");
   const locale = useLocale();
   const isAr = locale === "ar";
 
@@ -59,45 +67,53 @@ export function CustomerProfileClient({ customer }: CustomerProfileClientProps) 
     });
   }
 
-  function renderTierBadge() {
-    const tier = customer.loyaltyTier.tier;
-    const isNew = customer.loyaltyTier.isFirstTime;
+  function renderSegmentBadge() {
+    const seg = customer.segment || "REGULAR";
+    const label =
+      tSegments(seg as "VIP" | "REGULAR" | "NEW" | "AT_RISK" | "INACTIVE") ||
+      customer.segmentInfo?.labelEn ||
+      seg;
 
-    if (isNew) {
+    if (seg === "VIP") {
       return (
-        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700">
-          {tTiers("NEW")}
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-900 dark:bg-amber-950/70 dark:text-amber-300 border border-amber-300 dark:border-amber-800 shadow-2xs">
+          <Star className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 fill-amber-500" />
+          <span>{label}</span>
         </span>
       );
     }
 
-    if (tier === "PLATINUM") {
+    if (seg === "REGULAR") {
       return (
-        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 border border-purple-300 dark:border-purple-800">
-          {tTiers("PLATINUM")}
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
+          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+          <span>{label}</span>
         </span>
       );
     }
 
-    if (tier === "GOLD") {
+    if (seg === "NEW") {
       return (
-        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-300 dark:border-amber-800">
-          {tTiers("GOLD")}
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-sky-100 text-sky-800 dark:bg-sky-950/70 dark:text-sky-300 border border-sky-300 dark:border-sky-800">
+          <Sparkles className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
+          <span>{label}</span>
         </span>
       );
     }
 
-    if (tier === "SILVER") {
+    if (seg === "AT_RISK") {
       return (
-        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 border border-blue-300 dark:border-blue-800">
-          {tTiers("SILVER")}
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-900 dark:bg-orange-950/70 dark:text-orange-300 border border-orange-300 dark:border-orange-800">
+          <AlertTriangle className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400" />
+          <span>{label}</span>
         </span>
       );
     }
 
     return (
-      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-950 dark:text-orange-300 border border-orange-300 dark:border-orange-800">
-        {tTiers("BRONZE")}
+      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700 dark:bg-zinc-800 dark:text-zinc-400 border border-slate-300 dark:border-zinc-700">
+        <UserX className="w-3.5 h-3.5 text-slate-500" />
+        <span>{label}</span>
       </span>
     );
   }
@@ -105,7 +121,7 @@ export function CustomerProfileClient({ customer }: CustomerProfileClientProps) 
   const ArrowIcon = isAr ? ArrowRight : ArrowLeft;
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto flex w-full max-w-[1536px] flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-8">
       {/* Top Bar / Navigation */}
       <div>
         <Button
@@ -135,7 +151,7 @@ export function CustomerProfileClient({ customer }: CustomerProfileClientProps) 
                   <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground truncate">
                     {customer.name || (isAr ? "عميل بدون اسم" : "Unnamed Customer")}
                   </h1>
-                  {renderTierBadge()}
+                  {renderSegmentBadge()}
                 </div>
 
                 <div className="flex items-center gap-2 flex-wrap text-xs text-muted-foreground">
@@ -244,6 +260,135 @@ export function CustomerProfileClient({ customer }: CustomerProfileClientProps) 
         </CardContent>
       </Card>
 
+      {/* Favorites & Delivery Insights Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Customer Favorites Card */}
+        <Card className="border border-border/70 bg-card shadow-xs">
+          <CardContent className="p-5 sm:p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                  <Utensils className="w-4 h-4" />
+                </div>
+                <div>
+                  <h2 className="text-sm font-bold text-foreground">
+                    {t("favoritesTitle")}
+                  </h2>
+                  <p className="text-xs text-muted-foreground">
+                    {isAr ? "الأصناف الأكثر طلباً في سجل العميل" : "Most frequently ordered menu items"}
+                  </p>
+                </div>
+              </div>
+              {customer.favoriteProducts && customer.favoriteProducts.length > 0 && (
+                <span className="text-xs font-mono font-semibold px-2 py-0.5 rounded-md bg-muted text-muted-foreground">
+                  {customer.favoriteProducts.length} {isAr ? "أصناف" : "items"}
+                </span>
+              )}
+            </div>
+
+            {customer.favoriteProducts && customer.favoriteProducts.length > 0 ? (
+              <div className="space-y-2 pt-1">
+                {customer.favoriteProducts.map((prod, idx) => (
+                  <div
+                    key={prod.productId || idx}
+                    className="flex items-center justify-between p-3 rounded-xl bg-muted/40 border border-border/50 hover:border-border transition-colors gap-3"
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <span className="w-6 h-6 rounded-full bg-primary/15 text-primary text-xs font-bold font-mono flex items-center justify-center shrink-0">
+                        #{idx + 1}
+                      </span>
+                      <div className="min-w-0">
+                        <p className="text-xs font-semibold text-foreground truncate" title={prod.productName}>
+                          {prod.productName}
+                        </p>
+                        <p className="text-[11px] font-mono text-muted-foreground tabular-nums">
+                          {prod.price.toFixed(2)} {isAr ? "ج.م" : "EGP"}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="shrink-0 text-end">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-semibold font-mono bg-primary/10 text-primary border border-primary/20 tabular-nums">
+                        {t("timesOrdered", { count: prod.quantity })}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="py-8 text-center text-xs text-muted-foreground flex flex-col items-center justify-center gap-2">
+                <Sparkles className="w-6 h-6 text-muted-foreground/40" />
+                <p>{t("noFavorites")}</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Delivery Insights Card */}
+        <Card className="border border-border/70 bg-card shadow-xs">
+          <CardContent className="p-5 sm:p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                  <Truck className="w-4 h-4" />
+                </div>
+                <div>
+                  <h2 className="text-sm font-bold text-foreground">
+                    {isAr ? "تفضيلات التوصيل والدارك كيتشن" : "Dark Kitchen & Delivery Insights"}
+                  </h2>
+                  <p className="text-xs text-muted-foreground">
+                    {isAr ? "قناة التوصيل ومنطقة الخدمة المعتادة" : "Preferred ordering channel & usual zone"}
+                  </p>
+                </div>
+              </div>
+
+              {/* 100% Delivery Badge */}
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 shadow-2xs">
+                <Bike className="w-3.5 h-3.5" />
+                <span>{t("deliveryOnlyNotice")}</span>
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+              {/* Preferred Platform */}
+              <div className="p-3.5 rounded-xl bg-muted/40 border border-border/50 space-y-2">
+                <span className="text-xs font-medium text-muted-foreground block">
+                  {t("preferredPlatform")}
+                </span>
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-background border border-border/70 text-foreground shadow-2xs">
+                    <Layers className="w-3.5 h-3.5 text-primary" />
+                    <span>{customer.preferredPlatform || (isAr ? "لا توجد بعد" : "None yet")}</span>
+                  </span>
+                </div>
+              </div>
+
+              {/* Usual Delivery Zone */}
+              <div className="p-3.5 rounded-xl bg-muted/40 border border-border/50 space-y-2">
+                <span className="text-xs font-medium text-muted-foreground block">
+                  {t("usualDeliveryZone")}
+                </span>
+                <div className="flex items-center gap-1.5 pt-0.5">
+                  <MapPin className="w-4 h-4 text-rose-500 shrink-0" />
+                  <span className="text-xs font-semibold text-foreground truncate">
+                    {customer.usualDeliveryZone || (isAr ? "لا توجد منطقة محددة" : "No specific zone")}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Dark Kitchen Notice Banner */}
+            <div className="p-3 rounded-xl bg-muted/30 border border-border/40 flex items-center gap-2.5 text-xs text-muted-foreground">
+              <Bike className="w-4 h-4 text-emerald-500 shrink-0" />
+              <span>
+                {isAr
+                  ? "جميع عمليات هذا الفرع تتبع نموذج المطبخ السحابي (Dark Kitchen) بنظام التوصيل بنسبة 100% دون صالة أو استلام مباشر."
+                  : "All operations follow the Dark Kitchen cloud kitchen model with 100% delivery operations."}
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Problem Orders Banner */}
       <CustomerProblemOrdersBanner problemSummary={customer.problemSummary} />
 
@@ -258,3 +403,4 @@ export function CustomerProfileClient({ customer }: CustomerProfileClientProps) 
     </div>
   );
 }
+
