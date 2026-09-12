@@ -10,6 +10,27 @@
 |---|---|---|
 | القائمة النهائية للمنصات | ✅ حُسمت (Talabat, InstaShop, Harry App, Elmenus, Facebook, Phone) | Platform seed & Visual Tokens |
 
+## [2026-09-12] إدارة العملاء — مسارات الـ API المحمية وسجل التدقيق وحظر الحذف (Customer CRM API Routes, RBAC Protection & Deletion Immutability)
+**النوع:** API Architecture & Role-Based Security (TDD, Task 11.2)
+**الدافع والمشكلة:**
+- توفير واجهات برمجية آمنة ومحمية بالصلاحيات تسمح للأدوار التشغيلية (المالك والمدير والكاشير) بالبحث في قاعدة بيانات العملاء واسترجاع الملف الشخصي الشامل وتحديث الملاحظات والبيانات.
+- فرض الالتزام الصارم بقواعد عدم الحذف النهائي (No Hard Delete): منع أي محاولة لحذف سجلات العملاء عبر واجهة برمجة التطبيقات وإرجاع كود `405 Method Not Allowed`.
+- التحقق الإجباري من مدخلات الاستعلام والتعديل باستخدام مخططات Zod لضمان سلامة البيانات وحماية النظام من القيم غير الصالحة.
+**اللي اتعمل:**
+- **بناء مسار مجموعة العملاء `src/app/api/customers/route.ts`:**
+  - بناء وتصدير مخطط التحقق `customerQuerySchema`: يفرض قيود الترقيم الافتراضية (`page: 1`, `limit: 25`, بحد أقصى `100`) والتحقق من نصوص البحث وشرائح الولاء وحالة الطلبات المشاكل.
+  - تأمين معالج `GET` بفحص الأدوار `requireApiRole("OWNER", "MANAGER", "CASHIER")` وتمرير الاستعلام لطبقة الخدمات `listCustomers`.
+  - تطبيق معالجات الرفض الصارم `POST`, `PUT`, `PATCH`, و `DELETE` مع إرجاع كود `405 Method Not Allowed` ورسالة خطأ توضح حظر حذف أو تعديل المجموعة عشوائياً.
+- **بناء مسار ملف العميل `src/app/api/customers/[id]/route.ts`:**
+  - معالج `GET`: التحقق من صلاحية المستخدم واستدعاء `getCustomerProfile(id)`، وإرجاع كود `404` عند عدم وجود العميل أو `200` مع الملف الشامل للعميل وسجل طلباته ومؤشراته.
+  - معالج `PATCH`: التحقق من الصلاحيات وتدقيق جسم الطلب عبر `updateCustomerBodySchema` (لتعديل الملاحظات أو العنوان أو الاسم)، واستدعاء خدمة التحديث مع تسجيل التغيير فورياً في `AuditLog` باسم المستخدم المنفذ.
+  - معالج `DELETE`: إرجاع `405 Method Not Allowed` لضمان عدم حذف أي عميل نهائياً.
+- **الاختبارات وبوابات الجودة (TDD):**
+  - إضافة الاختبار `F17.6` في `tests/e2e/tier1-feature-coverage.test.ts` والتحقق من طور الفشل (Red phase) ثم النجاح التام (Green phase).
+  - اجتياز فحص الأنواع `npm run typecheck` بنسبة 100% (0 أخطاء).
+  - اجتياز سويت الاختبارات الشامل `npm run test:e2e` بنجاح (223/223 اختبار، 100%).
+**الملفات المتأثرة:** `src/app/api/customers/route.ts`, `src/app/api/customers/[id]/route.ts`, `tests/e2e/tier1-feature-coverage.test.ts`, `PROJECT_LOG.md`
+
 ## [2026-09-12] إدارة العملاء — محرك حسابات النطاق وطبقة الخدمات وسجل التدقيق (Customer Domain Calculations, CRM Service Layer & Audit Trail)
 **النوع:** Core Domain & Service Layer Architecture (TDD, Task 11.1)
 **الدافع والمشكلة:**

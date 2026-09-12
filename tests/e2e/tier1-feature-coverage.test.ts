@@ -1345,5 +1345,54 @@ export async function runTier1Tests(): Promise<TestRunner> {
     assert.ok(!("hardDeleteCustomer" in customerService), "hardDeleteCustomer must NOT exist");
   });
 
+  await runner.test("F17.6: Customer API query schema validation and immutability enforcement (FR-CUST-01..08)", async () => {
+    const { customerQuerySchema, DELETE } = await import("../../src/app/api/customers/route");
+
+    // Default values
+    const defaults = customerQuerySchema.parse({});
+    assert.strictEqual(defaults.page, 1);
+    assert.strictEqual(defaults.limit, 25);
+
+    // Valid query parameters parsing
+    const valid = customerQuerySchema.parse({
+      page: "3",
+      limit: "50",
+      search: "01012345678",
+      tier: "PLATINUM",
+      hasProblems: "true",
+    });
+    assert.strictEqual(valid.page, 3);
+    assert.strictEqual(valid.limit, 50);
+    assert.strictEqual(valid.search, "01012345678");
+    assert.strictEqual(valid.tier, "PLATINUM");
+    assert.strictEqual(valid.hasProblems, true);
+
+    // Max limit constraint (max 100)
+    assert.throws(() => customerQuerySchema.parse({ limit: "500" }), /limit/);
+
+    // Immutability: DELETE handler on collection returns 405 Method Not Allowed
+    const deleteRes = await DELETE();
+    assert.strictEqual(deleteRes.status, 405);
+    const deleteBody = await deleteRes.json();
+    assert.strictEqual(deleteBody.code, "METHOD_NOT_ALLOWED");
+    assert.ok(
+      deleteBody.message.includes("prohibited") ||
+      deleteBody.message.includes("immutable") ||
+      deleteBody.message.includes("not allowed")
+    );
+
+    // Immutability: DELETE handler on individual customer [id] returns 405 Method Not Allowed
+    const idRoute = await import("../../src/app/api/customers/[id]/route");
+    const deleteIdRes = await idRoute.DELETE();
+    assert.strictEqual(deleteIdRes.status, 405);
+    const deleteIdBody = await deleteIdRes.json();
+    assert.strictEqual(deleteIdBody.code, "METHOD_NOT_ALLOWED");
+    assert.ok(
+      deleteIdBody.message.includes("prohibited") ||
+      deleteIdBody.message.includes("immutable") ||
+      deleteIdBody.message.includes("not allowed")
+    );
+  });
+
   return runner;
 }
