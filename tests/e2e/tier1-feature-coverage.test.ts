@@ -1394,5 +1394,201 @@ export async function runTier1Tests(): Promise<TestRunner> {
     );
   });
 
+  await runner.test("F17.7: determineCustomerSegment classifies VIP, Regular, New, At Risk, and Inactive based on RFM rules", async () => {
+    const { determineCustomerSegment } = await import("../../src/lib/customers");
+
+    const refDate = new Date("2026-09-12T12:00:00Z");
+
+    // VIP: totalOrders >= 15 OR lifetimeSpent >= 3000
+    const vipOrders = determineCustomerSegment(15, 1000, new Date("2026-09-01T12:00:00Z"), refDate);
+    assert.strictEqual(vipOrders.segment, "VIP");
+    assert.strictEqual(vipOrders.labelEn, "VIP");
+
+    const vipSpent = determineCustomerSegment(4, 3500, new Date("2026-09-01T12:00:00Z"), refDate);
+    assert.strictEqual(vipSpent.segment, "VIP");
+    assert.strictEqual(vipSpent.labelEn, "VIP");
+
+    // Regular: totalOrders >= 3 and lastOrder within last 30 days
+    const regular = determineCustomerSegment(4, 1200, new Date("2026-08-25T12:00:00Z"), refDate); // 18 days ago
+    assert.strictEqual(regular.segment, "REGULAR");
+    assert.strictEqual(regular.labelEn, "Regular");
+
+    // New: totalOrders <= 2 and lastOrder within last 30 days
+    const newCust1 = determineCustomerSegment(1, 200, new Date("2026-09-10T12:00:00Z"), refDate); // 2 days ago
+    assert.strictEqual(newCust1.segment, "NEW");
+    assert.strictEqual(newCust1.labelEn, "New");
+
+    const newCust2 = determineCustomerSegment(2, 500, new Date("2026-08-20T12:00:00Z"), refDate); // 23 days ago
+    assert.strictEqual(newCust2.segment, "NEW");
+
+    // At Risk: totalOrders >= 3 and lastOrder between 30 and 60 days ago
+    const atRisk = determineCustomerSegment(4, 1500, new Date("2026-07-25T12:00:00Z"), refDate); // 49 days ago
+    assert.strictEqual(atRisk.segment, "AT_RISK");
+    assert.strictEqual(atRisk.labelEn, "At Risk");
+
+    // Inactive: lastOrder > 60 days ago or 0 orders
+    const inactiveOld = determineCustomerSegment(4, 1500, new Date("2026-06-01T12:00:00Z"), refDate); // 103 days ago
+    assert.strictEqual(inactiveOld.segment, "INACTIVE");
+    assert.strictEqual(inactiveOld.labelEn, "Inactive");
+
+    const inactiveZero = determineCustomerSegment(0, 0, null, refDate);
+    assert.strictEqual(inactiveZero.segment, "INACTIVE");
+  });
+
+  await runner.test("F17.8: calculateCustomerFavorites computes top favorite products across orders", async () => {
+    const { calculateCustomerFavorites } = await import("../../src/lib/customers");
+
+    const mockOrders = [
+      {
+        id: "ord-fav-1",
+        status: "DELIVERED",
+        items: [
+          { productId: "prod-salmon", productName: "Salmon Roll", quantity: 3, price: 120 },
+          { productId: "prod-california", productName: "California Roll", quantity: 1, price: 90 },
+        ],
+      },
+      {
+        id: "ord-fav-2",
+        status: "DELIVERED",
+        items: [
+          { productId: "prod-salmon", productName: "Salmon Roll", quantity: 2, price: 120 },
+          { productId: "prod-crispy", productName: "Crispy Roll", quantity: 4, price: 110 },
+        ],
+      },
+      {
+        id: "ord-fav-3",
+        status: "CANCELLED", // Excluded
+        items: [
+          { productId: "prod-california", productName: "California Roll", quantity: 10, price: 90 },
+        ],
+      },
+    ];
+
+    const favorites = calculateCustomerFavorites(mockOrders);
+
+    assert.strictEqual(favorites.length, 3);
+    assert.strictEqual(favorites[0].productId, "prod-salmon");
+    assert.strictEqual(favorites[0].productName, "Salmon Roll");
+    assert.strictEqual(favorites[0].quantity, 5);
+
+    assert.strictEqual(favorites[1].productId, "prod-crispy");
+    assert.strictEqual(favorites[1].quantity, 4);
+
+    assert.strictEqual(favorites[2].productId, "prod-california");
+    assert.strictEqual(favorites[2].quantity, 1);
+  });
+
+  await runner.test("F17.9: determinePreferredPlatform and determineUsualDeliveryZone extract dark kitchen channel metrics", async () => {
+    const { determinePreferredPlatform, determineUsualDeliveryZone } = await import("../../src/lib/customers");
+
+    const mockOrders = [
+      {
+        id: "ord-1",
+        platform: { name: "Talabat" },
+        zone: { name: "Maadi Degla" },
+      },
+      {
+        id: "ord-2",
+        platform: { name: "Talabat" },
+        zone: { name: "Maadi Degla" },
+      },
+      {
+        id: "ord-3",
+        platform: { name: "Elmenus" },
+        zone: { name: "New Maadi" },
+      },
+    ];
+
+    const preferredPlatform = determinePreferredPlatform(mockOrders);
+    assert.strictEqual(preferredPlatform, "Talabat");
+
+    const usualZone = determineUsualDeliveryZone(mockOrders);
+    assert.strictEqual(usualZone, "Maadi Degla");
+
+    // Empty orders fallback
+    assert.strictEqual(determinePreferredPlatform([]), "Phone");
+    assert.strictEqual(determineUsualDeliveryZone([]), null);
+  });
+
+  await runner.test("F17.10: listCustomers and searchCustomersByPhone support segment filtering and return rich POS customer insights", async () => {
+    const { listCustomers, searchCustomersByPhone } = await import("../../src/services/customers");
+    const { prisma } = await import("../../src/lib/prisma");
+
+    const originalFindMany = prisma.customer.findMany;
+    const originalCount = prisma.customer.count;
+    const originalAggregate = prisma.order.aggregate;
+
+    try {
+      const mockCustomerDb = [
+        {
+          id: "cust-vip-1",
+          name: "Ahmed VIP",
+          phone: "01011112222",
+          address: "Zamalek",
+          notes: "Allergic to sesame",
+          totalOrders: 16,
+          lastOrderAt: new Date("2026-09-10T12:00:00Z"),
+          createdAt: new Date("2026-01-01"),
+          isActive: true,
+          orders: [
+            {
+              id: "ord-1",
+              status: "DELIVERED",
+              cancelReason: null,
+              subtotal: 500,
+              discount: 0,
+              deliveryFee: 20,
+              items: [
+                {
+                  product: { id: "prod-salmon", name: "Salmon Nigiri", price: 150 },
+                  quantity: 3,
+                },
+              ],
+            },
+          ],
+        },
+      ];
+
+      (prisma.customer as any).findMany = async () => {
+        return mockCustomerDb;
+      };
+      (prisma.customer as any).count = async () => {
+        return 1;
+      };
+      (prisma.order as any).aggregate = async () => {
+        return {
+          _sum: {
+            subtotal: 500,
+            discount: 0,
+            deliveryFee: 20,
+          },
+        };
+      };
+
+      // 1. Verify listCustomers returns atRiskCount in stats, and segment on items
+      const listResult = await listCustomers({ segment: "VIP" });
+      assert.strictEqual(typeof listResult.stats.atRiskCount, "number");
+      assert.ok(listResult.customers.length >= 1);
+      assert.strictEqual(listResult.customers[0].segment, "VIP");
+      assert.strictEqual(listResult.customers[0].segmentInfo.segment, "VIP");
+      assert.strictEqual(listResult.customers[0].spent, 520);
+
+      // 2. Verify searchCustomersByPhone returns notes, segment, and favoriteProducts
+      const searchResult = await searchCustomersByPhone("0101");
+      assert.ok(searchResult.length >= 1);
+      const firstResult = searchResult[0];
+      assert.strictEqual(firstResult.notes, "Allergic to sesame");
+      assert.strictEqual(firstResult.segment, "VIP");
+      assert.ok(Array.isArray(firstResult.favoriteProducts));
+      assert.strictEqual(firstResult.favoriteProducts[0].productName, "Salmon Nigiri");
+      assert.strictEqual(firstResult.favoriteProducts[0].quantity, 3);
+      assert.strictEqual(firstResult.lifetimeSpent, 520);
+    } finally {
+      prisma.customer.findMany = originalFindMany;
+      prisma.customer.count = originalCount;
+      prisma.order.aggregate = originalAggregate;
+    }
+  });
+
   return runner;
 }

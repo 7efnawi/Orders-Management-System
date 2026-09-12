@@ -10,6 +10,33 @@
 |---|---|---|
 | القائمة النهائية للمنصات | ✅ حُسمت (Talabat, InstaShop, Harry App, Elmenus, Facebook, Phone) | Platform seed & Visual Tokens |
 
+## [2026-09-12] المرحلة 11 — محرك تقسيم العملاء الذكي وحساب المفضلة للدارك كيتشن (Task 1: Customer Domain & Service Layer CRM 2.0)
+**النوع:** Architecture, Domain Engine & Service Layer (TDD, Task 1)
+**الدافع والمشكلة:**
+- استجابةً لمتطلبات CRM 2.0 للدارك كيتشن: إلغاء نظام النقاط والمكافآت بالكامل (No Points & No Rewards) لعدم ملاءمتها لطبيعة عمل المطبخ السحابي، والاعتماد على تقسيم تشغيلي ذكي لشرائح العملاء قائم على نموذج RFM (Recency, Frequency, Monetary).
+- تخصيص النظام ليعمل بنسبة 100% توصيل (Delivery Only — No Pickup/Takeaway)، مع استنتاج المنصة الأكثر طلباً (`determinePreferredPlatform`) ومنطقة التوصيل المعتادة (`determineUsualDeliveryZone`).
+- تمكين نقطة البيع والـ CRM من معرفة الأصناف الأكثر تفضيلاً للعميل (`calculateCustomerFavorites`) وإجمالي إنفاقه وشريحته وملاحظاته لدعم الكاشير باتخاذ قرارات سريعة وتوفير تجربة استثنائية.
+**اللي اتعمل:**
+- **محرك النطاق `src/lib/customers.ts`:**
+  - تعريف نوع وبيانات الشرائح `CustomerSegment = "VIP" | "REGULAR" | "NEW" | "AT_RISK" | "INACTIVE"` مع `CustomerSegmentInfo` وشارات الألوان والوصف العربي والإنجليزي.
+  - بناء دالة `determineCustomerSegment` وفق القواعد التشغيلية الصارمة:
+    - **VIP:** طلبات ≥ 15 أو إنفاق ≥ 3,000 ج.م.
+    - **Regular:** طلبات ≥ 3 وآخر طلب خلال آخر 30 يوماً.
+    - **New:** 1-2 طلب وآخر طلب خلال آخر 30 يوماً.
+    - **At Risk:** طلبات ≥ 3 وانقطع منذ 30 إلى 60 يوماً (أهم شريحة لإعادة التنشيط).
+    - **Inactive:** انقطع منذ > 60 يوماً أو 0 طلبات.
+  - بناء خوارزمية تجميع الأصناف المفضلة `calculateCustomerFavorites` لفرز المنتجات تنازلياً حسب الكمية مع استبعاد الطلبات الملغية.
+  - بناء دالتي استنتاج منصة التوصيل المفضلة `determinePreferredPlatform` ومنطقة التوصيل المعتادة `determineUsualDeliveryZone` لعمليات الدليفري 100%.
+  - الحفاظ على دوال التوافق السابقة بدون نقاط: `determineLoyaltyTier`, `calculateCustomerStats`, `identifyProblemOrders`, `formatCustomerPhone`.
+- **طبقة الخدمات `src/services/customers.ts`:**
+  - دعم فلترة الشريحة `segment?: CustomerSegment` في `listCustomers` مع احتساب عدد المعرضين للفقد `atRiskCount` في المؤشرات وإرجاع `spent`, `segment`, `segmentInfo` في عناصر القائمة.
+  - ترقية `searchCustomersByPhone` لجلب الأصناف المفضلة `favoriteProducts`، الشريحة `segment`، إجمالي الإنفاق `lifetimeSpent`، وملاحظات العميل `notes` لاستخدامها في شاشة الـ POS الفورية.
+  - ترقية `getCustomerProfile` لإرجاع الشريحة والمفضلة والمنصة المفضلة ومنطقة التوصيل المعتادة.
+- **الاختبارات التلقائية والتأكد الصارم (TDD Red -> Green):**
+  - كتابة وتمرير اختبارات F17.7 و F17.8 و F17.9 و F17.10 في `tests/e2e/tier1-feature-coverage.test.ts`.
+  - التحقق بنجاح من البوابات الإجبارية: `npm run typecheck` (0 errors) و `npm run test:e2e` (230/230 tests passed 100%).
+**الملفات المتأثرة:** `src/lib/customers.ts`, `src/services/customers.ts`, `tests/e2e/tier1-feature-coverage.test.ts`, `PROJECT_LOG.md`
+
 ## [2026-09-12] اكتمال المرحلة 11 — قاعدة بيانات العملاء وسجل النشاط وبروفايل العميل (Phase 11: Customer Database, CRM & Customer Profile Completion)
 **النوع:** Quality Engineering & CRM Verification Gate (Task 11.6)
 **الدافع والمشكلة:**

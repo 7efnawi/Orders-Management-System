@@ -1,5 +1,15 @@
-// Customer CRM Domain Calculations & Logic (Phase 11 — FR-CUST-01..08)
+// Customer CRM Domain Calculations & Logic (Phase 11 — FR-CUST-01..08, CRM 2.0)
 // Pure functions only — zero database access or side effects.
+
+export type CustomerSegment = "VIP" | "REGULAR" | "NEW" | "AT_RISK" | "INACTIVE";
+
+export interface CustomerSegmentInfo {
+  segment: CustomerSegment;
+  labelAr: string;
+  labelEn: string;
+  badgeClass: string;
+  descriptionAr: string;
+}
 
 export type CustomerLoyaltyTier = "BRONZE" | "SILVER" | "GOLD" | "PLATINUM";
 
@@ -290,3 +300,254 @@ export function formatCustomerPhone(phone: string): { display: string; raw: stri
 
   return { display, raw };
 }
+
+/**
+ * Classifies customers into 5 operational RFM segments for dark kitchen:
+ * - VIP: totalOrders >= 15 OR lifetimeSpent >= 3000
+ * - Regular: totalOrders >= 3 and lastOrder within last 30 days
+ * - New: totalOrders <= 2 and lastOrder within last 30 days
+ * - At Risk: totalOrders >= 3 and lastOrder between 30 and 60 days ago
+ * - Inactive: lastOrder > 60 days ago or 0 orders
+ */
+export function determineCustomerSegment(
+  totalOrders: number = 0,
+  lifetimeSpent: number = 0,
+  lastOrderAt: Date | string | null = null,
+  refDate?: Date
+): CustomerSegmentInfo {
+  const ordersCount = Math.max(0, Math.floor(Number(totalOrders) || 0));
+  const spent = Math.max(0, Number(lifetimeSpent) || 0);
+  const reference = refDate ? new Date(refDate) : new Date();
+
+  // 1. VIP (Monetary or high Frequency): totalOrders >= 15 OR lifetimeSpent >= 3000
+  if (ordersCount >= 15 || spent >= 3000) {
+    return {
+      segment: "VIP",
+      labelAr: "VIP",
+      labelEn: "VIP",
+      badgeClass:
+        "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border-amber-300 dark:border-amber-800",
+      descriptionAr: "عميل عالي القيمة (طلبات ≥ 15 أو إنفاق ≥ 3,000 ج.م)",
+    };
+  }
+
+  // 2. Inactive if 0 orders or no order date recorded
+  if (ordersCount === 0 || !lastOrderAt) {
+    return {
+      segment: "INACTIVE",
+      labelAr: "خامل",
+      labelEn: "Inactive",
+      badgeClass:
+        "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400 border-slate-300 dark:border-slate-700",
+      descriptionAr: "لم يطلب منذ أكثر من 60 يوماً أو بدون طلبات",
+    };
+  }
+
+  const orderDate = new Date(lastOrderAt);
+  if (isNaN(orderDate.getTime())) {
+    return {
+      segment: "INACTIVE",
+      labelAr: "خامل",
+      labelEn: "Inactive",
+      badgeClass:
+        "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400 border-slate-300 dark:border-slate-700",
+      descriptionAr: "لم يطلب منذ أكثر من 60 يوماً أو بدون طلبات",
+    };
+  }
+
+  const diffMs = reference.getTime() - orderDate.getTime();
+  const daysAgo = Math.max(0, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
+
+  // 3. Inactive if last order was > 60 days ago
+  if (daysAgo > 60) {
+    return {
+      segment: "INACTIVE",
+      labelAr: "خامل",
+      labelEn: "Inactive",
+      badgeClass:
+        "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400 border-slate-300 dark:border-slate-700",
+      descriptionAr: "لم يطلب منذ أكثر من 60 يوماً أو بدون طلبات",
+    };
+  }
+
+  // 4. Regular vs At Risk for customers with >= 3 orders
+  if (ordersCount >= 3) {
+    if (daysAgo <= 30) {
+      return {
+        segment: "REGULAR",
+        labelAr: "دائم",
+        labelEn: "Regular",
+        badgeClass:
+          "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800",
+        descriptionAr: "عميل منتظم (طلبات ≥ 3 وطلب خلال آخر 30 يوماً)",
+      };
+    } else {
+      return {
+        segment: "AT_RISK",
+        labelAr: "معرّض للفقد",
+        labelEn: "At Risk",
+        badgeClass:
+          "bg-orange-100 text-orange-800 dark:bg-orange-950 dark:text-orange-300 border-orange-300 dark:border-orange-800",
+        descriptionAr: "عميل منتظم انقطع منذ 30 إلى 60 يوماً",
+      };
+    }
+  }
+
+  // 5. New customer: totalOrders <= 2 and ordered within last 30 days
+  if (daysAgo <= 30) {
+    return {
+      segment: "NEW",
+      labelAr: "جديد",
+      labelEn: "New",
+      badgeClass:
+        "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 border-blue-300 dark:border-blue-800",
+      descriptionAr: "عميل جديد (1-2 طلب خلال آخر 30 يوماً)",
+    };
+  }
+
+  return {
+    segment: "INACTIVE",
+    labelAr: "خامل",
+    labelEn: "Inactive",
+    badgeClass:
+      "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400 border-slate-300 dark:border-slate-700",
+    descriptionAr: "لم يطلب منذ أكثر من 60 يوماً أو بدون طلبات",
+  };
+}
+
+/**
+ * Computes customer top favorite products across completed orders,
+ * sorted descending by quantity ordered.
+ */
+export function calculateCustomerFavorites(
+  orders: any[] = []
+): { productId: string; productName: string; quantity: number; price: number }[] {
+  if (!orders || !Array.isArray(orders) || orders.length === 0) {
+    return [];
+  }
+
+  const aggregates = new Map<
+    string,
+    { productId: string; productName: string; quantity: number; price: number }
+  >();
+
+  for (const order of orders) {
+    if (!order || order.status === "CANCELLED") continue;
+
+    const items = Array.isArray(order.items) ? order.items : [];
+    for (const item of items) {
+      if (!item) continue;
+      const productId =
+        item.productId ||
+        (typeof item.product === "object" ? item.product?.id : null) ||
+        item.id ||
+        "";
+      const productName =
+        item.productName ||
+        (typeof item.product === "object" ? item.product?.name : null) ||
+        item.name ||
+        "منتج";
+      const quantity = Math.max(1, Math.floor(Number(item.quantity) || 1));
+      const price = Number(
+        item.price ??
+          item.unitPrice ??
+          (typeof item.product === "object" ? item.product?.price : null) ??
+          0
+      );
+
+      const key = productId || productName;
+      const existing = aggregates.get(key);
+
+      if (existing) {
+        existing.quantity += quantity;
+        if (price > 0) existing.price = price;
+      } else {
+        aggregates.set(key, {
+          productId,
+          productName,
+          quantity,
+          price,
+        });
+      }
+    }
+  }
+
+  return Array.from(aggregates.values()).sort((a, b) => b.quantity - a.quantity);
+}
+
+/**
+ * Determines the most frequently used delivery platform/channel for a customer.
+ */
+export function determinePreferredPlatform(orders: any[] = []): string {
+  if (!orders || !Array.isArray(orders) || orders.length === 0) {
+    return "Phone";
+  }
+
+  const platformCounts: Record<string, number> = {};
+
+  for (const order of orders) {
+    if (!order) continue;
+    const name =
+      (typeof order.platform === "object" ? order.platform?.name : null) ??
+      order.platformName ??
+      (typeof order.platform === "string" ? order.platform : null);
+
+    if (name && typeof name === "string" && name.trim().length > 0) {
+      const trimmed = name.trim();
+      platformCounts[trimmed] = (platformCounts[trimmed] || 0) + 1;
+    }
+  }
+
+  let preferred = "Phone";
+  let maxCount = 0;
+
+  for (const [name, count] of Object.entries(platformCounts)) {
+    if (count > maxCount) {
+      maxCount = count;
+      preferred = name;
+    }
+  }
+
+  return preferred;
+}
+
+/**
+ * Determines the customer's usual delivery zone from order history (100% delivery).
+ */
+export function determineUsualDeliveryZone(orders: any[] = []): string | null {
+  if (!orders || !Array.isArray(orders) || orders.length === 0) {
+    return null;
+  }
+
+  const zoneCounts: Record<string, number> = {};
+
+  for (const order of orders) {
+    if (!order) continue;
+    const zoneName =
+      (typeof order.zone === "object" ? order.zone?.name : null) ??
+      (typeof order.zone === "string" ? order.zone : null) ??
+      order.zoneName ??
+      order.deliveryZone ??
+      order.deliveryAddress ??
+      order.address ??
+      (typeof order.customer === "object" ? order.customer?.address : null);
+
+    if (zoneName && typeof zoneName === "string" && zoneName.trim().length > 0) {
+      const trimmed = zoneName.trim();
+      zoneCounts[trimmed] = (zoneCounts[trimmed] || 0) + 1;
+    }
+  }
+
+  let usualZone: string | null = null;
+  let maxCount = 0;
+
+  for (const [name, count] of Object.entries(zoneCounts)) {
+    if (count > maxCount) {
+      maxCount = count;
+      usualZone = name;
+    }
+  }
+
+  return usualZone;
+}
+
