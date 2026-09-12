@@ -538,6 +538,14 @@ export async function runTier3Tests(): Promise<TestRunner> {
     assert.ok(headerCode.includes("/customers"), "dashboard-header must include /customers nav link");
   });
 
+  await runner.test("C7.21: Customer profile UI includes problem orders warning, notes editor, and history table", async () => {
+    const fs = await import("fs");
+    const profileCode = fs.readFileSync("src/components/customers/customer-profile-client.tsx", "utf-8");
+    assert.ok(profileCode.includes("CustomerProblemOrdersBanner") || profileCode.includes("problemOrders"), "Customer profile must handle problem orders");
+    assert.ok(profileCode.includes("CustomerNotesEditor") || profileCode.includes("notes"), "Customer profile must have notes editor");
+    assert.ok(profileCode.includes("CustomerOrderHistoryTable") || profileCode.includes("orderHistory"), "Customer profile must display order history table");
+  });
+
   return runner;
 }
 

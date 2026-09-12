@@ -10,6 +10,38 @@
 |---|---|---|
 | القائمة النهائية للمنصات | ✅ حُسمت (Talabat, InstaShop, Harry App, Elmenus, Facebook, Phone) | Platform seed & Visual Tokens |
 
+## [2026-09-12] إدارة العملاء — ملف العميل الشامل وفاحص مشاكل الطلبات ومحرر الملاحظات (Customer Profile, Problem Orders Inspector & Notes Editor)
+**النوع:** UI/UX Engineering & Customer Profile Architecture (TDD, Task 11.5)
+**الدافع والمشكلة:**
+- عند استقبال مكالمة هاتفية أو طلب جديد أو مراجعة شكوى عميل، يحتاج الكاشير والمدير إلى شاشة متكاملة تجمع كافة تفاصيل العميل في مكان واحد: سجل الإنفاق، شريحة الولاء، البراند المفضل، وملاحظات التوصيل والتفضيلات الخاصة.
+- الأهمية القصوى لرصد وتنبيه المشغل بأي طلبات سابقة واجهت مشاكل تشغيلية (إلغاء، مشاكل توصيل، أو مشاكل جودة) لتقديم عناية خاصة وتفادي تكرار الأخطاء.
+- توفير محرر ملاحظات فوري يدعم التحديثات المتفائلة وحفظ التعديلات في قاعدة البيانات وسجل التدقيق `AuditLog`.
+**اللي اتعمل:**
+- **بناء شريط تنبيه الطلبات المشاكل `src/components/customers/customer-problem-orders-banner.tsx`:**
+  - عرض بطاقة تنبيه بارزة وعالية التباين تحذر الكاشير والمدير عند وجود طلبات سابقة ملغية أو بها مشاكل تشغيلية.
+  - تحليل تفصيلي بالأوسمة الملونة لعدد المشاكل موزعة: أوردرات ملغية، مشاكل توصيل، ومشاكل جودة.
+  - إبراز وسم السجل النظيف الإيجابي في حالة خلو سجل العميل من أي مشكلة.
+- **بناء محرر ملاحظات وتفضيلات العميل `src/components/customers/customer-notes-editor.tsx`:**
+  - حقل نصي مخصص لكتابة التعليمات والتفضيلات الدائمة مع زر حفظ تفاعلي ومؤشر حالة التحميل والتأكيد الفوري.
+  - حفظ التعديلات عبر مسار `PATCH /api/customers/[id]` مع تسجيل الحدث في `AuditLog` داخل المعاملة.
+- **بناء جدول سجل الطلبات التاريخي `src/components/customers/customer-order-history-table.tsx`:**
+  - استعراض كامل للطلبات السابقة للعميل باستخدام `table-fixed w-full`.
+  - أعمدة رقم الأوردر، البراند والمنصة بأوسمة ملونة، حالة الطلب، إجمالي الفاتورة، تاريخ وتوقيت الطلب، وسبب الإلغاء إن وجد.
+- **بناء المكون العميل لبروفايل العميل `src/components/customers/customer-profile-client.tsx`:**
+  - بطاقة رئيسية (Hero Banner) أنيقة تضم الحرف التعريفي للعميل واسمه وشريحة ولائه (Bronze, Silver, Gold, Platinum).
+  - شريحة الهاتف معزولة الاتجاه `dir="ltr"` مع دعم النسخ السريع والاتصال الهاتفي الفوري (`tel:...`).
+  - شبكة إحصائيات القيمة الإجمالية للعميل (إجمالي الطلبات، إجمالي الإنفاق، متوسط قيمة الطلب AOV، والبراند المفضل الأكثر طلباً).
+  - دمج شريط تنبيه المشاكل ومحرر الملاحظات وجدول سجل الطلبات.
+- **بناء صفحة الخادم `src/app/[locale]/(dashboard)/customers/[id]/page.tsx`:**
+  - التحقق من صلاحيات الدخول عبر `requirePageUser()` للأدوار المعتمدة (OWNER, MANAGER, CASHIER).
+  - جلب الملف الشامل للعميل عبر `getCustomerProfile(id)` والتعامل الآمن مع عدم وجود العميل `notFound()`.
+- **الاختبارات وبوابات الجودة (TDD):**
+  - إضافة الاختبار `C7.21` في `tests/e2e/tier3-cross-feature.test.ts`.
+  - التحقق من طور الفشل (Red phase) ثم اجتياز الاختبار بنجاح (Green phase).
+  - اجتياز فحص الأنواع `npm run typecheck` بنسبة 100% (0 أخطاء).
+  - اجتياز سويت الاختبارات الشامل `npm run test:e2e` بنجاح (226/226 اختبار، 100%).
+**الملفات المتأثرة:** `src/components/customers/customer-problem-orders-banner.tsx`, `src/components/customers/customer-notes-editor.tsx`, `src/components/customers/customer-order-history-table.tsx`, `src/components/customers/customer-profile-client.tsx`, `src/app/[locale]/(dashboard)/customers/[id]/page.tsx`, `tests/e2e/tier3-cross-feature.test.ts`, `PROJECT_LOG.md`
+
 ## [2026-09-12] إدارة العملاء — شاشة الدليل ولوحة مؤشرات الـ CRM والتنقل الثابت (Customer Directory Dashboard, Filter Bar, Fixed Table & Navigation)
 **النوع:** UI/UX Architecture & Enterprise CRM Dashboard (TDD, Task 11.4)
 **الدافع والمشكلة:**
