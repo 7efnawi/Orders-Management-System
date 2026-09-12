@@ -1590,5 +1590,98 @@ export async function runTier1Tests(): Promise<TestRunner> {
     }
   });
 
+  await runner.test("F17.11: customerQuerySchema validates segment parameter and rejects invalid segments", async () => {
+    const { customerQuerySchema } = await import("../../src/app/api/customers/route");
+
+    // Valid segments
+    const validSegments = ["VIP", "REGULAR", "NEW", "AT_RISK", "INACTIVE"] as const;
+    for (const seg of validSegments) {
+      const parsed = customerQuerySchema.parse({ segment: seg });
+      assert.strictEqual(parsed.segment, seg);
+    }
+
+    // Invalid segment throws Zod validation error
+    assert.throws(() => customerQuerySchema.parse({ segment: "SUPER_VIP" }), /Invalid|segment/);
+    assert.throws(() => customerQuerySchema.parse({ segment: "CHURNED" }), /Invalid|segment/);
+  });
+
+  await runner.test("F17.12: GET /api/customers/export generates valid UTF-8 BOM CSV with Arabic headers and proper columns", async () => {
+    const { generateCustomersCsv } = await import("../../src/lib/customers");
+
+    const sampleCustomers = [
+      {
+        id: "cust-1",
+        name: 'أحمد "الذواقة" علي',
+        phone: "01012345678",
+        segment: "VIP" as const,
+        segmentInfo: {
+          segment: "VIP" as const,
+          labelAr: "VIP",
+          labelEn: "VIP",
+          badgeClass: "",
+          descriptionAr: "",
+        },
+        totalOrders: 18,
+        spent: 3250.5,
+        totalSpent: 3250.5,
+        lastOrderAt: new Date("2026-09-10T15:30:00Z"),
+        notes: "يفضل الصوص الإضافي، ولديه حساسية من السمسم",
+      },
+      {
+        id: "cust-2",
+        name: "سارة محمد",
+        phone: "01198765432",
+        segment: "AT_RISK" as const,
+        segmentInfo: {
+          segment: "AT_RISK" as const,
+          labelAr: "معرّض للفقد",
+          labelEn: "At Risk",
+          badgeClass: "",
+          descriptionAr: "",
+        },
+        totalOrders: 4,
+        spent: 820,
+        totalSpent: 820,
+        lastOrderAt: new Date("2026-08-01T12:00:00Z"),
+        notes: null,
+      },
+    ];
+
+    const csv = (generateCustomersCsv as any)(sampleCustomers);
+
+    // 1. Verify UTF-8 BOM \uFEFF
+    assert.ok(csv.startsWith("\uFEFF"), "CSV must start with UTF-8 BOM \\uFEFF for Excel compatibility");
+
+    // 2. Split rows
+    const lines = csv.replace(/^\uFEFF/, "").trim().split(/\r?\n/);
+    assert.ok(lines.length >= 3, "Should have header + at least 2 data rows");
+
+    // 3. Verify Arabic headers
+    const headerLine = lines[0];
+    assert.ok(headerLine.includes("اسم العميل"), "Header must contain 'اسم العميل'");
+    assert.ok(headerLine.includes("رقم الهاتف"), "Header must contain 'رقم الهاتف'");
+    assert.ok(headerLine.includes("الشريحة"), "Header must contain 'الشريحة'");
+    assert.ok(headerLine.includes("إجمالي الطلبات"), "Header must contain 'إجمالي الطلبات'");
+    assert.ok(headerLine.includes("إجمالي الإنفاق (ج.م)"), "Header must contain 'إجمالي الإنفاق (ج.م)'");
+    assert.ok(headerLine.includes("آخر طلب"), "Header must contain 'آخر طلب'");
+    assert.ok(headerLine.includes("الملاحظات"), "Header must contain 'الملاحظات'");
+
+    // 4. Verify proper quotes and comma escaping for row 1
+    const row1 = lines[1];
+    assert.ok(row1.includes('""الذواقة""'), 'Quotes inside values must be escaped as ""');
+    assert.ok(row1.includes('"01012345678"'));
+    assert.ok(row1.includes("3250.5"));
+    assert.ok(row1.includes("2026-09-10"));
+    assert.ok(row1.includes('"يفضل الصوص الإضافي، ولديه حساسية من السمسم"'));
+
+    // 5. Verify export route exists and enforces 405 on mutations
+    const exportRoute = await import("../../src/app/api/customers/export/route");
+    assert.strictEqual(typeof exportRoute.GET, "function");
+    const postRes = await exportRoute.POST();
+    assert.strictEqual(postRes.status, 405);
+    const delRes = await exportRoute.DELETE();
+    assert.strictEqual(delRes.status, 405);
+  });
+
   return runner;
 }

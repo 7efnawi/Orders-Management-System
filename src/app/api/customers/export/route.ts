@@ -1,30 +1,12 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { z } from "zod";
 import { isResponse, requireApiRole, wrapApi } from "@/lib/api";
 import { listCustomers } from "@/services/customers";
+import { generateCustomersCsv, type CustomerSegment } from "@/lib/customers";
 
 // ═══════════════════════════════════════════════════════════════════════════
-// Phase 11: Customer CRM API Route (Task 11.2 — FR-CUST-01..08)
+// Phase 11 / CRM 2.0: Customer Export API Route (Task 2)
+// Exports customer directory as UTF-8 BOM CSV with Arabic headers
 // ═══════════════════════════════════════════════════════════════════════════
-// Invariant (FR-CUST-07): Searchable & filterable customer directory
-// Invariant: Customer deletion is strictly prohibited (Immutability)
-// ═══════════════════════════════════════════════════════════════════════════
-
-export const customerQuerySchema = z.object({
-  page: z.coerce.number().int().min(1).default(1),
-  limit: z.coerce.number().int().min(1).max(100).default(25),
-  search: z.string().trim().optional(),
-  tier: z.string().trim().optional(),
-  segment: z.enum(["VIP", "REGULAR", "NEW", "AT_RISK", "INACTIVE"]).optional(),
-  hasProblems: z
-    .union([z.boolean(), z.string()])
-    .optional()
-    .transform((val) => {
-      if (typeof val === "boolean") return val;
-      if (typeof val === "string") return val.toLowerCase() === "true" || val === "1";
-      return undefined;
-    }),
-});
 
 export async function GET(request: NextRequest) {
   return wrapApi(async () => {
@@ -32,31 +14,49 @@ export async function GET(request: NextRequest) {
     if (isResponse(user)) return user;
 
     const { searchParams } = new URL(request.url);
-    const rawParams: Record<string, string> = {};
-    for (const [key, value] of searchParams.entries()) {
-      if (value !== "") {
-        rawParams[key] = value;
-      }
-    }
+    const search = searchParams.get("search")?.trim() || undefined;
+    const rawSegment = searchParams.get("segment")?.trim().toUpperCase();
+    const segment = (
+      ["VIP", "REGULAR", "NEW", "AT_RISK", "INACTIVE"].includes(rawSegment || "")
+        ? rawSegment
+        : undefined
+    ) as CustomerSegment | undefined;
 
-    const query = customerQuerySchema.parse(rawParams);
-    const result = await listCustomers(query);
+    const hasProblemsParam = searchParams.get("hasProblems")?.trim().toLowerCase();
+    const hasProblems =
+      hasProblemsParam === "true" || hasProblemsParam === "1" ? true : undefined;
 
-    return NextResponse.json(result);
+    const result = await listCustomers({
+      page: 1,
+      limit: 5000,
+      search,
+      segment,
+      hasProblems,
+    });
+
+    const csv = generateCustomersCsv(result.customers);
+    const today = new Date().toISOString().split("T")[0];
+    const filename = `customers-${today}.csv`;
+
+    return new NextResponse(csv, {
+      status: 200,
+      headers: {
+        "Content-Type": "text/csv; charset=utf-8",
+        "Content-Disposition": `attachment; filename="${filename}"`,
+      },
+    });
   });
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Immutability Enforcement: Reject mutations on the collection root
-// Customer deletion is strictly prohibited across the dark kitchen platform
+// Immutability Enforcement: Reject mutations on the export endpoint
 // ─────────────────────────────────────────────────────────────────────────────
 
 const METHOD_NOT_ALLOWED = () =>
   NextResponse.json(
     {
       code: "METHOD_NOT_ALLOWED",
-      message:
-        "Customer deletion is strictly prohibited. Modifying collection directly via root endpoint is not supported.",
+      message: "Customer export endpoint only supports GET requests.",
     },
     { status: 405 }
   );

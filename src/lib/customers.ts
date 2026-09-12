@@ -551,3 +551,71 @@ export function determineUsualDeliveryZone(orders: any[] = []): string | null {
   return usualZone;
 }
 
+const SEGMENT_ARABIC_LABELS: Record<string, string> = {
+  VIP: "VIP",
+  REGULAR: "دائم",
+  NEW: "جديد",
+  AT_RISK: "معرّض للفقد",
+  INACTIVE: "خامل",
+};
+
+/**
+ * Generates a UTF-8 BOM CSV string containing customer list data formatted for Excel
+ * with Arabic headers and proper quote/comma escaping.
+ */
+export function generateCustomersCsv(customers: any[] = []): string {
+  const BOM = "\uFEFF";
+  const headers = [
+    "اسم العميل",
+    "رقم الهاتف",
+    "الشريحة",
+    "إجمالي الطلبات",
+    "إجمالي الإنفاق (ج.م)",
+    "آخر طلب",
+    "الملاحظات",
+  ];
+
+  const escapeCell = (val: any): string => {
+    if (val === null || val === undefined) return '""';
+    const str = String(val);
+    return `"${str.replace(/"/g, '""')}"`;
+  };
+
+  const headerRow = headers.map(escapeCell).join(",");
+
+  const rows = customers.map((cust) => {
+    const name = cust.name ?? "";
+    const phone = cust.phone ?? "";
+    const segmentRaw = cust.segment ?? "";
+    const segment =
+      cust.segmentInfo?.labelAr ||
+      SEGMENT_ARABIC_LABELS[segmentRaw] ||
+      segmentRaw;
+    const totalOrders = Number(cust.totalOrders ?? 0);
+    const totalSpent = Number(cust.totalSpent ?? cust.spent ?? 0);
+    let lastOrderStr = "-";
+    if (cust.lastOrderAt) {
+      try {
+        const d = new Date(cust.lastOrderAt);
+        if (!isNaN(d.getTime())) {
+          lastOrderStr = d.toISOString().split("T")[0];
+        }
+      } catch {
+        lastOrderStr = "-";
+      }
+    }
+    const notes = cust.notes ?? "";
+
+    return [
+      escapeCell(name),
+      escapeCell(phone),
+      escapeCell(segment),
+      escapeCell(totalOrders),
+      escapeCell(totalSpent),
+      escapeCell(lastOrderStr),
+      escapeCell(notes),
+    ].join(",");
+  });
+
+  return BOM + [headerRow, ...rows].join("\r\n");
+}

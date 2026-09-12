@@ -207,7 +207,7 @@ export async function listCustomers(
   params: ListCustomersParams = {}
 ): Promise<CustomerListResult> {
   const page = Math.max(1, Number(params.page) || 1);
-  const limit = Math.min(100, Math.max(1, Number(params.limit) || 25));
+  const limit = Math.min(10000, Math.max(1, Number(params.limit) || 25));
   const skip = (page - 1) * limit;
 
   const now = new Date();

@@ -10,6 +10,32 @@
 |---|---|---|
 | القائمة النهائية للمنصات | ✅ حُسمت (Talabat, InstaShop, Harry App, Elmenus, Facebook, Phone) | Platform seed & Visual Tokens |
 
+## [2026-09-12] المرحلة 11 — مسار تصدير بيانات العملاء إلى Excel وتحديث الاستعلامات (Task 2: Customer Export API & Query Enhancement)
+**النوع:** API & Query Enhancement, Export Capability (TDD, Task 2)
+**الدافع والمشكلة:**
+- توفير ميزة تصدير قائمة وسجلات العملاء إلى ملف Excel/CSV للمالك والإدارة لدعم الحملات التسويقية وحملات الواتساب والتواصل المباشر مع العملاء.
+- ضمان التوافق الكامل مع اللغة العربية في برنامج Microsoft Excel عبر تصدير ملف CSV بمقدّمة UTF-8 BOM (`\uFEFF`) والترويسات العربية السليمة والهروب الدقيق للفواصل وعلامات التنصيص.
+- تحديث مخطط استعلام العملاء `customerQuerySchema` في مسار `GET /api/customers` لدعم فلترة الشرائح الخمس (`VIP`, `REGULAR`, `NEW`, `AT_RISK`, `INACTIVE`) مع التحقق الصارم عبر Zod ورفض أي شرائح غير صالحة.
+**اللي اتعمل:**
+- **مخطط استعلام العملاء `src/app/api/customers/route.ts`:**
+  - إضافة حقل `segment: z.enum(["VIP", "REGULAR", "NEW", "AT_RISK", "INACTIVE"]).optional()` إلى `customerQuerySchema`.
+- **دالة تصدير العملاء `src/lib/customers.ts`:**
+  - بناء دالة `generateCustomersCsv(customers: any[]): string` النقية لتوليد CSV يبدأ بـ UTF-8 BOM (`\uFEFF`) مع عناوين الأعمدة العربية:
+    `اسم العميل`, `رقم الهاتف`, `الشريحة`, `إجمالي الطلبات`, `إجمالي الإنفاق (ج.م)`, `آخر طلب`, `الملاحظات`.
+  - تطبيق الهروب الآمن للحقول النصية (`"field"`, واستبدال `"` بـ `""`) وتنسيق التاريخ وتسميات الشرائح بالعربية.
+- **مسار التصدير `src/app/api/customers/export/route.ts`:**
+  - إنشاء نقطة نهاية `GET /api/customers/export` محمية بصلاحيات `OWNER`, `MANAGER`, `CASHIER` عبر `requireApiRole`.
+  - معالجة معاملات التصفية (`search`, `segment`, `hasProblems`) واستدعاء `listCustomers({ page: 1, limit: 5000, ... })`.
+  - إرجاع ترويسات الاستجابة المناسبة للتنزيل الفوري: `Content-Type: text/csv; charset=utf-8` واسم الملف `Content-Disposition: attachment; filename="customers-YYYY-MM-DD.csv"`.
+  - تقييد المسار وإرجاع كود 405 `METHOD_NOT_ALLOWED` على أفعال التعديل (`POST`, `PUT`, `PATCH`, `DELETE`) التزاماً بحظر الحذف والتعديل المباشر.
+- **طبقة الخدمات `src/services/customers.ts`:**
+  - رفع الحد الأقصى لمعلمة `limit` في `listCustomers` لدعم تصدير حتى 10,000 سجل في الدفعة الواحدة.
+- **الاختبارات التلقائية والتأكد الصارم (TDD Red -> Green):**
+  - إضافة وتمرير اختبار `F17.11` للتحقق من قبول الشرائح الصالحة ورفض الشرائح غير الصالحة عبر Zod.
+  - إضافة وتمرير اختبار `F17.12` للتحقق من تصدير CSV بـ UTF-8 BOM والترويسات العربية والهروب الصارم واختبار حظر الأفعال غير المسموحة (405).
+  - اجتياز البوابات الإجبارية: `npm run typecheck` (0 errors) و `npm run test:e2e` (232/232 tests passed 100%).
+**الملفات المتأثرة:** `src/app/api/customers/route.ts`, `src/app/api/customers/export/route.ts`, `src/lib/customers.ts`, `src/services/customers.ts`, `tests/e2e/tier1-feature-coverage.test.ts`, `PROJECT_LOG.md`
+
 ## [2026-09-12] المرحلة 11 — محرك تقسيم العملاء الذكي وحساب المفضلة للدارك كيتشن (Task 1: Customer Domain & Service Layer CRM 2.0)
 **النوع:** Architecture, Domain Engine & Service Layer (TDD, Task 1)
 **الدافع والمشكلة:**
