@@ -10,6 +10,43 @@
 |---|---|---|
 | القائمة النهائية للمنصات | ✅ حُسمت (Talabat, InstaShop, Harry App, Elmenus, Facebook, Phone) | Platform seed & Visual Tokens |
 
+## [2026-09-12] إدارة العملاء — شاشة الدليل ولوحة مؤشرات الـ CRM والتنقل الثابت (Customer Directory Dashboard, Filter Bar, Fixed Table & Navigation)
+**النوع:** UI/UX Architecture & Enterprise CRM Dashboard (TDD, Task 11.4)
+**الدافع والمشكلة:**
+- يحتاج فريق التشغيل (الكاشير، المدير، والمالك) إلى لوحة تحكم تنفيذية مركزية لاستعراض العملاء، تتبع نمو القاعدة الجماهيرية ونسب كبار العملاء VIP، والوصول الفوري لأي عميل بالاسم أو رقم الهاتف.
+- الحاجة لتوفير فلترة ذكية لعزل "العملاء أصحاب المشاكل" لحل شكاواهم استباقياً، وفلترة العملاء حسب شرائح الولاء (Bronze/Silver/Gold/Platinum/New).
+- ضمان ثبات تخطيط الجدول التشغيلي عبر `table-fixed` لمنع اهتزاز الأعمدة، وعزل اتجاه أرقام الهواتف عبر `dir="ltr"` لمنع أي تشوه بصري للأرقام في اتجاه الـ RTL.
+- تضمين رابط العملاء في شريط التنقل العلوي (`/customers`) مع الحفاظ الصارم على معيار عدم تداخل شريط التنقل (Zero-Overlap Invariant).
+**اللي اتعمل:**
+- **بناء بطاقات المؤشرات التنفيذية `src/components/customers/customer-kpi-cards.tsx`:**
+  - 4 بطاقات تفاعلية أنيقة: إجمالي العملاء، الجدد هذا الشهر، كبار العملاء (VIP)، ومتوسط إنفاق العميل بالجنيه المصري (EGP).
+  - دعم كامل للوضع الداكن والتدرجات اللونية المعبرة وأرقام بخطوط `font-mono` و `tabular-nums`.
+- **بناء شريط البحث والفلترة `src/components/customers/customer-filter-bar.tsx`:**
+  - حقل بحث فوري يدعم الاسم ورقم الهاتف مع زر مسح سريع.
+  - قائمة منسدلة لاختيار شريحة الولاء (كافة الشرائح، جدد، برونزي، فضي، ذهبي، بلاتيني).
+  - زر تبديل بارز عالي التباين لعزل العملاء أصحاب المشاكل (`hasProblemsOnly`) مع أيقونة تنبيه ملفتة.
+  - زري التحديث التلقائي وإعادة الضبط.
+- **بناء جدول العملاء المتناظر `src/components/customers/customer-table.tsx`:**
+  - استخدام `table-fixed w-full` مع نسب عرض محددة لكل عمود لمنع انكسار التخطيط.
+  - وسم رقم الهاتف معزول الاتجاه `dir="ltr"` مع إمكانية النسخ بنقرة واحدة وتأكيد بصري فوري.
+  - أوسمة ملونة لكل شريحة ولاء، وعدّاد الطلبات مع وسم تحذيري لأي عميل لديه طلبات مشاكل سابقة.
+  - تذييل ترقيم مرن يدعم التنقل السريع بين الصفحات.
+- **بناء المكون العميل الرئيسي `src/components/customers/customers-client.tsx`:**
+  - تنظيم حالة البحث مع Debounce بمقدار 300ms لترشيد الاستعلامات نحو `/api/customers`.
+  - إدارة متزامنة لحالات الفلترة والترقيم والتحميل.
+- **بناء صفحة الخادم `src/app/[locale]/(dashboard)/customers/page.tsx`:**
+  - حماية المسار عبر `requirePageUser()` مع التحقق من الأدوار (OWNER, MANAGER, CASHIER).
+  - الجلب المسبق للبيانات الأولية عبر `listCustomers` مع تأمين التسلسل للـ App Router.
+- **تحديث شريط التنقل `src/components/layout/dashboard-header.tsx`:**
+  - إضافة أيقونة `Contact` وعنصر التنقل `/customers` في `coreDesktopNavItems` بعد الأوردرات مباشرة لكافة الأدوار التشغيلية.
+  - الحفاظ التام على قيود `min-w-0`, `no-scrollbar`, `overflow-x-auto` وحماية الشاشات الصغيرة.
+- **الاختبارات وبوابات الجودة (TDD):**
+  - إضافة الاختبار `C7.20` في `tests/e2e/tier3-cross-feature.test.ts`.
+  - التحقق من طور الفشل (Red phase) ثم اجتياز الاختبار بنجاح (Green phase).
+  - اجتياز فحص الأنواع `npm run typecheck` بنسبة 100% (0 أخطاء).
+  - اجتياز سويت الاختبارات الشامل `npm run test:e2e` بنجاح (225/225 اختبار، 100%).
+**الملفات المتأثرة:** `src/components/customers/customer-kpi-cards.tsx`, `src/components/customers/customer-filter-bar.tsx`, `src/components/customers/customer-table.tsx`, `src/components/customers/customers-client.tsx`, `src/app/[locale]/(dashboard)/customers/page.tsx`, `src/components/layout/dashboard-header.tsx`, `tests/e2e/tier3-cross-feature.test.ts`, `PROJECT_LOG.md`
+
 ## [2026-09-12] إدارة العملاء — قواميس الترجمة ثنائية اللغة والتوطين المتناظر (Bilingual Customer CRM Translation Dictionaries)
 **النوع:** Internationalization & UI Localization (TDD, Task 11.3)
 **الدافع والمشكلة:**

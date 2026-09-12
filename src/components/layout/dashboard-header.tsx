@@ -21,6 +21,7 @@ import {
   LogOut,
   ShieldCheck,
   User as UserIcon,
+  Contact,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -129,6 +130,13 @@ export function DashboardHeader({ user, locale }: DashboardHeaderProps) {
       isActive:
         pathname === "/orders" ||
         (pathname.startsWith("/orders") && pathname !== "/orders/new"),
+    },
+    {
+      href: "/customers",
+      label: tNav("customers"),
+      icon: Contact,
+      roles: ["OWNER", "MANAGER", "CASHIER"] as Role[],
+      isActive: pathname === "/customers" || pathname.startsWith("/customers"),
     },
     {
       href: "/menu",

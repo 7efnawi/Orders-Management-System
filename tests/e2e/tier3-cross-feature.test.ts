@@ -528,6 +528,16 @@ export async function runTier3Tests(): Promise<TestRunner> {
     assert.ok(en.customers?.tiers?.PLATINUM, "en.customers.tiers.PLATINUM must exist");
   });
 
+  await runner.test("C7.20: Customer directory UI uses table-fixed, direction-safe phone chips, and navbar inclusion", async () => {
+    const fs = await import("fs");
+    const tableCode = fs.readFileSync("src/components/customers/customer-table.tsx", "utf-8");
+    assert.ok(tableCode.includes("table-fixed"), "CustomerTable must use table-fixed for column stability");
+    assert.ok(tableCode.includes("dir=\"ltr\""), "CustomerTable must enforce dir=ltr on phone numbers");
+
+    const headerCode = fs.readFileSync("src/components/layout/dashboard-header.tsx", "utf-8");
+    assert.ok(headerCode.includes("/customers"), "dashboard-header must include /customers nav link");
+  });
+
   return runner;
 }
 
