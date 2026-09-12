@@ -10,6 +10,29 @@
 |---|---|---|
 | القائمة النهائية للمنصات | ✅ حُسمت (Talabat, InstaShop, Harry App, Elmenus, Facebook, Phone) | Platform seed & Visual Tokens |
 
+## [2026-09-12] إدارة العملاء — قواميس الترجمة ثنائية اللغة والتوطين المتناظر (Bilingual Customer CRM Translation Dictionaries)
+**النوع:** Internationalization & UI Localization (TDD, Task 11.3)
+**الدافع والمشكلة:**
+- توفير تجربة مستخدم عربية كاملة وثرية مع تناظر دقيق باللغة الإنجليزية لوحدة إدارة العملاء وقاعدة بيانات الـ CRM، طبقاً لمعايير التصميم الرفيعة `/ui-ux-pro-max` و `/frontend-design`.
+- توطين شامل لمؤشرات الأداء الرئيسية (KPIs)، فلاتر البحث والشرائح، جداول استعراض العملاء، وسام شرائح الولاء، تنبيهات الطلبات المشاكل، ومحرر ملاحظات العميل.
+**اللي اتعمل:**
+- **إضافة ترجمات شريط التنقل (`nav.customers`):**
+  - إضافة `"customers": "العملاء"` في `src/messages/ar.json`.
+  - إضافة `"customers": "Customers"` في `src/messages/en.json`.
+- **بناء النطاق الكامل لترجمات العملاء (`customers` namespace):**
+  - شمل المفاتيح الرئيسية للواجهة: `title`, `subtitle`.
+  - مؤشرات الأداء: `kpis` (`totalCustomers`, `newThisMonth`, `vipCount`, `avgSpent`).
+  - الفلاتر وأدوات التحكم: `filters` (`searchPlaceholder`, `allTiers`, `tierNew`, `tierBronze`, `tierSilver`, `tierGold`, `tierPlatinum`, `hasProblemsOnly`, `reset`, `refresh`).
+  - جدول العملاء: `table` (`customer`, `phone`, `tier`, `ordersCount`, `lastOrder`, `actions`, `viewProfile`, `empty`, `showingResults`, `problemBadge`, `page`, `of`, `previous`, `next`).
+  - وسوم شرائح الولاء: `tiers` (`NEW`, `BRONZE`, `SILVER`, `GOLD`, `PLATINUM`).
+  - صفحة البروفايل وفاحص المشاكل: `profile` (`backToList`, `basicInfo`, `firstOrder`, `lastOrder`, `lifetimeSpent`, `totalOrders`, `aov`, `preferredBrand`, `notesTitle`, `notesPlaceholder`, `saveNotes`, `savingNotes`, `notesSaved`, `notesError`, `orderHistory`, `problemOrdersTitle`, `problemOrdersDesc`, `noOrders`, `call`, `copyPhone`, `phoneCopied`, `address`, `noAddress`, `orderNumber`, `brand`, `platform`, `status`, `total`, `date`, `cancelReason`, `deliveryNotes`, `items`, `noProblems`, `problemCancelled`, `problemDelivery`, `problemQuality`).
+- **الاختبارات وبوابات الجودة (TDD):**
+  - إضافة الاختبار `C7.19` في `tests/e2e/tier3-cross-feature.test.ts`.
+  - التحقق من طور الفشل (Red phase) ثم اجتياز الاختبار بنجاح (Green phase).
+  - اجتياز فحص الأنواع `npm run typecheck` بنسبة 100% (0 أخطاء).
+  - اجتياز سويت الاختبارات الشامل `npm run test:e2e` بنجاح (224/224 اختبار، 100%).
+**الملفات المتأثرة:** `src/messages/ar.json`, `src/messages/en.json`, `tests/e2e/tier3-cross-feature.test.ts`, `PROJECT_LOG.md`
+
 ## [2026-09-12] إدارة العملاء — مسارات الـ API المحمية وسجل التدقيق وحظر الحذف (Customer CRM API Routes, RBAC Protection & Deletion Immutability)
 **النوع:** API Architecture & Role-Based Security (TDD, Task 11.2)
 **الدافع والمشكلة:**

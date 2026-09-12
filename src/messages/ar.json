@@ -65,6 +65,7 @@
   "nav": {
     "dashboard": "الرئيسية",
     "orders": "الأوردرات",
+    "customers": "العملاء",
     "menu": "المنيو",
     "delivery": "التوصيل",
     "expenses": "المصاريف",
@@ -1127,6 +1128,89 @@
       "exporting": "جارٍ التصدير...",
       "exportSuccess": "تم تصدير سجل المراقبة بنجاح",
       "exportError": "فشل تصدير سجل المراقبة"
+    }
+  },
+  "customers": {
+    "title": "قاعدة بيانات العملاء وسجل النشاط",
+    "subtitle": "إدارة بيانات العملاء، تتبع شرائح الولاء، ورصد الطلبات التي واجهت مشاكل تشغيلية",
+    "kpis": {
+      "totalCustomers": "إجمالي العملاء",
+      "newThisMonth": "عملاء جدد هذا الشهر",
+      "vipCount": "كبار العملاء (VIP)",
+      "avgSpent": "متوسط إنفاق العميل"
+    },
+    "filters": {
+      "searchPlaceholder": "بحث بالاسم أو برقم الهاتف...",
+      "allTiers": "كافة الشرائح",
+      "tierNew": "عملاء جدد",
+      "tierBronze": "برونزي",
+      "tierSilver": "فضي",
+      "tierGold": "ذهبي",
+      "tierPlatinum": "بلاتيني",
+      "hasProblemsOnly": "أصحاب المشاكل فقط",
+      "reset": "إعادة ضبط",
+      "refresh": "تحديث"
+    },
+    "table": {
+      "customer": "العميل",
+      "phone": "رقم الهاتف",
+      "tier": "شريحة الولاء",
+      "ordersCount": "عدد الطلبات",
+      "lastOrder": "آخر طلب",
+      "actions": "إجراءات",
+      "viewProfile": "عرض الملف",
+      "empty": "لا يوجد عملاء يطابقون معايير البحث أو الفلترة",
+      "showingResults": "عرض {from} إلى {to} من أصل {total} عميل",
+      "problemBadge": "{count} مشاكل",
+      "page": "صفحة",
+      "of": "من",
+      "previous": "السابق",
+      "next": "التالي"
+    },
+    "tiers": {
+      "NEW": "عميل جديد",
+      "BRONZE": "برونزي",
+      "SILVER": "فضي VIP",
+      "GOLD": "ذهبي VIP",
+      "PLATINUM": "بلاتيني مميز"
+    },
+    "profile": {
+      "backToList": "العودة لقائمة العملاء",
+      "basicInfo": "البيانات الأساسية",
+      "firstOrder": "أول طلب",
+      "lastOrder": "آخر طلب",
+      "lifetimeSpent": "إجمالي الإنفاق",
+      "totalOrders": "إجمالي الطلبات",
+      "aov": "متوسط قيمة الطلب",
+      "preferredBrand": "البراند المفضل",
+      "notesTitle": "ملاحظات وتفضيلات العميل",
+      "notesPlaceholder": "اكتب ملاحظات خاصة، تفضيلات العميل، أو تعليمات التوصيل الدائمة هنا...",
+      "saveNotes": "حفظ الملاحظات",
+      "savingNotes": "جارٍ الحفظ...",
+      "notesSaved": "تم حفظ ملاحظات العميل بنجاح",
+      "notesError": "فشل حفظ الملاحظات — حاول مجددًا",
+      "orderHistory": "سجل الطلبات التاريخي",
+      "problemOrdersTitle": "تنبيه: توجد مشاكل في طلبات سابقة لهذا العميل",
+      "problemOrdersDesc": "واجه هذا العميل {count} مشكلة في طلباته السابقة (إلغاء أو مشاكل تشغيلية). يُرجى مراعاة ذلك عند تقديم الخدمة.",
+      "noOrders": "لا توجد طلبات مسجلة لهذا العميل بعد",
+      "call": "اتصال هاتفياً",
+      "copyPhone": "نسخ الرقم",
+      "phoneCopied": "تم نسخ رقم الهاتف",
+      "address": "العنوان المسجل",
+      "noAddress": "لم يُسجل عنوان بعد",
+      "orderNumber": "رقم الأوردر",
+      "brand": "البراند",
+      "platform": "المنصة",
+      "status": "الحالة",
+      "total": "الإجمالي",
+      "date": "التاريخ",
+      "cancelReason": "سبب الإلغاء",
+      "deliveryNotes": "ملاحظات التوصيل",
+      "items": "الأصناف",
+      "noProblems": "سجل نظيف — لا توجد أي مشاكل مسجلة لهذا العميل",
+      "problemCancelled": "أوردرات ملغية",
+      "problemDelivery": "مشاكل توصيل",
+      "problemQuality": "مشاكل جودة"
     }
   }
 }

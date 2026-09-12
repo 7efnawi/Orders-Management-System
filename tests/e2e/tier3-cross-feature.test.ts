@@ -511,6 +511,23 @@ export async function runTier3Tests(): Promise<TestRunner> {
     );
   });
 
+  await runner.test("C7.19: Customer CRM translation keys exist symmetrically in ar.json and en.json", async () => {
+    const fs = await import("fs");
+    const ar = JSON.parse(fs.readFileSync("src/messages/ar.json", "utf-8"));
+    const en = JSON.parse(fs.readFileSync("src/messages/en.json", "utf-8"));
+
+    assert.ok(ar.nav?.customers, "ar.nav.customers must exist");
+    assert.ok(en.nav?.customers, "en.nav.customers must exist");
+    assert.ok(ar.customers?.title, "ar.customers.title must exist");
+    assert.ok(en.customers?.title, "en.customers.title must exist");
+    assert.ok(ar.customers?.kpis?.totalCustomers, "ar.customers.kpis.totalCustomers must exist");
+    assert.ok(en.customers?.kpis?.totalCustomers, "en.customers.kpis.totalCustomers must exist");
+    assert.ok(ar.customers?.profile?.problemOrdersTitle, "ar.customers.profile.problemOrdersTitle must exist");
+    assert.ok(en.customers?.profile?.problemOrdersTitle, "en.customers.profile.problemOrdersTitle must exist");
+    assert.ok(ar.customers?.tiers?.PLATINUM, "ar.customers.tiers.PLATINUM must exist");
+    assert.ok(en.customers?.tiers?.PLATINUM, "en.customers.tiers.PLATINUM must exist");
+  });
+
   return runner;
 }
 

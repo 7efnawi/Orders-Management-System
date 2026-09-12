@@ -65,6 +65,7 @@
   "nav": {
     "dashboard": "Dashboard",
     "orders": "Orders",
+    "customers": "Customers",
     "menu": "Menu",
     "delivery": "Delivery",
     "expenses": "Expenses",
@@ -1127,6 +1128,89 @@
       "exporting": "Exporting...",
       "exportSuccess": "Audit log exported successfully",
       "exportError": "Failed to export audit log"
+    }
+  },
+  "customers": {
+    "title": "Customer Database & Activity Log",
+    "subtitle": "Manage customer profiles, track loyalty tiers, and inspect operational order problems",
+    "kpis": {
+      "totalCustomers": "Total Customers",
+      "newThisMonth": "New This Month",
+      "vipCount": "VIP & Returning",
+      "avgSpent": "Avg Lifetime Spend"
+    },
+    "filters": {
+      "searchPlaceholder": "Search by customer name or phone...",
+      "allTiers": "All Tiers",
+      "tierNew": "New Customers",
+      "tierBronze": "Bronze",
+      "tierSilver": "Silver",
+      "tierGold": "Gold",
+      "tierPlatinum": "Platinum",
+      "hasProblemsOnly": "Problem Orders Only",
+      "reset": "Reset",
+      "refresh": "Refresh"
+    },
+    "table": {
+      "customer": "Customer",
+      "phone": "Phone",
+      "tier": "Loyalty Tier",
+      "ordersCount": "Orders Count",
+      "lastOrder": "Last Order",
+      "actions": "Actions",
+      "viewProfile": "View Profile",
+      "empty": "No customers match the current search or filters",
+      "showingResults": "Showing {from} to {to} of {total} customers",
+      "problemBadge": "{count} problems",
+      "page": "Page",
+      "of": "of",
+      "previous": "Previous",
+      "next": "Next"
+    },
+    "tiers": {
+      "NEW": "New Customer",
+      "BRONZE": "Bronze",
+      "SILVER": "Silver VIP",
+      "GOLD": "Gold VIP",
+      "PLATINUM": "Platinum Elite"
+    },
+    "profile": {
+      "backToList": "Back to Customers",
+      "basicInfo": "Basic Information",
+      "firstOrder": "First Order",
+      "lastOrder": "Last Order",
+      "lifetimeSpent": "Lifetime Spent",
+      "totalOrders": "Total Orders",
+      "aov": "Average Order Value",
+      "preferredBrand": "Preferred Brand",
+      "notesTitle": "Customer Notes & Preferences",
+      "notesPlaceholder": "Enter special preferences, instructions, or delivery notes here...",
+      "saveNotes": "Save Notes",
+      "savingNotes": "Saving...",
+      "notesSaved": "Customer notes saved successfully",
+      "notesError": "Failed to save notes — please try again",
+      "orderHistory": "Order History",
+      "problemOrdersTitle": "Attention: Previous Order Issues Detected",
+      "problemOrdersDesc": "This customer experienced {count} issue(s) on previous orders (cancellations or operational issues). Please handle with care.",
+      "noOrders": "No orders recorded for this customer yet",
+      "call": "Call Phone",
+      "copyPhone": "Copy Phone",
+      "phoneCopied": "Phone number copied",
+      "address": "Registered Address",
+      "noAddress": "No address recorded yet",
+      "orderNumber": "Order #",
+      "brand": "Brand",
+      "platform": "Platform",
+      "status": "Status",
+      "total": "Total",
+      "date": "Date",
+      "cancelReason": "Cancellation Reason",
+      "deliveryNotes": "Delivery Notes",
+      "items": "Items",
+      "noProblems": "Clean Record — No operational issues reported",
+      "problemCancelled": "Cancelled Orders",
+      "problemDelivery": "Delivery Issues",
+      "problemQuality": "Quality Issues"
     }
   }
 }
