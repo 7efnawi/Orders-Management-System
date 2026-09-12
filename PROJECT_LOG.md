@@ -10,6 +10,32 @@
 |---|---|---|
 | القائمة النهائية للمنصات | ✅ حُسمت (Talabat, InstaShop, Harry App, Elmenus, Facebook, Phone) | Platform seed & Visual Tokens |
 
+## [2026-09-12] المرحلة 11 — قواميس الترجمة المتناظرة لترقية إدارة العملاء ونقطة البيع (Task 3: Symmetrical i18n Translations)
+**النوع:** i18n & Localization, Symmetrical Dictionaries (TDD, Task 3)
+**الدافع والمشكلة:**
+- استكمالاً لمتطلبات ترقية نظام إدارة العملاء (CRM 2.0) ودعم شاشات نقطة البيع (POS) وتصدير البيانات: يلزم وجود مفاتيح ترجمة متناظرة 100% بين اللغتين العربية والإنجليزية (`ar.json` و `en.json`) لتجنب أي نصوص ثابتة أو أخطاء رندرة أثناء التبديل بين اللغات.
+- التزام صارم بقواعد النظام: منع أي إشارة إلى النقاط أو المكافآت (Zero Points & Zero Rewards) والتأكيد على نموذج التوصيل فقط 100% (100% Delivery Only، بدون استلام/صالون).
+- تغطية تسميات الشرائح التشغيلية الخمس (`VIP`, `REGULAR`, `NEW`, `AT_RISK`, `INACTIVE`)، ومؤشر المعرضين للفقد (`atRiskCount`)، وأعمدة الجدول (`segment`, `spent`)، وزر تصدير إكسل (`exportExcel`, `exporting`)، وبطاقة التفضيلات والمنصة المفضلة، وبطاقة الرؤى السريعة للعميل في نقطة البيع (`quickInsight`, `quickAdd`, `customerNotesAlert`, `favoriteItems`).
+**اللي اتعمل:**
+- **قاموس العربية `src/messages/ar.json`:**
+  - إضافة مفتاح `kpis.atRiskCount`: `"معرّضون للفقد ⚠️"`.
+  - إضافة مفاتيح `filters.exportExcel`: `"تصدير إكسل"`, `filters.exporting`: `"جارٍ التصدير..."`, `filters.allSegments`: `"كافة الشرائح"`.
+  - إضافة مفاتيح `table.segment`: `"الشريحة"`, `table.spent`: `"إجمالي الإنفاق"`.
+  - إضافة كتلة `segments` الكاملة:
+    - `all`: `"كافة الشرائح"`, `VIP`: `"عميل VIP"`, `REGULAR`: `"عميل دائم"`, `NEW`: `"عميل جديد"`, `AT_RISK`: `"معرّض للفقد ⚠️"`, `INACTIVE`: `"عميل خامل"`.
+  - إضافة حقول تفضيلات العميل في `profile`:
+    - `segment`: `"شريحة العميل"`, `favoritesTitle`: `"الأصناف الأكثر طلباً (المفضلة)"`, `noFavorites`: `"لا توجد أصناف مفضلة مسجلة بعد"`, `timesOrdered`: `"{count} مرة"`, `preferredPlatform`: `"المنصة المفضلة"`, `usualDeliveryZone`: `"منطقة التوصيل المعتادة"`, `deliveryOnlyNotice`: `"جميع الطلبات توصيل دليفري 100%"`.
+  - إضافة حقول الرؤية الفورية في `orders`:
+    - `quickInsight`: `"معلومات العميل الفورية"`, `quickAdd`: `"إضافة للطلب"`, `quickAdded`: `"تمت إضافة الصنف للطلب"`, `customerNotesAlert`: `"تنبيه ملاحظات العميل"`, `favoriteItems`: `"الأصناف المفضلة"`.
+- **قاموس الإنجليزية `src/messages/en.json`:**
+  - مطابقة متناظرة كاملة لكافة المفاتيح المضافة أعلاه باللغة الإنجليزية في `customers.kpis`, `customers.filters`, `customers.table`, `customers.segments`, `customers.profile`, و `orders`.
+- **الاختبارات التلقائية والتأكد الصارم (TDD Red -> Green):**
+  - كتابة وتمرير اختبار `C7.22` في `tests/e2e/tier3-cross-feature.test.ts` للتحقق التلقائي من التناظر الدقيق لجميع المفاتيح المضافة.
+  - التحقق من اجتياز البوابات الإلزامية:
+    - `npm run typecheck` (0 errors).
+    - `npm run test:e2e` (233/233 tests passed 100%).
+**الملفات المتأثرة:** `src/messages/ar.json`, `src/messages/en.json`, `tests/e2e/tier3-cross-feature.test.ts`, `PROJECT_LOG.md`
+
 ## [2026-09-12] المرحلة 11 — مسار تصدير بيانات العملاء إلى Excel وتحديث الاستعلامات (Task 2: Customer Export API & Query Enhancement)
 **النوع:** API & Query Enhancement, Export Capability (TDD, Task 2)
 **الدافع والمشكلة:**

@@ -546,6 +546,44 @@ export async function runTier3Tests(): Promise<TestRunner> {
     assert.ok(profileCode.includes("CustomerOrderHistoryTable") || profileCode.includes("orderHistory"), "Customer profile must display order history table");
   });
 
+  await runner.test("C7.22: Customer CRM 2.0 translation keys exist symmetrically in ar.json and en.json", async () => {
+    const fs = await import("fs");
+    const ar = JSON.parse(fs.readFileSync("src/messages/ar.json", "utf-8"));
+    const en = JSON.parse(fs.readFileSync("src/messages/en.json", "utf-8"));
+
+    // Segments
+    assert.ok(ar.customers?.segments?.VIP, "ar.customers.segments.VIP must exist");
+    assert.ok(en.customers?.segments?.VIP, "en.customers.segments.VIP must exist");
+    assert.ok(ar.customers?.segments?.AT_RISK, "ar.customers.segments.AT_RISK must exist");
+    assert.ok(en.customers?.segments?.AT_RISK, "en.customers.segments.AT_RISK must exist");
+    assert.ok(ar.customers?.segments?.REGULAR, "ar.customers.segments.REGULAR must exist");
+    assert.ok(en.customers?.segments?.REGULAR, "en.customers.segments.REGULAR must exist");
+    assert.ok(ar.customers?.segments?.NEW, "ar.customers.segments.NEW must exist");
+    assert.ok(en.customers?.segments?.NEW, "en.customers.segments.NEW must exist");
+    assert.ok(ar.customers?.segments?.INACTIVE, "ar.customers.segments.INACTIVE must exist");
+    assert.ok(en.customers?.segments?.INACTIVE, "en.customers.segments.INACTIVE must exist");
+
+    // KPI & Table fields
+    assert.ok(ar.customers?.kpis?.atRiskCount, "ar.customers.kpis.atRiskCount must exist");
+    assert.ok(en.customers?.kpis?.atRiskCount, "en.customers.kpis.atRiskCount must exist");
+    assert.ok(ar.customers?.table?.spent, "ar.customers.table.spent must exist");
+    assert.ok(en.customers?.table?.spent, "en.customers.table.spent must exist");
+    assert.ok(ar.customers?.table?.segment, "ar.customers.table.segment must exist");
+    assert.ok(en.customers?.table?.segment, "en.customers.table.segment must exist");
+    assert.ok(ar.customers?.filters?.exportExcel, "ar.customers.filters.exportExcel must exist");
+    assert.ok(en.customers?.filters?.exportExcel, "en.customers.filters.exportExcel must exist");
+
+    // Profile & POS insights
+    assert.ok(ar.customers?.profile?.favoritesTitle, "ar.customers.profile.favoritesTitle must exist");
+    assert.ok(en.customers?.profile?.favoritesTitle, "en.customers.profile.favoritesTitle must exist");
+    assert.ok(ar.customers?.profile?.preferredPlatform, "ar.customers.profile.preferredPlatform must exist");
+    assert.ok(en.customers?.profile?.preferredPlatform, "en.customers.profile.preferredPlatform must exist");
+    assert.ok(ar.orders?.quickInsight, "ar.orders.quickInsight must exist");
+    assert.ok(en.orders?.quickInsight, "en.orders.quickInsight must exist");
+    assert.ok(ar.orders?.quickAdd, "ar.orders.quickAdd must exist");
+    assert.ok(en.orders?.quickAdd, "en.orders.quickAdd must exist");
+  });
+
   return runner;
 }
 
