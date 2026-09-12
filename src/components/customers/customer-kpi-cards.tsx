@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useTranslations, useLocale } from "next-intl";
-import { Users, UserPlus, Crown, TrendingUp } from "lucide-react";
+import { Users, UserPlus, Crown, AlertTriangle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { CustomerListStats } from "@/services/customers";
 
@@ -20,7 +20,7 @@ export function CustomerKpiCards({ stats, isLoading }: CustomerKpiCardsProps) {
     {
       id: "total",
       label: t("totalCustomers"),
-      value: stats.totalCustomers.toLocaleString(isAr ? "ar-EG" : "en-US"),
+      value: (stats.totalCustomers ?? 0).toLocaleString(isAr ? "ar-EG" : "en-US"),
       icon: Users,
       colorClass: "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/50 border-blue-200 dark:border-blue-900/60",
       accentBorder: "hover:border-blue-300 dark:hover:border-blue-800",
@@ -28,7 +28,7 @@ export function CustomerKpiCards({ stats, isLoading }: CustomerKpiCardsProps) {
     {
       id: "new",
       label: t("newThisMonth"),
-      value: stats.newThisMonth.toLocaleString(isAr ? "ar-EG" : "en-US"),
+      value: (stats.newThisMonth ?? 0).toLocaleString(isAr ? "ar-EG" : "en-US"),
       icon: UserPlus,
       colorClass: "text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 border-emerald-200 dark:border-emerald-900/60",
       accentBorder: "hover:border-emerald-300 dark:hover:border-emerald-800",
@@ -36,21 +36,18 @@ export function CustomerKpiCards({ stats, isLoading }: CustomerKpiCardsProps) {
     {
       id: "vip",
       label: t("vipCount"),
-      value: stats.vipCount.toLocaleString(isAr ? "ar-EG" : "en-US"),
+      value: (stats.vipCount ?? 0).toLocaleString(isAr ? "ar-EG" : "en-US"),
       icon: Crown,
       colorClass: "text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/50 border-amber-200 dark:border-amber-900/60",
       accentBorder: "hover:border-amber-300 dark:hover:border-amber-800",
     },
     {
-      id: "spent",
-      label: t("avgSpent"),
-      value: `${stats.avgSpent.toLocaleString(isAr ? "ar-EG" : "en-US", {
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 2,
-      })} ${isAr ? "ج.م" : "EGP"}`,
-      icon: TrendingUp,
-      colorClass: "text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/50 border-purple-200 dark:border-purple-900/60",
-      accentBorder: "hover:border-purple-300 dark:hover:border-purple-800",
+      id: "atRisk",
+      label: t("atRiskCount"),
+      value: (stats.atRiskCount || 0).toLocaleString(isAr ? "ar-EG" : "en-US"),
+      icon: AlertTriangle,
+      colorClass: "text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/50 border-orange-200 dark:border-orange-900/60",
+      accentBorder: "hover:border-orange-300 dark:hover:border-orange-800",
     },
   ];
 
@@ -65,10 +62,10 @@ export function CustomerKpiCards({ stats, isLoading }: CustomerKpiCardsProps) {
               isLoading ? "opacity-60" : ""
             }`}
           >
-            <CardContent className="p-4 flex items-center justify-between">
+            <CardContent className="p-4 sm:p-5 flex items-center justify-between">
               <div className="space-y-1">
                 <p className="text-xs font-medium text-muted-foreground">{card.label}</p>
-                <p className="text-2xl font-bold tracking-tight font-mono tabular-nums text-foreground">
+                <p className="font-mono text-2xl sm:text-3xl font-bold tabular-nums text-foreground">
                   {card.value}
                 </p>
               </div>

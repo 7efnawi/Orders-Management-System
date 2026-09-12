@@ -584,6 +584,26 @@ export async function runTier3Tests(): Promise<TestRunner> {
     assert.ok(en.orders?.quickAdd, "en.orders.quickAdd must exist");
   });
 
+  await runner.test("C7.23: Customer directory UI uses 1536px standard container, 7 proportional columns including spent, and segment filters", async () => {
+    const fs = await import("fs");
+    const clientCode = fs.readFileSync("src/components/customers/customers-client.tsx", "utf-8");
+    assert.ok(clientCode.includes("max-w-[1536px]"), "customers-client must use standard max-w-[1536px] container");
+    assert.ok(clientCode.includes("segment") || clientCode.includes("onSegmentChange"), "customers-client must support segment state");
+
+    const tableCode = fs.readFileSync("src/components/customers/customer-table.tsx", "utf-8");
+    assert.ok(tableCode.includes("spent") || tableCode.includes("totalSpent"), "CustomerTable must display customer spent");
+    assert.ok(tableCode.includes("w-[22%]"), "CustomerTable col 1 must be 22%");
+    assert.ok(tableCode.includes("w-[16%]"), "CustomerTable col 2 must be 16%");
+    assert.ok(tableCode.includes("w-[14%]"), "CustomerTable col 3 must be 14%");
+    assert.ok(tableCode.includes("w-[11%]"), "CustomerTable col 4 must be 11%");
+    assert.ok(tableCode.includes("w-[14%]"), "CustomerTable col 5 must be 14%");
+    assert.ok(tableCode.includes("w-[13%]"), "CustomerTable col 6 must be 13%");
+    assert.ok(tableCode.includes("w-[10%]"), "CustomerTable col 7 must be 10%");
+
+    const kpiCode = fs.readFileSync("src/components/customers/customer-kpi-cards.tsx", "utf-8");
+    assert.ok(kpiCode.includes("atRiskCount"), "CustomerKpiCards must display atRiskCount");
+  });
+
   return runner;
 }
 
