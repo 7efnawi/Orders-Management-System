@@ -10,6 +10,30 @@
 |---|---|---|
 | القائمة النهائية للمنصات | ✅ حُسمت (Talabat, InstaShop, Harry App, Elmenus, Facebook, Phone) | Platform seed & Visual Tokens |
 
+## [2026-09-12] اكتمال المرحلة 11 — قاعدة بيانات العملاء وسجل النشاط وبروفايل العميل (Phase 11: Customer Database, CRM & Customer Profile Completion)
+**النوع:** Quality Engineering & CRM Verification Gate (Task 11.6)
+**الدافع والمشكلة:**
+- إتمام المرحلة 11 بالكامل وتأكيد مطابقة النظام لكافة متطلبات سجل العملاء وبروفايل العميل وإدارة علاقات العملاء (§FR-CUST: FR-CUST-01 through FR-CUST-08 و UC-12).
+- إنشاء وتشغيل سكربت التحقق الآلي الشامل المخصص للمرحلة 11 (`scripts/verify-phase11.ts`) لاختبار كافة السيناريوهات التشغيلية والحسابية والأمنية بتناغم بين طبقة الخدمات وقاعدة البيانات ومسارات الـ API.
+- التحقق الصارم من بوابات الجودة الإجبارية: خلو الأخطاء البرمجية من الـ Typescript (`npm run typecheck`)، اجتياز سويت اختبارات الـ E2E بنسبة 100%، ونجاح بناء الإنتاج عبر Turbopack (`npm run build`).
+**اللي اتعمل:**
+- **بناء وتشغيل سكربت التحقق الآلي المخصص للمرحلة 11 `scripts/verify-phase11.ts` (7/7 فحوصات بنجاح 100%):**
+  1. **الخطوة 1: نظافة ما قبل التحقق وتجهيز البيئة (Setup & Pre-verification Cleanliness):** إنشاء مستخدم كاشير اختباري وكتالوج براند وفئة ومنتج ومنصة تجريبية، وتنظيف أي بيانات سابقة بدقة مع احترام قيود المفاتيح الأجنبية.
+  2. **الخطوة 2: الإنشاء التلقائي ومنع التكرار (FR-CUST-01, FR-CUST-02, FR-CUST-03):** التحقق من دالة `findOrCreateCustomer` في إنشاء عميل جديد برقم فريد، وتحديث العنوان والملاحظات مع إعادة استخدام نفس معرف العميل `customerId` دون تكرار السجل، واختبار دالة البحث السريع ببادئة الهاتف `searchCustomersByPhone` وتطبيع الأرقام المصرية وعزلها بالاتجاه `dir="ltr"` عبر `formatCustomerPhone`.
+  3. **الخطوة 3: شرائح الولاء وحسابات القيمة الدائمة (FR-CUST-06):** التحقق الدقيق من دالة `determineLoyaltyTier` عبر العتبات المحددة (1 أوردر -> NEW & BRONZE، 6 أوردرات -> RETURNING & SILVER، 20 أوردر -> RETURNING & GOLD، 35 أوردر -> RETURNING & PLATINUM)، وحساب إجمالي الإنفاق واستبعاد الأوردرات الملغية ومتوسط قيمة الطلب (AOV) وتاريخ آخر طلب والبراند المفضل عبر `calculateCustomerStats`.
+  4. **الخطوة 4: رصد وتصنيف الطلبات المشاكل (FR-CUST-05):** إنشاء طلبات فعلية ملغية بسبب مشاكل التوصيل `DELIVERY_ISSUE` ومشاكل الجودة `QUALITY_ISSUE` وطلب مكتمل، والتأكد من دقة `identifyProblemOrders` في عزل المشاكل وحساب نسبتها (67%).
+  5. **الخطوة 5: دليل العملاء والترقيم والفلترة (Customer Directory Service):** اختبار خدمة `listCustomers` مع الترقيم الفعلي (`page: 1, limit: 10`)، فلترة البحث بالاسم والهاتف، فلترة الشريحة الذهبية `tier: "GOLD"`، فلترة الطلبات المشاكل `hasProblems: true` وعزل العملاء المتضررين، واحتساب مؤشرات الأداء اللحظية (`totalCustomers`, `newThisMonth`, `vipCount`, `avgSpent`).
+  6. **الخطوة 6: تعديل الملاحظات وسجل التدقيق المعاملي (FR-CUST-08, FR-AUD-01):** استدعاء `updateCustomerNotes` وحفظ تفضيلات العميل، والتحقق من تسجيل الحدث آلياً في جدول `AuditLog` داخل نفس المعاملة وتوثيق `oldValue` و `newValue` وربط العملية بهوية المستخدم.
+  7. **الخطوة 7: أمان طبقة الـ API ومنع الحذف النهائي (FR-CUST Immutability):** اختبار مسارات `GET /api/customers` و `GET /api/customers/[id]` واسترجاع كود 200 والبيانات الكاملة للمستخدمين المصرح لهم، والتأكد من إرجاع كود 405 `METHOD_NOT_ALLOWED` عند استدعاء `DELETE /api/customers` أو `DELETE /api/customers/[id]`، والتأكد البرمجي من خلو خدمة العملاء من أي دالة حذف نهائي (Strict Immutability).
+- **إضافة أمر التحقق في `package.json`:**
+  - إضافة `"verify:phase11": "tsx scripts/verify-phase11.ts"`.
+- **اجتياز بوابات الجودة الصارمة 100%:**
+  - `scripts/verify-phase11.ts`: 7/7 فحوصات كاملة وناجحة 100%.
+  - `npm run typecheck` (`tsc --noEmit`): 0 أخطاء.
+  - `npm run test:e2e` (`run-all.ts`): 226/226 اختباراً بنسبة نجاح 100% عبر كافة المستويات (T1: 90, T2: 65, T3: 61, T4: 10).
+  - `npm run build`: بناء إنتاج سليم وخالٍ من الأخطاء عبر Next.js 16 و Turbopack.
+**الملفات المتأثرة:** `scripts/verify-phase11.ts`, `package.json`, `PROJECT_LOG.md`
+
 ## [2026-09-12] إدارة العملاء — ملف العميل الشامل وفاحص مشاكل الطلبات ومحرر الملاحظات (Customer Profile, Problem Orders Inspector & Notes Editor)
 **النوع:** UI/UX Engineering & Customer Profile Architecture (TDD, Task 11.5)
 **الدافع والمشكلة:**
