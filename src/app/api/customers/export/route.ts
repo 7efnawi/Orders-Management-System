@@ -1,11 +1,12 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { isResponse, requireApiRole, wrapApi } from "@/lib/api";
 import { listCustomers } from "@/services/customers";
-import { generateCustomersCsv, type CustomerSegment } from "@/lib/customers";
+import type { CustomerSegment } from "@/lib/customers";
+import { generateCustomersExcelWorkbook } from "@/lib/customersExcel";
 
 // ═══════════════════════════════════════════════════════════════════════════
-// Phase 11 / CRM 2.0: Customer Export API Route (Task 2)
-// Exports customer directory as UTF-8 BOM CSV with Arabic headers
+// Phase 11 / CRM 2.0: Customer Export API Route
+// Exports customer directory as native Microsoft Excel (.xlsx) workbook
 // ═══════════════════════════════════════════════════════════════════════════
 
 export async function GET(request: NextRequest) {
@@ -34,15 +35,20 @@ export async function GET(request: NextRequest) {
       hasProblems,
     });
 
-    const csv = generateCustomersCsv(result.customers);
+    const buffer = await generateCustomersExcelWorkbook(result.customers, result.stats, {
+      generatedBy: user.name || "مدير التشغيل",
+      isAr: true,
+    });
     const today = new Date().toISOString().split("T")[0];
-    const filename = `customers-${today}.csv`;
+    const filename = `customers-${today}.xlsx`;
 
-    return new NextResponse(csv, {
+    return new NextResponse(buffer as any, {
       status: 200,
       headers: {
-        "Content-Type": "text/csv; charset=utf-8",
+        "Content-Type":
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         "Content-Disposition": `attachment; filename="${filename}"`,
+        "Cache-Control": "no-store, no-cache, must-revalidate",
       },
     });
   });

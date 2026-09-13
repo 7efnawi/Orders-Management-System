@@ -624,6 +624,14 @@ export async function runTier3Tests(): Promise<TestRunner> {
     assert.ok(formCode.includes("quickAdded") || formCode.includes("quickAdd"), "order-form must support quick-add to cart for favorites");
   });
 
+  await runner.test("C7.26: Customer export route serves native .xlsx spreadsheet with correct mime-type and disposition", async () => {
+    const fs = await import("fs");
+    const routeCode = fs.readFileSync("src/app/api/customers/export/route.ts", "utf-8");
+    assert.ok(routeCode.includes("generateCustomersExcelWorkbook"), "Route must call generateCustomersExcelWorkbook");
+    assert.ok(routeCode.includes("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"), "Route must set .xlsx MIME type");
+    assert.ok(routeCode.includes(".xlsx"), "Route must set .xlsx filename");
+  });
+
   return runner;
 }
 

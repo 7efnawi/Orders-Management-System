@@ -10,6 +10,25 @@
 |---|---|---|
 | القائمة النهائية للمنصات | ✅ حُسمت (Talabat, InstaShop, Harry App, Elmenus, Facebook, Phone) | Platform seed & Visual Tokens |
 
+## [2026-09-13] المرحلة 11 — ترقية مسار استخراج العملاء لتقديم شيت .xlsx الأصلي (Task 2: Protected .xlsx Export API Route)
+**النوع:** API Route, Binary Streaming & Security (TDD, Red -> Green)
+**الدافع والمشكلة:**
+- تحويل نقطة النهاية `/api/customers/export` من إرجاع نص CSV الخام إلى بث ملف إكسل ثنائي حقيقي بامتداد `.xlsx` مع ترويسات Content-Type المناسبة وحظر التعديل.
+**اللي اتعمل:**
+- **تحديث `src/app/api/customers/export/route.ts`:**
+  - استدعاء دالة `generateCustomersExcelWorkbook` مع تمرير قائمة العملاء وإحصائياتهم واسم المستخدم المصدّر.
+  - إرجاع الاستجابة الثنائية مع الترويسات القياسية:
+    - `Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`
+    - `Content-Disposition: attachment; filename="customers-YYYY-MM-DD.xlsx"`
+    - `Cache-Control: no-store, no-cache, must-revalidate`
+  - الحفاظ على حماية الصلاحيات (`OWNER`, `MANAGER`, `CASHIER`) وقواعد حظر العمليات المعدلة (405 على POST, PUT, PATCH, DELETE).
+- **الاختبارات الآلية وبوابات الجودة:**
+  - إضافة واجتياز اختبار `C7.26` في `tests/e2e/tier3-cross-feature.test.ts` للتحقق من استدعاء المحرك وتعيين الترويسات وامتداد `.xlsx`.
+  - `npm run typecheck` (0 errors).
+  - `npm run test:e2e` (239/239 passed 100%).
+**الملفات المتأثرة:** `src/app/api/customers/export/route.ts`, `tests/e2e/tier3-cross-feature.test.ts`, `PROJECT_LOG.md`
+
+
 ## [2026-09-13] المرحلة 11 — محرك توليد شيت إكسل أصلي واحترافي (.xlsx) للعملاء (Task 1: Native .xlsx Customer Generator)
 **النوع:** Pure Business & Export Engine (TDD, Red -> Green)
 **الدافع والمشكلة:**
