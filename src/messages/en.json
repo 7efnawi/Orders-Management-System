@@ -1156,8 +1156,8 @@
       "tierGold": "Gold",
       "tierPlatinum": "Platinum",
       "hasProblemsOnly": "Problem Orders Only",
-      "exportExcel": "Export Excel",
-      "exporting": "Exporting...",
+      "exportExcel": "Export Excel (.xlsx)",
+      "exporting": "Exporting Excel...",
       "reset": "Reset",
       "refresh": "Refresh"
     },

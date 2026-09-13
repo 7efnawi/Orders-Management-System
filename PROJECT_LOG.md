@@ -10,6 +10,28 @@
 |---|---|---|
 | القائمة النهائية للمنصات | ✅ حُسمت (Talabat, InstaShop, Harry App, Elmenus, Facebook, Phone) | Platform seed & Visual Tokens |
 
+## [2026-09-13] المرحلة 11 — واجهة المستخدم وتنزيل شيت إكسل المنسق (.xlsx) مع مؤشر التحميل (Task 3: Client UI & Asynchronous .xlsx Export)
+**النوع:** UI & UX Precision, Asynchronous File Download & Symmetrical i18n (TDD, Red -> Green)
+**الدافع والمشكلة:**
+- استبدال فتح نافذة تبويب جديدة عشوائية (`window.open`) بآلية تنزيل غير متزامنة متطورة تتعامل مع ملف الـ `.xlsx` الثنائي كـ Blob وتستخرج اسم الملف الأصلي بدقة، مع إظهار حالة التحميل (Spinner) على زر التصدير لمنع التكرار ومنح المستخدم وضوحاً تشغيلياً كاملاً.
+**اللي اتعمل:**
+- **ترقية `src/components/customers/customers-client.tsx`:**
+  - إضافة حالة تصدير تفاعلية `isExporting`.
+  - تحديث دالة `handleExport` لتستدعي نقطة النهاية `/api/customers/export`، وتحصل على ملف الـ `.xlsx` كثنائي (Blob)، وتستخرج اسم الملف من ترويسة `Content-Disposition`، وتُطلق التنزيل التلقائي مع تنظيف موارد الذاكرة `revokeObjectURL`.
+  - تحديث زر التصدير العلوي بأيقونة إكسل الخضراء `FileSpreadsheet` وحالة الدوران أثناء الاستخراج مع تعطيل الأزرار لمنع النقرات المتعددة.
+- **ترقية `src/components/customers/customer-filter-bar.tsx`:**
+  - دعم خاصية `isExporting` وتحديث زر التصدير بلمسة خضراء زمردية خاصة بملفات الإكسل وأيقونة `FileSpreadsheet` ومؤشر دوران وقت المعالجة.
+- **التناظر اللغوي (i18n Symmetry):**
+  - تحديث نصوص التصدير في `src/messages/ar.json` و `src/messages/en.json`:
+    - `"exportExcel": "تصدير شيت إكسل (.xlsx)"` / `"Export Excel (.xlsx)"`
+    - `"exporting": "جارٍ استخراج الشيت..."` / `"Exporting Excel..."`
+- **الاختبارات وبوابات الجودة (TDD):**
+  - إضافة واجتياز اختبار `C7.27` في `tests/e2e/tier3-cross-feature.test.ts` للتحقق من تكامل واجهة المستخدم والأيقونات والتناظر اللغوي.
+  - `npm run typecheck` (0 errors).
+  - `npm run test:e2e` (240/240 passed 100%).
+**الملفات المتأثرة:** `src/components/customers/customers-client.tsx`, `src/components/customers/customer-filter-bar.tsx`, `src/messages/ar.json`, `src/messages/en.json`, `tests/e2e/tier3-cross-feature.test.ts`, `PROJECT_LOG.md`
+
+
 ## [2026-09-13] المرحلة 11 — ترقية مسار استخراج العملاء لتقديم شيت .xlsx الأصلي (Task 2: Protected .xlsx Export API Route)
 **النوع:** API Route, Binary Streaming & Security (TDD, Red -> Green)
 **الدافع والمشكلة:**

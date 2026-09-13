@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useTranslations } from "next-intl";
-import { Search, X, AlertTriangle, RotateCcw, RefreshCw, Download } from "lucide-react";
+import { Search, X, AlertTriangle, RotateCcw, RefreshCw, Download, FileSpreadsheet } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,6 +25,7 @@ interface CustomerFilterBarProps {
   onRefresh: () => void;
   onExport?: () => void;
   isLoading?: boolean;
+  isExporting?: boolean;
 }
 
 export function CustomerFilterBar({
@@ -38,6 +39,7 @@ export function CustomerFilterBar({
   onRefresh,
   onExport,
   isLoading,
+  isExporting,
 }: CustomerFilterBarProps) {
   const t = useTranslations("customers.filters");
   const tSegments = useTranslations("customers.segments");
@@ -112,10 +114,15 @@ export function CustomerFilterBar({
             type="button"
             variant="outline"
             onClick={onExport}
-            className="h-10 px-3 text-xs gap-1.5 border-border/70 hover:bg-muted/80 text-muted-foreground hover:text-foreground shrink-0"
+            disabled={isExporting}
+            className="h-10 px-3 text-xs gap-1.5 border-border/70 hover:bg-muted/80 text-muted-foreground hover:text-foreground shrink-0 border-emerald-600/30 hover:border-emerald-600/50 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20"
           >
-            <Download className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-            <span>{t("exportExcel")}</span>
+            {isExporting ? (
+              <RefreshCw className="w-4 h-4 animate-spin text-emerald-600 dark:text-emerald-400" />
+            ) : (
+              <FileSpreadsheet className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            )}
+            <span>{isExporting ? t("exporting") : t("exportExcel")}</span>
           </Button>
         )}
 

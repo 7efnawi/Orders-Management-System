@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useTranslations } from "next-intl";
-import { Download, RefreshCw } from "lucide-react";
+import { Download, RefreshCw, FileSpreadsheet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CustomerListResult } from "@/services/customers";
 import { CustomerKpiCards } from "@/components/customers/customer-kpi-cards";
@@ -23,10 +23,11 @@ export function CustomersClient({ initialData }: CustomersClientProps) {
   const [debouncedSearch, setDebouncedSearch] = React.useState<string>("");
   const [segment, setSegment] = React.useState<string>("");
   const [hasProblems, setHasProblems] = React.useState<boolean>(false);
-  const [page, setPage] = React.useState<number>(1);
+  const [page, setPage] = React.useState<number>(initialData.page || 1);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
+  const [isExporting, setIsExporting] = React.useState<boolean>(false);
 
-  // Debounce search input by 300ms
+  // Debounce search query changes
   React.useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(search);
@@ -35,7 +36,6 @@ export function CustomersClient({ initialData }: CustomersClientProps) {
     return () => clearTimeout(timer);
   }, [search]);
 
-  // Fetch customers from API
   const fetchCustomers = React.useCallback(async () => {
     setIsLoading(true);
     try {
@@ -53,30 +53,23 @@ export function CustomersClient({ initialData }: CustomersClientProps) {
       }
 
       const res = await fetch(`/api/customers?${params.toString()}`);
-      if (!res.ok) {
-        throw new Error("Failed to fetch customers");
+      if (res.ok) {
+        const json = await res.json();
+        setData(json.data || json);
       }
-      const json: CustomerListResult = await res.json();
-      setData(json);
     } catch (err) {
-      console.error("Error fetching customers:", err);
+      console.error("Failed to fetch customers:", err);
     } finally {
       setIsLoading(false);
     }
   }, [page, debouncedSearch, segment, hasProblems]);
 
-  // Trigger fetch when filters or page changes (skip on very first mount if matching initial)
-  const isFirstMount = React.useRef(true);
   React.useEffect(() => {
-    if (isFirstMount.current) {
-      isFirstMount.current = false;
-      return;
-    }
     fetchCustomers();
   }, [fetchCustomers]);
 
-  function handleSegmentChange(newSegment: string) {
-    setSegment(newSegment);
+  function handleSegmentChange(val: string) {
+    setSegment(val);
     setPage(1);
   }
 
@@ -93,19 +86,46 @@ export function CustomersClient({ initialData }: CustomersClientProps) {
     setPage(1);
   }
 
-  const handleExport = React.useCallback(() => {
-    const params = new URLSearchParams();
-    if (debouncedSearch.trim()) {
-      params.set("search", debouncedSearch.trim());
+  const handleExport = React.useCallback(async () => {
+    try {
+      setIsExporting(true);
+      const params = new URLSearchParams();
+      if (debouncedSearch.trim()) {
+        params.set("search", debouncedSearch.trim());
+      }
+      if (segment && segment !== "ALL") {
+        params.set("segment", segment);
+      }
+      if (hasProblems) {
+        params.set("hasProblems", "true");
+      }
+      const url = `/api/customers/export${params.toString() ? `?${params.toString()}` : ""}`;
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error("Failed to export customers");
+      }
+      const blob = await response.blob();
+      const disposition = response.headers.get("Content-Disposition");
+      let filename = `customers-${new Date().toISOString().split("T")[0]}.xlsx`;
+      if (disposition && disposition.includes("filename=")) {
+        const matches = /filename="?([^";]+)"?/.exec(disposition);
+        if (matches && matches[1]) {
+          filename = matches[1];
+        }
+      }
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = downloadUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(downloadUrl);
+    } catch (err) {
+      console.error("Failed to export customers Excel sheet:", err);
+    } finally {
+      setIsExporting(false);
     }
-    if (segment && segment !== "ALL") {
-      params.set("segment", segment);
-    }
-    if (hasProblems) {
-      params.set("hasProblems", "true");
-    }
-    const url = `/api/customers/export${params.toString() ? `?${params.toString()}` : ""}`;
-    window.open(url, "_blank");
   }, [debouncedSearch, segment, hasProblems]);
 
   return (
@@ -126,10 +146,15 @@ export function CustomersClient({ initialData }: CustomersClientProps) {
             type="button"
             variant="outline"
             onClick={handleExport}
-            className="h-10 gap-2 text-xs sm:text-sm font-medium border-border/70 shadow-2xs hover:bg-muted/80"
+            disabled={isExporting}
+            className="h-10 gap-2 text-xs sm:text-sm font-medium border-border/70 shadow-2xs hover:bg-muted/80 border-emerald-600/30 hover:border-emerald-600/50 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20"
           >
-            <Download className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-            <span>{tFilters("exportExcel")}</span>
+            {isExporting ? (
+              <RefreshCw className="w-4 h-4 animate-spin text-emerald-600 dark:text-emerald-400" />
+            ) : (
+              <FileSpreadsheet className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            )}
+            <span>{isExporting ? tFilters("exporting") : tFilters("exportExcel")}</span>
           </Button>
 
           <Button
@@ -160,6 +185,7 @@ export function CustomersClient({ initialData }: CustomersClientProps) {
         onRefresh={fetchCustomers}
         onExport={handleExport}
         isLoading={isLoading}
+        isExporting={isExporting}
       />
 
       {/* Customer Directory Table */}

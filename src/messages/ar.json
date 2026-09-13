@@ -1156,8 +1156,8 @@
       "tierGold": "ذهبي",
       "tierPlatinum": "بلاتيني",
       "hasProblemsOnly": "أصحاب المشاكل فقط",
-      "exportExcel": "تصدير إكسل",
-      "exporting": "جارٍ التصدير...",
+      "exportExcel": "تصدير شيت إكسل (.xlsx)",
+      "exporting": "جارٍ استخراج الشيت...",
       "reset": "إعادة ضبط",
       "refresh": "تحديث"
     },

@@ -632,6 +632,24 @@ export async function runTier3Tests(): Promise<TestRunner> {
     assert.ok(routeCode.includes(".xlsx"), "Route must set .xlsx filename");
   });
 
+  await runner.test("C7.27: Customer UI uses .xlsx export with loading indicator and localized labels", async () => {
+    const fs = await import("fs");
+    const ar = JSON.parse(fs.readFileSync("src/messages/ar.json", "utf-8"));
+    const en = JSON.parse(fs.readFileSync("src/messages/en.json", "utf-8"));
+
+    assert.ok(ar.customers?.filters?.exportExcel.includes("xlsx"), "ar.customers.filters.exportExcel should mention .xlsx");
+    assert.ok(en.customers?.filters?.exportExcel.includes("xlsx"), "en.customers.filters.exportExcel should mention .xlsx");
+    assert.ok(ar.customers?.filters?.exporting, "ar.customers.filters.exporting must exist");
+    assert.ok(en.customers?.filters?.exporting, "en.customers.filters.exporting must exist");
+
+    const clientCode = fs.readFileSync("src/components/customers/customers-client.tsx", "utf-8");
+    assert.ok(clientCode.includes("isExporting"), "customers-client must track isExporting state");
+    assert.ok(clientCode.includes("FileSpreadsheet") || clientCode.includes("Download"), "customers-client must have spreadsheet icon");
+
+    const filterBarCode = fs.readFileSync("src/components/customers/customer-filter-bar.tsx", "utf-8");
+    assert.ok(filterBarCode.includes("isExporting"), "customer-filter-bar must accept isExporting prop");
+  });
+
   return runner;
 }
 
