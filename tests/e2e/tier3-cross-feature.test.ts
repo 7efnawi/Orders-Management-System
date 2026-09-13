@@ -650,6 +650,90 @@ export async function runTier3Tests(): Promise<TestRunner> {
     assert.ok(filterBarCode.includes("isExporting"), "customer-filter-bar must accept isExporting prop");
   });
 
+  await runner.test("C7.28: generateReportsExcelWorkbook creates valid .xlsx buffer with RTL, KPIs, numFmt, and totals", async () => {
+    const { generateReportsExcelWorkbook } = await import("../../src/lib/reportsExcel");
+
+    const buffer = await generateReportsExcelWorkbook({
+      title: "تقرير المبيعات التفصيلي اليومي",
+      sheetName: "المبيعات اليومية",
+      dateRange: { startDate: "2026-09-01", endDate: "2026-09-08" },
+      brandName: "Flower",
+      platformName: "Talabat",
+      kpis: [
+        { label: "صافي الإيرادات", value: "25,000 ج.م" },
+        { label: "إجمالي الطلبات", value: 140 },
+        { label: "إجمالي المصروفات", value: "8,000 ج.م" },
+        { label: "صافي الأرباح", value: "17,000 ج.م" },
+        { label: "متوسط الطلب (AOV)", value: "178.50 ج.م" },
+        { label: "هامش الربح", value: "68.0%" },
+      ],
+      columns: [
+        { header: "التاريخ", key: "date", align: "center", width: 14 },
+        { header: "إجمالي الطلبات", key: "orders", align: "center", numFmt: "#,##0", width: 15 },
+        { header: "المبيعات (ج.م)", key: "sales", align: "right", numFmt: "#,##0.00", width: 18 },
+      ],
+      rows: [
+        { date: "2026-09-01", orders: 20, sales: 3500 },
+        { date: "2026-09-02", orders: 25, sales: 4200 },
+      ],
+      totalsRow: {
+        date: "الإجمالي العام",
+        orders: 45,
+        sales: 7700,
+      },
+    });
+
+    assert.ok(buffer instanceof Buffer, "Should return a Buffer");
+    assert.ok(buffer.length > 500, "Buffer should contain substantial .xlsx data");
+    // Standard ZIP signature for .xlsx files: PK\x03\x04
+    assert.strictEqual(buffer[0], 0x50, "First byte must be P (0x50)");
+    assert.strictEqual(buffer[1], 0x4b, "Second byte must be K (0x4b)");
+    assert.strictEqual(buffer[2], 0x03, "Third byte must be 0x03");
+    assert.strictEqual(buffer[3], 0x04, "Fourth byte must be 0x04");
+  });
+
+  await runner.test("C7.29: generateReportsExcelWorkbook supports multi-sheet full operations workbook", async () => {
+    const { generateReportsExcelWorkbook } = await import("../../src/lib/reportsExcel");
+
+    const buffer = await generateReportsExcelWorkbook({
+      isMultiSheet: true,
+      title: "شيت العمليات الشامل — دارك كيتشن سوشي",
+      dateRange: { startDate: "2026-09-01", endDate: "2026-09-08" },
+      sheets: [
+        {
+          sheetName: "ملخص الأداء المالي",
+          title: "ملخص الأداء المالي",
+          kpis: [
+            { label: "صافي الإيرادات", value: "120,000 ج.م" },
+            { label: "إجمالي الطلبات", value: 650 },
+          ],
+          columns: [
+            { header: "المؤشر", key: "metric", width: 30 },
+            { header: "القيمة", key: "val", width: 25, align: "right" },
+          ],
+          rows: [
+            { metric: "المبيعات", val: "120,000 ج.م" },
+          ],
+        },
+        {
+          sheetName: "المبيعات اليومية",
+          title: "المبيعات اليومية",
+          columns: [
+            { header: "التاريخ", key: "date", width: 15 },
+            { header: "الطلبات", key: "orders", numFmt: "#,##0", width: 12 },
+          ],
+          rows: [
+            { date: "2026-09-01", orders: 80 },
+          ],
+        },
+      ],
+    });
+
+    assert.ok(buffer instanceof Buffer, "Multi-sheet should return a Buffer");
+    assert.strictEqual(buffer[0], 0x50);
+    assert.strictEqual(buffer[1], 0x4b);
+  });
+
   return runner;
 }
 
