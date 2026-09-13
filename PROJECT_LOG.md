@@ -10,6 +10,23 @@
 |---|---|---|
 | القائمة النهائية للمنصات | ✅ حُسمت (Talabat, InstaShop, Harry App, Elmenus, Facebook, Phone) | Platform seed & Visual Tokens |
 
+## [2026-09-13] ترقية محرك تقارير PDF المطبوعة بدعم الوضعين الأفقي والرأسي وكروت المؤشرات التنفيذية (Task 2: Enhanced Printable PDF Engine)
+**النوع:** Core Print Engine Enhancement & Layout Responsiveness (TDD, Red -> Green)
+**الدافع والمشكلة:**
+- تطوير محرك الطباعة المعزول عبر الـ Iframe (`src/lib/printReport.ts`) لتمكين طباعة التقارير بالوضعين الرأسي (`portrait`) والأفقي (`landscape`) لتلائم الجداول العريضة (مثل مصفوفة ساعات الذروة وتحليلات الموظفين)، مع تحسين هوامش الطباعة (8mm 10mm للأفقي و 12mm 15mm للرأسي).
+- استيعاب حتى 6 كروت لمؤشرات الأداء الرئيسية (KPIs) في صدارة الوثيقة بتوزيع شبكي ديناميكي، مع تعزيز بلوك التوقيعات التنفيذية ليشمل اعتماد إدارة العمليات والتشغيل (مدير الفرع / مدير العمليات) والاعتماد المالي (المدير المالي ورئيس الحسابات) مع خط توقيع منقط وقواعد منع انقسام العناصر بين الصفحات (`page-break-inside: avoid`).
+**اللي اتعمل:**
+- **ترقية `src/lib/printReport.ts`:**
+  - إضافة خاصية `orientation?: "portrait" | "landscape"` إلى واجهة `PrintableReportOptions` مع جعل القيمة الافتراضية `"portrait"` لضمان التوافقية العكسية الكاملة.
+  - تطبيق قواعد CSS ديناميكية لقاعدة `@page`: `size: A4 ${orientation}; margin: ${orientation === "landscape" ? "8mm 10mm" : "12mm 15mm"};`.
+  - تحديث شبكة كروت المؤشرات `.kpi-grid` لتوزّع الأعمدة ديناميكياً حتى 6 كروت عبر `repeat(${Math.min(Math.max(kpis.length, 1), 6)}, 1fr)` مع تنسيق هوامش وبادينغ مصقول.
+  - تعزيز بلوك الاعتمادات `.signatures-block` ليشمل عناوين واضحة لإدارة العمليات والتشغيل والإدارة المالية والمراجعة مع الختم والتوقيع الرسمي.
+- **الاختبارات وبوابات الجودة (TDD):**
+  - إضافة واجتياز اختبار `C7.30` في `tests/e2e/tier3-cross-feature.test.ts` للتحقق من دعم الوضع الأفقي، 6 كروت KPIs، وتوقيعات العمليات والمالية.
+  - اجتياز فحص الأنواع الصارم: `npm run typecheck` (0 errors).
+  - اجتياز سويت الاختبارات الشامل: `npm run test:e2e` (243/243 passed 100%).
+**الملفات المتأثرة:** `src/lib/printReport.ts`, `tests/e2e/tier3-cross-feature.test.ts`, `PROJECT_LOG.md`
+
 ## [2026-09-13] محرك شيتات إكسل الأصلية للتقارير بصيغة xlsx ودعم كروت المؤشرات واتجاه RTL (Task 1: Native Reports Excel Engine)
 **النوع:** Core Reporting Engine & Native Excel Generation (.xlsx) (TDD, Red -> Green)
 **الدافع والمشكلة:**

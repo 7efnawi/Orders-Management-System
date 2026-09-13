@@ -734,6 +734,42 @@ export async function runTier3Tests(): Promise<TestRunner> {
     assert.strictEqual(buffer[1], 0x4b);
   });
 
+  await runner.test("C7.30: generatePrintableReportHtml supports landscape orientation, 6 KPI cards, and executive endorsements", async () => {
+    const { generatePrintableReportHtml } = await import("../../src/lib/printReport");
+
+    // Test landscape mode
+    const landscapeHtml = generatePrintableReportHtml({
+      orientation: "landscape",
+      title: "تقرير ساعات الذروة ومصفوفة الطلبات",
+      dateRange: { startDate: "2026-09-01", endDate: "2026-09-08" },
+      kpis: [
+        { label: "صافي الإيرادات", value: "25,000 ج.م" },
+        { label: "إجمالي الطلبات", value: 140 },
+        { label: "إجمالي المصروفات", value: "8,000 ج.م" },
+        { label: "صافي الأرباح", value: "17,000 ج.م" },
+        { label: "متوسط الطلب", value: "178.50 ج.م" },
+        { label: "هامش الربح", value: "68%" },
+      ],
+      tableHtml: "<table><tr><td>Landscape Table</td></tr></table>",
+    });
+
+    assert.ok(landscapeHtml.includes("@page { size: A4 landscape;"), "Should define A4 landscape size in CSS");
+    assert.ok(landscapeHtml.includes("25,000 ج.م"), "Should render net revenue KPI");
+    assert.ok(landscapeHtml.includes("هامش الربح"), "Should render 6th KPI");
+    assert.ok(landscapeHtml.includes("إدارة العمليات والتشغيل"), "Should include operations signature block");
+    assert.ok(landscapeHtml.includes("المدير المالي") || landscapeHtml.includes("الإدارة المالية"), "Should include finance endorsement");
+    assert.ok(landscapeHtml.includes("page-break-inside: avoid;"), "Should configure page break rules");
+
+    // Test portrait default
+    const portraitHtml = generatePrintableReportHtml({
+      title: "تقرير المؤشرات الشاملة",
+      dateRange: { startDate: "2026-09-01", endDate: "2026-09-08" },
+      kpis: [{ label: "صافي الإيرادات", value: "10,000 ج.م" }],
+      tableHtml: "<table><tr><td>Portrait Table</td></tr></table>",
+    });
+    assert.ok(portraitHtml.includes("@page { size: A4 portrait;"), "Default orientation should be A4 portrait");
+  });
+
   return runner;
 }
 

@@ -10,6 +10,7 @@ export interface PrintableReportKPI {
 }
 
 export interface PrintableReportOptions {
+  orientation?: "portrait" | "landscape";
   title: string;
   dateRange: { startDate: string; endDate: string };
   brandName?: string;
@@ -22,6 +23,7 @@ export interface PrintableReportOptions {
 
 export function generatePrintableReportHtml(options: PrintableReportOptions): string {
   const {
+    orientation = "portrait",
     title,
     dateRange,
     brandName = "جميع البراندات (Flower, Mastery, Niwa, Tobiko)",
@@ -62,7 +64,7 @@ export function generatePrintableReportHtml(options: PrintableReportOptions): st
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   <style>
-    @page { size: A4 portrait; margin: 12mm 15mm; }
+    @page { size: A4 ${orientation}; margin: ${orientation === "landscape" ? "8mm 10mm" : "12mm 15mm"}; }
 
     * {
       box-sizing: border-box;
@@ -183,9 +185,9 @@ export function generatePrintableReportHtml(options: PrintableReportOptions): st
     /* KPI Summary Cards */
     .kpi-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-      margin-bottom: 20px;
+      grid-template-columns: repeat(${Math.min(Math.max(kpis.length, 1), 6)}, 1fr);
+      gap: 8px;
+      margin-bottom: 16px;
     }
 
     .kpi-card {
@@ -206,7 +208,7 @@ export function generatePrintableReportHtml(options: PrintableReportOptions): st
 
     .kpi-value {
       display: block;
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 800;
       color: #0f172a;
       font-family: 'JetBrains Mono', monospace;
@@ -368,12 +370,12 @@ export function generatePrintableReportHtml(options: PrintableReportOptions): st
     <!-- 5. Signatures -->
     <div class="signatures-block">
       <div class="sig-col">
-        <span class="sig-title">إدارة العمليات والتشغيل</span>
+        <span class="sig-title">إدارة العمليات والتشغيل (مدير الفرع / مدير العمليات)</span>
         <div class="sig-line"></div>
-        <span class="sig-caption">التوقيع والتاريخ</span>
+        <span class="sig-caption">التوقيع والتاريخ الرسمي</span>
       </div>
       <div class="sig-col" style="text-align: left;">
-        <span class="sig-title" style="text-align: left;">الإدارة المالية والمراجعة</span>
+        <span class="sig-title" style="text-align: left;">الإدارة المالية والمراجعة (المدير المالي ورئيس الحسابات)</span>
         <div class="sig-line"></div>
         <span class="sig-caption" style="text-align: left;">الختم والاعتماد المالي</span>
       </div>
