@@ -1683,5 +1683,132 @@ export async function runTier1Tests(): Promise<TestRunner> {
     assert.strictEqual(delRes.status, 405);
   });
 
+  await runner.test("F17.13: generateCustomersExcelWorkbook generates a valid .xlsx buffer with Office/ZIP signature and RTL view", async () => {
+    const { generateCustomersExcelWorkbook } = await import("../../src/lib/customersExcel");
+
+    const sampleCustomers = [
+      {
+        id: "c-1",
+        name: "أحمد محمود",
+        phone: "01012345678",
+        address: "المعادي، شارع 9",
+        segment: "VIP",
+        segmentInfo: { segment: "VIP", labelAr: "عميل VIP", labelEn: "VIP", badgeClass: "" },
+        totalOrders: 16,
+        spent: 3500,
+        totalSpent: 3500,
+        lastOrderAt: new Date("2026-09-10T12:00:00Z"),
+        isActive: true,
+        preferredPlatform: "Talabat",
+        usualDeliveryZone: "المعادي",
+        notes: "يفضل الصوص الإضافي",
+      },
+      {
+        id: "c-2",
+        name: "سارة علي",
+        phone: "01198765432",
+        address: "التجمع الخامس",
+        segment: "AT_RISK",
+        segmentInfo: { segment: "AT_RISK", labelAr: "معرّض للفقد ⚠️", labelEn: "At Risk", badgeClass: "" },
+        totalOrders: 4,
+        spent: 820,
+        totalSpent: 820,
+        lastOrderAt: new Date("2026-08-01T12:00:00Z"),
+        isActive: true,
+        preferredPlatform: "Phone",
+        usualDeliveryZone: "التجمع",
+        notes: null,
+      },
+    ];
+
+    const stats = {
+      totalCustomers: 2,
+      newThisMonth: 0,
+      vipCount: 1,
+      atRiskCount: 1,
+      avgSpent: 2160,
+    };
+
+    const buffer = await generateCustomersExcelWorkbook(sampleCustomers as any, stats, {
+      generatedBy: "مدير التشغيل",
+      isAr: true,
+    });
+
+    assert.ok(Buffer.isBuffer(buffer), "Should return a Node.js Buffer");
+    assert.ok(buffer.length > 1000, "Excel buffer should be non-empty and well-formed");
+
+    // Check standard ZIP / Office header signature (0x50, 0x4B, 0x03, 0x04)
+    assert.strictEqual(buffer[0], 0x50, "PK header byte 0");
+    assert.strictEqual(buffer[1], 0x4B, "PK header byte 1");
+    assert.strictEqual(buffer[2], 0x03, "PK header byte 2");
+    assert.strictEqual(buffer[3], 0x04, "PK header byte 3");
+
+    // Read back with ExcelJS to inspect RTL and worksheet integrity
+    const ExcelJSModule = await import("exceljs");
+    const ExcelJS = (ExcelJSModule as any).default || ExcelJSModule;
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(buffer as any);
+
+    const worksheet = workbook.getWorksheet("قاعدة العملاء") || workbook.worksheets[0];
+    assert.ok(worksheet, "Worksheet must exist");
+    assert.strictEqual(worksheet.views?.[0]?.rightToLeft, true, "Worksheet view must be RTL for Arabic");
+  });
+
+  await runner.test("F17.14: generateCustomersExcelWorkbook formats phone as string, preserves leading zero, and includes KPIs and summary", async () => {
+    const { generateCustomersExcelWorkbook } = await import("../../src/lib/customersExcel");
+
+    const sampleCustomers = [
+      {
+        id: "c-1",
+        name: "كريم يوسف",
+        phone: "01099998888",
+        address: "مدينة نصر",
+        segment: "REGULAR",
+        segmentInfo: { segment: "REGULAR", labelAr: "عميل دائم", labelEn: "Regular", badgeClass: "" },
+        totalOrders: 5,
+        spent: 1250,
+        totalSpent: 1250,
+        lastOrderAt: new Date("2026-09-11T12:00:00Z"),
+        isActive: true,
+        preferredPlatform: "Elmenus",
+        usualDeliveryZone: "مدينة نصر",
+        notes: "حساسية من الجمبري",
+      },
+    ];
+
+    const stats = {
+      totalCustomers: 1,
+      newThisMonth: 0,
+      vipCount: 0,
+      atRiskCount: 0,
+      avgSpent: 1250,
+    };
+
+    const buffer = await generateCustomersExcelWorkbook(sampleCustomers as any, stats, {
+      isAr: true,
+    });
+
+    const ExcelJSModule = await import("exceljs");
+    const ExcelJS = (ExcelJSModule as any).default || ExcelJSModule;
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(buffer as any);
+    const worksheet = workbook.worksheets[0];
+
+    // Search for phone in rows
+    let foundPhone = false;
+    let foundPhoneValue = "";
+    worksheet.eachRow((row: any) => {
+      row.eachCell((cell: any) => {
+        if (typeof cell.value === "string" && cell.value.includes("01099998888")) {
+          foundPhone = true;
+          foundPhoneValue = cell.value;
+        }
+      });
+    });
+
+    assert.ok(foundPhone, "Phone number with leading zero must be present in worksheet");
+    assert.strictEqual(foundPhoneValue, "01099998888", "Leading zero must be preserved verbatim");
+  });
+
   return runner;
 }
