@@ -10,6 +10,23 @@
 |---|---|---|
 | القائمة النهائية للمنصات | ✅ حُسمت (Talabat, InstaShop, Harry App, Elmenus, Facebook, Phone) | Platform seed & Visual Tokens |
 
+## [2026-09-13] توثيق السلوكيات والدروس المستفادة في AGENTS.md (Learned Behaviors & Directives Update)
+**النوع:** Engineering Directives, Architectural Guardrails & Process Hardening (/learn)
+**الدافع والمشكلة:**
+- استجابة لتفعيل أمر `/learn` من المستخدم، ومراجعة كافة التجارب والأخطاء والملاحظات الصريحة لمنع تكرارها نهائياً.
+- ضبط القواعد الملزمة لتشمل:
+  1. توحيد توزيع وأحجام عناصر الواجهات (حاوية `max-w-[1536px]`، ارتفاع تحكم `h-10`، وجداول ثابتة `table-fixed w-full` بنسب 100%).
+  2. نموذج الدارك كيتشن 100% دليفري وتصفير نظام النقاط والمكافآت والاعتماد حصرياً على التقسيم السلوكي (RFM).
+  3. تناظر الترجمة الصارم تحت نفس الـ namespace لمنع أخطاء `MISSING_MESSAGE`.
+  4. تصدير الإكسل بملفات `.xlsx` أصلية عبر `exceljs` مع اتجاه RTL وحفظ أصفار الهواتف وكروت KPIs وتنزيل غير متزامن في الـ Frontend كـ Blob.
+  5. توثيق الفخاخ التقنية المتعلقة بـ `exceljs` في ESM، أداة `write_to_file`، وأنواع `noImplicitAny` في TypeScript.
+**اللي اتعمل:**
+- تحديث القواعد 6 و7 و8 و9 في ملف `AGENTS.md` بالصياغات الملزمة المفصلة.
+- إضافة 3 فخاخ تقنية جديدة في قسم "فخاخ تقنية" بملف `AGENTS.md`.
+- فحص وتأكيد اجتياز كافة بوابات الجودة: `npm run typecheck` (0 errors) و `npm run test:e2e` (240/240 passed).
+**الملفات المتأثرة:** `AGENTS.md`, `PROJECT_LOG.md`
+
+
 ## [2026-09-13] المرحلة 11 — واجهة المستخدم وتنزيل شيت إكسل المنسق (.xlsx) مع مؤشر التحميل (Task 3: Client UI & Asynchronous .xlsx Export)
 **النوع:** UI & UX Precision, Asynchronous File Download & Symmetrical i18n (TDD, Red -> Green)
 **الدافع والمشكلة:**

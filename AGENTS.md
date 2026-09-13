@@ -21,13 +21,23 @@
    - الصلاحيات → `src/lib/auth.ts` (`requireRole`) في أول سطر من كل API route
 4. **No Hard Delete** لأي أوردر — إلغاء بسبب إجباري فقط. الـ Lookup tables بـ `isActive=false`
 5. أي كتابة على Order تمر من `src/services/orders.ts` — ممنوع Prisma مباشر من الصفحات/الراوتات
-6. **تصدير الإكسل `.xlsx` فقط (Native Excel):** أي تصدير إكسل يجب أن يولّد ملف `.xlsx` حقيقي أصلي عبر `exceljs` مع تفعيل اتجاه RTL (`rightToLeft: true`) وتنسيق الهواتف كنص وتلوين الشرائح والـ KPIs، وتجنب الـ `.csv`.
-7. **تناظر الترجمة الصارم (i18n Symmetry):** أي مفتاح يُستدعى بـ `t("...")` يجب أن يُضاف متناظراً في `ar.json` و `en.json` فوراً لمنع أخطاء `MISSING_MESSAGE`.
-8. **نموذج الدارك كيتشن 100% دليفري:** كل العمليات توصيل دليفري فقط (ممنوع Pickup/Takeaway/Dine-in).
-9. **تناظر الجداول والحاويات:** شاشات التحكم بحاوية `max-w-[1536px]`، وجداول البيانات بـ `table-fixed w-full` ونسب مئوية مجموعها 100%.
+6. **تصدير الإكسل `.xlsx` الأصلي فقط (Native Excel Invariant):**
+   - أي تصدير إكسل يجب أن يولّد ملف `.xlsx` حقيقي أصلي عبر `exceljs` مع تفعيل اتجاه RTL (`rightToLeft: true`)، ترويسة تنفيذية، كروت KPIs علوية، تلوين باستيل للشرائح، صف إجماليات ختامي، وتنسيق الهواتف كنص صريح `@` لمنع حذف الصفر الأول. ممنوع استخدام `.csv` عند طلب إكسل.
+   - في الـ Frontend: تنزيل غير متزامن كـ `Blob` مع حالة `isExporting` وزر معطل ومؤشر دوران (Spinner) — ممنوع استخدام `window.open`.
+7. **تناظر الترجمة الصارم (i18n Symmetry):** أي مفتاح يُستدعى بـ `t("key")` يجب أن يُضاف متناظراً في `ar.json` و `en.json` فوراً تحت نفس الـ namespace لمنع أخطاء `MISSING_MESSAGE`.
+8. **نموذج الدارك كيتشن 100% دليفري وصفرية النقاط:**
+   - كل العمليات توصيل دليفري فقط (ممنوع Pickup/Takeaway/Dine-in نهائياً).
+   - الصفرية التامة لنظام نقاط الولاء والمكافآت (Zero Points & Zero Rewards) — الولاء يُقاس بالتقسيم السلوكي الفعلي (RFM: VIP, Regular, New, At Risk, Inactive).
+9. **تناظر الحاويات وشبكات الجداول وعناصر التحكم:**
+   - شاشات التحكم بحاوية قياسية `max-w-[1536px]` مع `p-4 sm:p-6 lg:p-8`.
+   - توحيد ارتفاع حقول البحث والقوائم المنسدلة وأزرار الفلاتر إلى `h-10` مع حجم لمس `>=44px`.
+   - جداول البيانات بـ `table-fixed w-full` ونسب مئوية دقيقة مجموعها 100% بالضبط مع حدود `min-w` للأعمدة، وأرقام بـ `font-mono tabular-nums`.
 
 ## فخاخ تقنية (اتدفع ثمنها قبل كده — اقراها)
 
+- **`exceljs` في Next.js / ESM:** دمج الفحص الآمن للدالة الإنشائية: `const WorkbookClass = (ExcelJS as any).Workbook || (ExcelJS as any).default?.Workbook || ExcelJS;` لتفادي خطأ `ExcelJS.Workbook is not a constructor`.
+- **أداة `write_to_file`:** خاصية `ArtifactMetadata` مخصصة فقط لملفات الـ Artifacts في مجلد `brain/`. يُمنع إرسالها لملفات كود المشروع لتجنب خطأ `invalid tool call error`.
+- **TypeScript `noImplicitAny`:** يجب تحديد أنواع المتغيرات صراحة في دوال الـ callback (مثل `(col: any)`, `(row: any)`, `(cell: any, rowNumber: number)`).
 - **PowerShell يتعامل مع `[locale]` كـ wildcard!** أي عملية ملفات على مسارات `src/app/[locale]/` لازم `-LiteralPath`. حذف بدون LiteralPath فشل بصمت مرة وخرب البناء (صفحة قديمة فضلت تترندر)
 - **`src/proxy.ts`** هو الـ middleware في Next 16 (مش `middleware.ts`). الـ matcher **لازم يستثني `api`** — لو اتشال، الـ i18n middleware بيرد 404 على كل API routes
 - **Prisma 7:** الـ connection URLs في `prisma.config.ts` مش في الـ schema. الـ client بيتعمل بـ adapter: `new PrismaClient({ adapter: new PrismaPg({...}) })` — شوف `src/lib/prisma.ts`
