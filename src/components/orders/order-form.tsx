@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { toast } from "sonner";
 import {
+  AlertTriangle,
   Banknote,
   Check,
   CheckCircle2,
@@ -18,6 +19,8 @@ import {
   RotateCcw,
   Search,
   ShoppingBag,
+  Sparkles,
+  Star,
   Trash2,
   Truck,
   User,
@@ -104,7 +107,22 @@ export interface CustomerSearchResult {
   name: string;
   phone: string;
   address?: string | null;
+  notes?: string | null;
   totalOrders: number;
+  lifetimeSpent?: number;
+  segment?: string;
+  segmentInfo?: {
+    segment: string;
+    labelAr: string;
+    labelEn: string;
+    badgeClass: string;
+  };
+  favoriteProducts?: {
+    productId: string;
+    productName: string;
+    quantity: number;
+    price: number;
+  }[];
 }
 
 interface OrderFormProps {
@@ -137,6 +155,7 @@ export function OrderForm({
 }: OrderFormProps) {
   const t = useTranslations("orders");
   const locale = useLocale();
+  const isAr = locale === "ar";
   const router = useRouter();
 
   // ────────────────────────── State ──────────────────────────
@@ -246,6 +265,15 @@ export function OrderForm({
           if (active) {
             setCustomerSuggestions(results || []);
             setShowCustomerDropdown(Boolean(results && results.length > 0));
+            const exact = results?.find(
+              (r) => r.phone.replace(/\D/g, "") === cleanPhone.replace(/\D/g, "")
+            );
+            if (exact && !selectedCustomerMeta) {
+              setSelectedCustomerMeta(exact);
+              if (!customerName) setCustomerName(exact.name);
+              if (!customerAddress && exact.address) setCustomerAddress(exact.address);
+              if (!customerNotes && exact.notes) setCustomerNotes(exact.notes);
+            }
           }
         })
         .catch(() => {
@@ -280,6 +308,7 @@ export function OrderForm({
     setCustomerPhone(c.phone);
     setCustomerName(c.name);
     if (c.address) setCustomerAddress(c.address);
+    if (c.notes) setCustomerNotes(c.notes);
     setSelectedCustomerMeta(c);
     setShowCustomerDropdown(false);
   };
@@ -746,6 +775,123 @@ export function OrderForm({
               />
             </div>
           </div>
+
+          {/* POS Quick Customer Insight Panel */}
+          {selectedCustomerMeta && (
+            <div className="mt-3.5 pt-3.5 border-t border-border/60 space-y-3 bg-muted/20 p-3.5 rounded-xl border border-border/50">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                <div className="flex items-center gap-2.5 flex-wrap">
+                  <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-primary" />
+                    {t("quickInsight")}
+                  </span>
+
+                  {/* Customer Segment Badge */}
+                  {selectedCustomerMeta.segment && (
+                    <span
+                      className={cn(
+                        "inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold border shadow-2xs",
+                        selectedCustomerMeta.segment === "VIP" &&
+                          "bg-amber-100 text-amber-900 dark:bg-amber-950/80 dark:text-amber-300 border-amber-300",
+                        selectedCustomerMeta.segment === "REGULAR" &&
+                          "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border-emerald-300",
+                        selectedCustomerMeta.segment === "NEW" &&
+                          "bg-sky-100 text-sky-800 dark:bg-sky-950/80 dark:text-sky-300 border-sky-300",
+                        selectedCustomerMeta.segment === "AT_RISK" &&
+                          "bg-orange-100 text-orange-900 dark:bg-orange-950/80 dark:text-orange-300 border-orange-300",
+                        selectedCustomerMeta.segment === "INACTIVE" &&
+                          "bg-slate-100 text-slate-700 dark:bg-zinc-800 dark:text-zinc-400 border-slate-300"
+                      )}
+                    >
+                      {selectedCustomerMeta.segment === "VIP" && (
+                        <Star className="w-3 h-3 fill-amber-500 text-amber-600" />
+                      )}
+                      {selectedCustomerMeta.segment === "AT_RISK" && (
+                        <AlertTriangle className="w-3 h-3 text-orange-600" />
+                      )}
+                      <span>
+                        {selectedCustomerMeta.segmentInfo?.labelAr || selectedCustomerMeta.segment}
+                      </span>
+                    </span>
+                  )}
+
+                  <span className="text-xs text-muted-foreground font-mono tabular-nums">
+                    ({selectedCustomerMeta.totalOrders} {t("ordersCount")} •{" "}
+                    {(selectedCustomerMeta.lifetimeSpent ?? 0).toFixed(0)} {isAr ? "ج.م" : "EGP"})
+                  </span>
+                </div>
+
+                {selectedCustomerMeta.address && (
+                  <span className="text-xs text-muted-foreground truncate max-w-xs">
+                    📍 {selectedCustomerMeta.address}
+                  </span>
+                )}
+              </div>
+
+              {/* Notes / Allergy Alert */}
+              {selectedCustomerMeta.notes && (
+                <div className="flex items-start gap-2 p-2.5 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60 text-xs text-amber-900 dark:text-amber-200">
+                  <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-bold">{t("customerNotesAlert")}: </span>
+                    <span>{selectedCustomerMeta.notes}</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Favorite Items Quick-Add (Top 3) */}
+              {selectedCustomerMeta.favoriteProducts &&
+                selectedCustomerMeta.favoriteProducts.length > 0 && (
+                  <div className="space-y-1.5 pt-0.5">
+                    <span className="text-[11px] font-semibold text-muted-foreground block">
+                      {t("favoriteItems")}:
+                    </span>
+                    <div className="flex flex-wrap items-center gap-2">
+                      {selectedCustomerMeta.favoriteProducts.slice(0, 3).map((fav) => (
+                        <button
+                          key={fav.productId}
+                          type="button"
+                          onClick={() => {
+                            setCart((prev) => {
+                              const existing = prev.find(
+                                (item) => item.productId === fav.productId
+                              );
+                              if (existing) {
+                                return prev.map((item) =>
+                                  item.productId === fav.productId
+                                    ? { ...item, quantity: item.quantity + 1 }
+                                    : item
+                                );
+                              }
+                              return [
+                                ...prev,
+                                {
+                                  productId: fav.productId,
+                                  name: fav.productName,
+                                  price: fav.price,
+                                  quantity: 1,
+                                },
+                              ];
+                            });
+                            toast.success(`${t("quickAdded")}: ${fav.productName}`);
+                          }}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-background border border-border/70 hover:border-primary/50 hover:bg-primary/5 transition-all text-foreground cursor-pointer shadow-2xs group"
+                        >
+                          <Plus className="w-3.5 h-3.5 text-primary group-hover:scale-110 transition-transform" />
+                          <span className="font-semibold">{fav.productName}</span>
+                          <span className="text-[11px] font-mono text-muted-foreground tabular-nums">
+                            ({fav.price} {isAr ? "ج.م" : "EGP"})
+                          </span>
+                          <span className="text-[10px] text-muted-foreground/80 bg-muted px-1.5 py-0.5 rounded font-mono">
+                            ×{fav.quantity}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+            </div>
+          )}
         </CardContent>
       </Card>
 

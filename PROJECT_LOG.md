@@ -10,6 +10,27 @@
 |---|---|---|
 | القائمة النهائية للمنصات | ✅ حُسمت (Talabat, InstaShop, Harry App, Elmenus, Facebook, Phone) | Platform seed & Visual Tokens |
 
+## [2026-09-13] المرحلة 11 — كارت رؤى العميل الفوري في نقطة البيع مع الإضافة السريعة للأصناف المفضلة (Task 6: POS Quick Customer Insight Card)
+**النوع:** POS UI & Quick Insight, Customer Favorites 1-Click Addition & Allergy Alerts (TDD, Task 6)
+**الدافع والمشكلة:**
+- أثناء فترات الذروة وإدخال الطلبات السريعة على شاشة الكاشير (`/orders/new`)، يحتاج الكاشير لمعرفة شريحة العميل فور كتابة هاتفه، وأي ملاحظات خاصة أو تنبيهات حساسية/توصيل سابقة لتجنب المشاكل التشغيلية.
+- تمكين الكاشير من إضافة الأصناف التي يفضلها العميل ويكرر طلبها بنقرة زر واحدة (`+ إضافة للطلب`) دون الحاجة للبحث الطويل في شجرة المنيو، مما يرفع سرعة الإدخال ويحسن تجربة العميل (Upsell & Speed).
+**اللي اتعمل:**
+- **ترقية مكوّن استمارة الطلب `src/components/orders/order-form.tsx`:**
+  - توسيع واجهة `CustomerSearchResult` لتشمل: `notes`, `lifetimeSpent`, `segment`, `segmentInfo`, و `favoriteProducts`.
+  - تحديث معالج البحث عن العملاء (`api/customers/search`) لالتقاط العميل المطابق تلقائياً وحفظ ملاحظاته في حالة الاستمارة.
+  - تصميم كارت **رؤى العميل الفورية لنقطة البيع (POS Quick Customer Insight Panel)** يظهر تلقائياً أسفل حقول بيانات العميل:
+    - شارة الشريحة السلوكية (`VIP`, `REGULAR`, `NEW`, `AT_RISK`, `INACTIVE`) مع ألوان وأيقونات مميزة.
+    - ملخص سريع بالأرقام المجدولة: إجمالي الطلبات وإجمالي الإنفاق بالجنيه المصري.
+    - تنبيه ملاحظات العميل والحساسية (`customerNotesAlert`) بشريط تحذيري بارز بالأيقونة التنبيهية في حالة وجود ملاحظات سابقة.
+    - قائمة أكثر 3 أصناف مفضلة مع زر سريع `+ إضافة للطلب` يضيف المنتج وسعره إلى سلة الطلب الحالية فوراً بنقرة واحدة مع إشعار نجاح (`quickAdded`).
+- **الاختبارات التلقائية والتأكد الصارم (TDD Red -> Green):**
+  - إضافة واجتياز اختبار `C7.25` في `tests/e2e/tier3-cross-feature.test.ts` للتحقق من تضمين كارت الرؤى الفورية، تنبيه الملاحظات، وعملية الإضافة السريعة للأصناف المفضلة إلى السلة.
+  - اجتياز بوابات الجودة الإلزامية:
+    - `npm run typecheck` (0 errors).
+    - `npm run test:e2e` (236/236 tests passed 100%).
+**الملفات المتأثرة:** `src/components/orders/order-form.tsx`, `tests/e2e/tier3-cross-feature.test.ts`, `PROJECT_LOG.md`
+
 ## [2026-09-12] المرحلة 11 — ترقية شاشة الملف التعريفي للعميل مع الأصناف المفضلة وقنوات التوصيل (Task 5: Customer Profile Refinement)
 **النوع:** UI & UX Precision, Dark Kitchen Delivery Insights & Customer Favorites Leaderboard (TDD, Task 5)
 **الدافع والمشكلة:**

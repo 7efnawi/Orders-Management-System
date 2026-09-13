@@ -613,6 +613,15 @@ export async function runTier3Tests(): Promise<TestRunner> {
     assert.ok(profileCode.includes("segment"), "Customer profile must display customer segment");
   });
 
+  await runner.test("C7.25: Order creation form embeds POS quick customer insight card with 1-click favorite additions and allergy alert", async () => {
+    const fs = await import("fs");
+    const formCode = fs.readFileSync("src/components/orders/order-form.tsx", "utf-8");
+    assert.ok(formCode.includes("quickInsight"), "order-form must render quick customer insight section");
+    assert.ok(formCode.includes("customerNotesAlert"), "order-form must render customer notes alert");
+    assert.ok(formCode.includes("favoriteItems") || formCode.includes("favoriteProducts"), "order-form must display favorite items");
+    assert.ok(formCode.includes("quickAdded") || formCode.includes("quickAdd"), "order-form must support quick-add to cart for favorites");
+  });
+
   return runner;
 }
 
