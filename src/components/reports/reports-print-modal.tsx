@@ -69,9 +69,19 @@ export function ReportsPrintModal({
   const t = useTranslations("reports");
   const tModal = useTranslations("reports.printModal");
 
+  const isWideTab = ["sales", "order-sources", "peak-hours", "employees"].includes(activeTab);
+  const [orientation, setOrientation] = React.useState<"portrait" | "landscape">(isWideTab ? "landscape" : "portrait");
   const [zoomLevel, setZoomLevel] = React.useState<number>(100);
   const [isMaximized, setIsMaximized] = React.useState<boolean>(false);
   const [paperWidthMode, setPaperWidthMode] = React.useState<"standard" | "wide">("standard");
+
+  // Smart orientation default sync on tab or modal open changes
+  React.useEffect(() => {
+    if (open) {
+      const wide = ["sales", "order-sources", "peak-hours", "employees"].includes(activeTab);
+      setOrientation(wide ? "landscape" : "portrait");
+    }
+  }, [open, activeTab]);
 
   const now = new Date();
   const formattedTimestamp = now.toLocaleDateString("ar-EG", {
@@ -81,6 +91,11 @@ export function ReportsPrintModal({
     hour: "2-digit",
     minute: "2-digit",
   });
+
+  const marginPct =
+    mainData.summary.netRevenue > 0
+      ? Math.round((mainData.summary.netProfit / mainData.summary.netRevenue) * 100)
+      : 0;
 
   const getReportTitle = React.useCallback(() => {
     switch (activeTab) {
@@ -110,6 +125,7 @@ export function ReportsPrintModal({
     });
 
     const printableHtml = generatePrintableReportHtml({
+      orientation,
       title: getReportTitle(),
       dateRange: {
         startDate: filter.startDate,
@@ -122,6 +138,8 @@ export function ReportsPrintModal({
         { label: tModal("kpiOrders"), value: `${mainData.summary.totalOrders} طلب` },
         { label: tModal("kpiExpenses"), value: formatCurrency(mainData.summary.totalExpenses) },
         { label: tModal("kpiProfit"), value: formatCurrency(mainData.summary.netProfit) },
+        { label: tModal("kpiAov"), value: formatCurrency(mainData.summary.aov) },
+        { label: tModal("kpiMargin"), value: `${marginPct}%` },
       ],
       tableHtml,
       generatedBy: tModal("systemAdmin"),
@@ -129,7 +147,7 @@ export function ReportsPrintModal({
     });
 
     printHtmlViaIframe(printableHtml);
-  }, [activeTab, mainData, peakData, empData, formatCurrency, getReportTitle, filter.startDate, filter.endDate, brandName, platformName, tModal, formattedTimestamp]);
+  }, [orientation, activeTab, mainData, peakData, empData, formatCurrency, getReportTitle, filter.startDate, filter.endDate, brandName, platformName, tModal, formattedTimestamp]);
 
   // Fast keyboard shortcut: Ctrl+P triggers print while preview is open
   React.useEffect(() => {
@@ -188,6 +206,38 @@ export function ReportsPrintModal({
 
           {/* Interactive Preview Viewport Controls (Center) */}
           <div className="flex items-center gap-2 bg-background/80 border border-border/60 p-1 rounded-xl shadow-xs">
+            {/* Orientation Mode Switcher */}
+            <div className="flex items-center rounded-lg bg-muted/50 p-0.5" title={tModal("orientation")}>
+              <button
+                type="button"
+                onClick={() => setOrientation("portrait")}
+                className={cn(
+                  "px-2.5 py-1 text-xs font-semibold rounded-md transition-all cursor-pointer flex items-center gap-1",
+                  orientation === "portrait"
+                    ? "bg-background text-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+                title={tModal("portrait")}
+              >
+                <span>{tModal("portrait")}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setOrientation("landscape")}
+                className={cn(
+                  "px-2.5 py-1 text-xs font-semibold rounded-md transition-all cursor-pointer flex items-center gap-1",
+                  orientation === "landscape"
+                    ? "bg-background text-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+                title={tModal("landscape")}
+              >
+                <span>{tModal("landscape")}</span>
+              </button>
+            </div>
+
+            <div className="h-4 w-px bg-border/80" />
+
             {/* Width Mode Switcher */}
             <div className="flex items-center rounded-lg bg-muted/50 p-0.5">
               <button
@@ -310,7 +360,9 @@ export function ReportsPrintModal({
             }}
             className={cn(
               "w-full bg-white text-slate-900 border border-slate-300 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.18),0_0_1px_rgba(0,0,0,0.12)] ring-1 ring-slate-900/5 rounded-xl p-8 sm:p-12 md:p-14 text-right font-sans shrink-0 transition-[max-width] duration-200",
-              paperWidthMode === "standard" ? "max-w-[880px]" : "max-w-[1140px]"
+              orientation === "landscape"
+                ? "max-w-[1140px] md:max-w-[1240px]"
+                : paperWidthMode === "wide" ? "max-w-[980px]" : "max-w-[850px]"
             )}
           >
             {/* 1. Official Header */}
@@ -367,29 +419,49 @@ export function ReportsPrintModal({
             </div>
 
             {/* 3. Key Summary KPI Cards */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+            <div className={cn(
+              "grid gap-3 mb-6",
+              orientation === "landscape"
+                ? "grid-cols-2 sm:grid-cols-3 lg:grid-cols-6"
+                : "grid-cols-2 sm:grid-cols-3 md:grid-cols-6"
+            )}>
               <div className="border border-slate-200 rounded-lg p-3 bg-white">
                 <span className="text-slate-500 text-[11px] font-medium block">{tModal("kpiRevenue")}</span>
-                <span className="text-lg font-bold text-slate-950 font-mono mt-0.5 block">
+                <span className="text-base sm:text-lg font-bold text-slate-950 font-mono mt-0.5 block">
                   {formatCurrency(mainData.summary.netRevenue)}
                 </span>
               </div>
               <div className="border border-slate-200 rounded-lg p-3 bg-white">
                 <span className="text-slate-500 text-[11px] font-medium block">{tModal("kpiOrders")}</span>
-                <span className="text-lg font-bold text-slate-950 font-mono mt-0.5 block">
+                <span className="text-base sm:text-lg font-bold text-slate-950 font-mono mt-0.5 block">
                   {mainData.summary.totalOrders} <span className="text-xs font-normal text-slate-500">طلب</span>
                 </span>
               </div>
               <div className="border border-slate-200 rounded-lg p-3 bg-white">
                 <span className="text-slate-500 text-[11px] font-medium block">{tModal("kpiExpenses")}</span>
-                <span className="text-lg font-bold text-slate-950 font-mono mt-0.5 block">
+                <span className="text-base sm:text-lg font-bold text-slate-950 font-mono mt-0.5 block">
                   {formatCurrency(mainData.summary.totalExpenses)}
                 </span>
               </div>
               <div className="border border-slate-200 rounded-lg p-3 bg-white">
                 <span className="text-slate-500 text-[11px] font-medium block">{tModal("kpiProfit")}</span>
-                <span className="text-lg font-bold text-emerald-700 font-mono mt-0.5 block">
+                <span className="text-base sm:text-lg font-bold text-emerald-700 font-mono mt-0.5 block">
                   {formatCurrency(mainData.summary.netProfit)}
+                </span>
+              </div>
+              <div className="border border-slate-200 rounded-lg p-3 bg-white">
+                <span className="text-slate-500 text-[11px] font-medium block">{tModal("kpiAov")}</span>
+                <span className="text-base sm:text-lg font-bold text-slate-950 font-mono mt-0.5 block">
+                  {formatCurrency(mainData.summary.aov)}
+                </span>
+              </div>
+              <div className="border border-slate-200 rounded-lg p-3 bg-white">
+                <span className="text-slate-500 text-[11px] font-medium block">{tModal("kpiMargin")}</span>
+                <span className={cn(
+                  "text-base sm:text-lg font-bold font-mono mt-0.5 block",
+                  marginPct >= 0 ? "text-emerald-700" : "text-rose-700"
+                )}>
+                  {marginPct}%
                 </span>
               </div>
             </div>

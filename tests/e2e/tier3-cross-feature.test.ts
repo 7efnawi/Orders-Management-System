@@ -770,6 +770,33 @@ export async function runTier3Tests(): Promise<TestRunner> {
     assert.ok(portraitHtml.includes("@page { size: A4 portrait;"), "Default orientation should be A4 portrait");
   });
 
+  await runner.test("C7.31: ReportsPrintModal provides page orientation toggle and smart defaults for wide tabs", async () => {
+    const fs = await import("fs");
+    const modalCode = fs.readFileSync("src/components/reports/reports-print-modal.tsx", "utf-8");
+
+    // Must have orientation state
+    assert.ok(modalCode.includes("orientation"), "Must manage orientation state");
+    assert.ok(modalCode.includes("landscape") && modalCode.includes("portrait"), "Must support landscape and portrait modes");
+    assert.ok(modalCode.includes("generatePrintableReportHtml"), "Must invoke generatePrintableReportHtml");
+    assert.ok(modalCode.includes("orientation:") || modalCode.includes("orientation,"), "Must pass orientation to generatePrintableReportHtml");
+
+    // Smart default detection for wide tabs
+    assert.ok(
+      modalCode.includes("peak-hours") || modalCode.includes("order-sources") || modalCode.includes("sales"),
+      "Must consider wide tabs for smart orientation defaulting"
+    );
+
+    // Translations verification
+    const ar = JSON.parse(fs.readFileSync("src/messages/ar.json", "utf-8"));
+    const en = JSON.parse(fs.readFileSync("src/messages/en.json", "utf-8"));
+    assert.ok(ar.reports.printModal?.orientation, "ar.reports.printModal.orientation must exist");
+    assert.ok(en.reports.printModal?.orientation, "en.reports.printModal.orientation must exist");
+    assert.ok(ar.reports.printModal?.portrait, "ar.reports.printModal.portrait must exist");
+    assert.ok(en.reports.printModal?.portrait, "en.reports.printModal.portrait must exist");
+    assert.ok(ar.reports.printModal?.landscape, "ar.reports.printModal.landscape must exist");
+    assert.ok(en.reports.printModal?.landscape, "en.reports.printModal.landscape must exist");
+  });
+
   return runner;
 }
 

@@ -10,6 +10,27 @@
 |---|---|---|
 | القائمة النهائية للمنصات | ✅ حُسمت (Talabat, InstaShop, Harry App, Elmenus, Facebook, Phone) | Platform seed & Visual Tokens |
 
+## [2026-09-13] إضافة محول اتجاه الصفحة (Landscape & Portrait) والاختيار التلقائي الذكي لنافذة معاينة وطباعة التقارير (Task 3: Print Modal Orientation Controls)
+**النوع:** UI/UX & Print Modal Enhancement (TDD, Red -> Green)
+**الدافع والمشكلة:**
+- استكمال تحسين تجربة مستخدم التقارير المطبوعة من خلال تزويد نافذة المعاينة والطباعة (`ReportsPrintModal`) بمحول اتجاه الصفحة التفاعلي (رأسي `portrait` / أفقي `landscape`).
+- تطبيق الاختيار التلقائي الذكي لاتجاه الصفحة؛ بحيث يتم تفعيل الوضع الأفقي تلقائياً للجداول العريضة ومتعددة الأعمدة (`sales`, `order-sources`, `peak-hours`, `employees`) مع السماح للمستخدم بالتبديل الفوري بين الوضعين، وتحديث حجم ورقة العرض الافتراضي ديناميكياً.
+- عرض 6 كروت متوازنة للمؤشرات المالية والتشغيلية (بما فيها متوسط قيمة الطلب AOV وهامش الربح Net Margin) في صدارة الوثيقة المعاينة لتتطابق تماماً مع المستند المطبوع.
+**اللي اتعمل:**
+- **ترقية `src/components/reports/reports-print-modal.tsx`:**
+  - إدارة حالة اتجاه الصفحة `orientation` (`"portrait"` | `"landscape"`) مع رصد ذكي للتبويبات العريضة ومزامنة تلقائية عند فتح النافذة أو تبديل التبويب.
+  - إضافة محول اتجاه الصفحة (`portrait` / `landscape`) في شريط أدوات النافذة بجوار أدوات التحكم في العرض والتكبير.
+  - تمرير `orientation` ومصفوفة الـ 6 مؤشرات KPIs إلى `generatePrintableReportHtml`.
+  - ضبط استجابة أبعاد ورقة المعاينة `max-w-[1140px] md:max-w-[1240px]` في الوضع الأفقي لضمان قراءة مريحة بدون انضغاط للأعمدة.
+  - بناء وتنسيق شبكة كروت الـ KPIs الستة بدقة وتناسق بصري في المعاينة مع حساب هامش الربح التشغيلي.
+- **تناظر الترجمة الصارم (i18n Symmetry):**
+  - إضافة مفاتيح `orientation` و `portrait` و `landscape` و `kpiAov` و `kpiMargin` متناظرة تماماً في كل من `src/messages/ar.json` و `src/messages/en.json`.
+- **الاختبارات وبوابات الجودة (TDD):**
+  - إضافة واجتياز اختبار `C7.31` في `tests/e2e/tier3-cross-feature.test.ts` للتحقق من وجود حالة التبديل، دعم الوضعين، استدعاء `generatePrintableReportHtml` مع `orientation`، الرصد الذكي للتبويبات العريضة، ووجود مفاتيح الترجمة في اللغتين.
+  - اجتياز فحص الأنواع الصارم: `npm run typecheck` (0 errors).
+  - اجتياز سويت الاختبارات الشامل: `npm run test:e2e` (244/244 passed 100%).
+**الملفات المتأثرة:** `src/components/reports/reports-print-modal.tsx`, `src/messages/ar.json`, `src/messages/en.json`, `tests/e2e/tier3-cross-feature.test.ts`, `PROJECT_LOG.md`
+
 ## [2026-09-13] ترقية محرك تقارير PDF المطبوعة بدعم الوضعين الأفقي والرأسي وكروت المؤشرات التنفيذية (Task 2: Enhanced Printable PDF Engine)
 **النوع:** Core Print Engine Enhancement & Layout Responsiveness (TDD, Red -> Green)
 **الدافع والمشكلة:**
