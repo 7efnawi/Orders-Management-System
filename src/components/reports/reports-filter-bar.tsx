@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useTranslations } from "next-intl";
-import { Filter, RefreshCw, Download, Printer } from "lucide-react";
+import { Filter, RefreshCw, FileSpreadsheet, Loader2, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -21,7 +21,10 @@ export interface ReportsFilterBarProps {
   loading: boolean;
   onChange: (next: ReportsFilterState) => void;
   onApply: () => void;
-  onExportCsv?: () => void;
+  onExportCsv?: () => void; // keep for backward compatibility
+  onExportExcel?: () => void;
+  onExportAllWorksheets?: () => void;
+  isExporting?: boolean;
   onPrintPdf?: () => void;
 }
 
@@ -73,6 +76,9 @@ export function ReportsFilterBar({
   onChange,
   onApply,
   onExportCsv,
+  onExportExcel,
+  onExportAllWorksheets,
+  isExporting = false,
   onPrintPdf,
 }: ReportsFilterBarProps) {
   const t = useTranslations("reports.filters");
@@ -92,8 +98,28 @@ export function ReportsFilterBar({
             <span>{t("title")}</span>
           </CardTitle>
 
-          <div className="flex items-center gap-1.5 flex-wrap">
-            {(["today", "yesterday", "last7Days", "thisMonth", "lastMonth"] as QuickRange[]).map((q) => {
+          <div className="flex items-center gap-2 flex-wrap">
+            {onExportAllWorksheets && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={isExporting}
+                onClick={onExportAllWorksheets}
+                title={t("exportAllWorksheets")}
+                className="h-7 text-xs px-3 rounded-full gap-1.5 font-medium border-emerald-600/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20 transition-all shadow-2xs"
+              >
+                {isExporting ? (
+                  <Loader2 className="size-3 animate-spin text-emerald-600 dark:text-emerald-400" />
+                ) : (
+                  <FileSpreadsheet className="size-3 text-emerald-600 dark:text-emerald-400" />
+                )}
+                <span>{t("exportAllWorksheets")}</span>
+              </Button>
+            )}
+
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {(["today", "yesterday", "last7Days", "thisMonth", "lastMonth"] as QuickRange[]).map((q) => {
               const active = isQuickRangeActive(q, value.startDate, value.endDate);
               return (
                 <Button
@@ -113,6 +139,7 @@ export function ReportsFilterBar({
                 </Button>
               );
             })}
+            </div>
           </div>
         </div>
       </CardHeader>
@@ -184,16 +211,23 @@ export function ReportsFilterBar({
           </div>
 
           <div className="flex items-end gap-1.5">
-            {onExportCsv && (
+            {(onExportExcel || onExportCsv) && (
               <Button
                 type="button"
                 variant="outline"
-                onClick={onExportCsv}
-                title={t("exportCsv")}
-                className="h-10 flex-1 px-2.5 gap-1.5 text-xs font-medium border-border/80"
+                disabled={isExporting}
+                onClick={onExportExcel || onExportCsv}
+                title={t("exportExcel")}
+                className="h-10 flex-1 px-2.5 gap-1.5 text-xs font-medium border-emerald-600/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-colors"
               >
-                <Download className="size-3.5 text-emerald-600 dark:text-emerald-400" />
-                <span className="truncate">{t("exportCsvShort")}</span>
+                {isExporting ? (
+                  <Loader2 className="size-3.5 animate-spin text-emerald-600 dark:text-emerald-400" />
+                ) : (
+                  <FileSpreadsheet className="size-3.5 text-emerald-600 dark:text-emerald-400" />
+                )}
+                <span className="truncate">
+                  {isExporting ? t("exporting") : t("exportExcelShort")}
+                </span>
               </Button>
             )}
             {onPrintPdf && (
@@ -202,7 +236,7 @@ export function ReportsFilterBar({
                 variant="outline"
                 onClick={onPrintPdf}
                 title={t("printPdf")}
-                className="h-10 flex-1 px-2.5 gap-1.5 text-xs font-medium border-border/80"
+                className="h-10 flex-1 px-2.5 gap-1.5 text-xs font-medium border-border/80 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/30 transition-colors"
               >
                 <Printer className="size-3.5 text-blue-600 dark:text-blue-400" />
                 <span className="truncate">{t("printPdfShort")}</span>

@@ -797,6 +797,35 @@ export async function runTier3Tests(): Promise<TestRunner> {
     assert.ok(en.reports.printModal?.landscape, "en.reports.printModal.landscape must exist");
   });
 
+  await runner.test("C7.32: Reports UI uses 1536px container, native .xlsx export with isExporting spinner, and symmetrical translations", async () => {
+    const fs = await import("fs");
+
+    // Translations verification
+    const ar = JSON.parse(fs.readFileSync("src/messages/ar.json", "utf-8"));
+    const en = JSON.parse(fs.readFileSync("src/messages/en.json", "utf-8"));
+
+    assert.ok(ar.reports.filters?.exportExcel, "ar.reports.filters.exportExcel must exist");
+    assert.ok(en.reports.filters?.exportExcel, "en.reports.filters.exportExcel must exist");
+    assert.ok(ar.reports.filters?.exportExcel.includes("xlsx"), "ar.reports.filters.exportExcel should mention .xlsx");
+    assert.ok(en.reports.filters?.exportExcel.includes("xlsx"), "en.reports.filters.exportExcel should mention .xlsx");
+    assert.ok(ar.reports.filters?.exporting, "ar.reports.filters.exporting must exist");
+    assert.ok(en.reports.filters?.exporting, "en.reports.filters.exporting must exist");
+    assert.ok(ar.reports.filters?.exportAllWorksheets, "ar.reports.filters.exportAllWorksheets must exist");
+    assert.ok(en.reports.filters?.exportAllWorksheets, "en.reports.filters.exportAllWorksheets must exist");
+
+    // Container and layout verification in reports-client.tsx
+    const clientCode = fs.readFileSync("src/components/reports/reports-client.tsx", "utf-8");
+    assert.ok(clientCode.includes("max-w-[1536px]"), "reports-client must use standard max-w-[1536px] container");
+    assert.ok(clientCode.includes("isExporting"), "reports-client must track isExporting state");
+    assert.ok(clientCode.includes("exportReportsToExcelBlob"), "reports-client must call exportReportsToExcelBlob");
+
+    // Filter bar verification
+    const filterBarCode = fs.readFileSync("src/components/reports/reports-filter-bar.tsx", "utf-8");
+    assert.ok(filterBarCode.includes("FileSpreadsheet"), "reports-filter-bar must use FileSpreadsheet icon");
+    assert.ok(filterBarCode.includes("isExporting"), "reports-filter-bar must accept isExporting prop");
+  });
+
   return runner;
 }
+
 

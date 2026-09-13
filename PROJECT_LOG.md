@@ -10,6 +10,32 @@
 |---|---|---|
 | القائمة النهائية للمنصات | ✅ حُسمت (Talabat, InstaShop, Harry App, Elmenus, Facebook, Phone) | Platform seed & Visual Tokens |
 
+## [2026-09-13] ترقية واجهة التقارير والتنزيل غير المتزامن لشيتات إكسل xlsx مع زر شيت العمليات الشامل (Task 4: Reports UI & Native Excel UX)
+**النوع:** UI/UX & Native Excel Integration (TDD, Red -> Green)
+**الدافع والمشكلة:**
+- ترقية واجهة التقارير الإدارية (`ReportsClient` و `ReportsFilterBar`) لربطها بمحرك شيتات إكسل الأصلية (`.xlsx`) عبر التنزيل غير المتزامن كـ `Blob` مع إدارة دقيقة لحالة التصدير (`isExporting`) وإظهار مؤشر دوران (`Loader2`) وتعطيل الأزرار أثناء التحميل لمنع النقرات المتكررة أو تجميد الواجهة.
+- تزويد الواجهة بزر مخصص لتصدير "شيت العمليات الشامل (.xlsx)" متعدد الأوراق (`isMultiSheet: true`) يشمل 6 أوراق عمل تفصيلية (ملخص الأداء المالي، المبيعات اليومية، أصناف السوشي، قنوات البيع والبراندات، طرق الدفع، وإنتاجية الموظفين) مع جلب ذكي لبيانات الموظفين إن لم تكن محملة مسبقاً.
+- مطابقة المعايير الهندسية القياسية للحاوية الرئيسية (`max-w-[1536px]` مع `p-4 sm:p-6 lg:p-8`) وتوحيد ارتفاع حقول الإدخال والاختيار والأزرار عند `h-10` وتطبيق أيقونة `FileSpreadsheet` بلون زمردي ولمسات عصرية.
+- تمرير القيم الرقمية الخام للأموال والكميات مع تنسيقات `numFmt` صريحة (`#,##0.00` و `#,##0`) لضمان تعرف برامج الجداول الإلكترونية (Excel/Sheets) عليها كأرقام فورية قابلة للجمع والحساب.
+**اللي اتعمل:**
+- **ترقية `src/components/reports/reports-client.tsx`:**
+  - تعديل الحاوية الخارجية إلى `mx-auto w-full max-w-[1536px] flex flex-col gap-6 p-4 sm:p-6 lg:p-8`.
+  - إضافة حالة `isExporting` وتمريرها إلى شريط الفلاتر.
+  - استبدال دالة التصدير القديمة بدالة غير متزامنة حديثة `handleExportExcel` تستدعي `exportReportsToExcelBlob` وتمرر خيارات منسقة مع قيم رقمية صريحة وتنسيقات `numFmt` وأسماء ملفات موحدة بصيغة `.xlsx`.
+  - إضافة دالة `handleExportAllWorksheets` التي تبني 6 أوراق عمل تنفيذية شاملة لجميع قطاعات التشغيل، مع جلب كسول لبيانات إنتاجية الموظفين عند الحاجة.
+  - الحفاظ على التوافقية العكسية لدالة `handleExportCsv` بإعادة توجيهها إلى `handleExportExcel`.
+- **ترقية `src/components/reports/reports-filter-bar.tsx`:**
+  - استيراد `FileSpreadsheet` و `Loader2`، ودعم خاصيتي `onExportExcel` و `onExportAllWorksheets` وحالة `isExporting`.
+  - إضافة زر شيت العمليات الشامل في ترويسة البطاقة بجوار فلاتر النطاق السريع، وزر إكسل الزمردي التفاعلي مع مؤشر الدوران.
+  - توحيد ارتفاع جميع المدخلات والقوائم المنسدلة والأزرار عند `h-10`.
+- **تناظر الترجمة الصارم (i18n Symmetry):**
+  - إضافة مفاتيح `exportExcel`, `exportExcelShort`, `exportAllWorksheets`, `exporting` متناظرة تماماً في `src/messages/ar.json` و `src/messages/en.json`.
+- **الاختبارات وبوابات الجودة (TDD):**
+  - إضافة واجتياز اختبار `C7.32` في `tests/e2e/tier3-cross-feature.test.ts` للتحقق من وجود المفاتيح المتناظرة، حاوية `max-w-[1536px]`، حالة `isExporting`، استدعاء `exportReportsToExcelBlob`، واستخدام أيقونة `FileSpreadsheet`.
+  - اجتياز فحص الأنواع الصارم: `npm run typecheck` (0 errors).
+  - اجتياز سويت الاختبارات الشامل: `npm run test:e2e` (245/245 passed 100%).
+**الملفات المتأثرة:** `src/components/reports/reports-client.tsx`, `src/components/reports/reports-filter-bar.tsx`, `src/messages/ar.json`, `src/messages/en.json`, `tests/e2e/tier3-cross-feature.test.ts`, `PROJECT_LOG.md`
+
 ## [2026-09-13] إضافة محول اتجاه الصفحة (Landscape & Portrait) والاختيار التلقائي الذكي لنافذة معاينة وطباعة التقارير (Task 3: Print Modal Orientation Controls)
 **النوع:** UI/UX & Print Modal Enhancement (TDD, Red -> Green)
 **الدافع والمشكلة:**
