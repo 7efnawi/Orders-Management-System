@@ -104,6 +104,7 @@
     "returningCustomer": "عميل مسجل ({count} طلب سابق)",
     "searchingCustomer": "جارٍ البحث عن العميل...",
     "quickInsight": "معلومات العميل الفورية",
+    "ordersCount": "طلب",
     "quickAdd": "إضافة للطلب",
     "quickAdded": "تمت إضافة الصنف للطلب",
     "customerNotesAlert": "تنبيه ملاحظات العميل",

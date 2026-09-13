@@ -104,6 +104,7 @@
     "returningCustomer": "Registered Customer ({count} orders)",
     "searchingCustomer": "Searching customer...",
     "quickInsight": "Customer Quick Insight",
+    "ordersCount": "orders",
     "quickAdd": "Add to Order",
     "quickAdded": "Item added to order",
     "customerNotesAlert": "Customer Notes Alert",

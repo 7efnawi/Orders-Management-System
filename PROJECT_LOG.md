@@ -10,6 +10,21 @@
 |---|---|---|
 | القائمة النهائية للمنصات | ✅ حُسمت (Talabat, InstaShop, Harry App, Elmenus, Facebook, Phone) | Platform seed & Visual Tokens |
 
+## [2026-09-13] المرحلة 11 — إصلاح مفتاح ترجمة عدد الطلبات في كارت استمارة الأوردر (Fix: orders.ordersCount translation key)
+**النوع:** Bugfix & Symmetrical i18n Resolution
+**الدافع والمشكلة:**
+- ظهور خطأ في الكونسول: `MISSING_MESSAGE: Could not resolve 'orders.ordersCount' in messages for locale 'ar'` عند عرض كارت رؤى العميل الفوري في شاشة إدخال الطلب (`/orders/new`).
+- كان المفتاح `ordersCount` معرّفاً في مجالات أخرى (`customers` و `closing`) لكنه كان مفقوداً في مجال `orders`.
+**اللي اتعمل:**
+- إضافة المفتاح المتناظر `ordersCount` تحت نطاق `orders` في:
+  - `src/messages/ar.json`: `"ordersCount": "طلب"`
+  - `src/messages/en.json`: `"ordersCount": "orders"`
+- إضافة فحص تأكيدي صريح في اختبار `C7.22` بملف `tests/e2e/tier3-cross-feature.test.ts` لضمان استمرارية وجود المفتاح في كلا اللغتين ومنع تكرار الخطأ مستقبلاً.
+- اجتياز بوابات الجودة:
+  - `npm run typecheck` (0 errors).
+  - `npm run test:e2e` (236/236 passed 100%).
+**الملفات المتأثرة:** `src/messages/ar.json`, `src/messages/en.json`, `tests/e2e/tier3-cross-feature.test.ts`, `PROJECT_LOG.md`
+
 ## [2026-09-13] المرحلة 11 — كارت رؤى العميل الفوري في نقطة البيع مع الإضافة السريعة للأصناف المفضلة (Task 6: POS Quick Customer Insight Card)
 **النوع:** POS UI & Quick Insight, Customer Favorites 1-Click Addition & Allergy Alerts (TDD, Task 6)
 **الدافع والمشكلة:**

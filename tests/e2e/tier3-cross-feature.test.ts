@@ -580,6 +580,8 @@ export async function runTier3Tests(): Promise<TestRunner> {
     assert.ok(en.customers?.profile?.preferredPlatform, "en.customers.profile.preferredPlatform must exist");
     assert.ok(ar.orders?.quickInsight, "ar.orders.quickInsight must exist");
     assert.ok(en.orders?.quickInsight, "en.orders.quickInsight must exist");
+    assert.ok(ar.orders?.ordersCount, "ar.orders.ordersCount must exist");
+    assert.ok(en.orders?.ordersCount, "en.orders.ordersCount must exist");
     assert.ok(ar.orders?.quickAdd, "ar.orders.quickAdd must exist");
     assert.ok(en.orders?.quickAdd, "en.orders.quickAdd must exist");
   });
