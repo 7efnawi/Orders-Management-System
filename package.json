@@ -9,6 +9,12 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test:e2e": "tsx tests/e2e/run-all.ts",
+    "test:pw": "playwright test --project=chromium-ar",
+    "test:pw:en": "playwright test --project=chromium-en",
+    "test:pw:tablet": "playwright test --project=tablet",
+    "test:pw:all": "playwright test",
+    "test:pw:ui": "playwright test --ui",
+    "test:pw:headed": "playwright test --headed",
     "verify:phase4": "tsx scripts/verify-phase4.ts",
     "verify:phase7": "tsx scripts/verify-phase7.ts",
     "verify:phase11": "tsx scripts/verify-phase11.ts"
@@ -38,6 +44,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20.19.43",
     "@types/react": "^19",

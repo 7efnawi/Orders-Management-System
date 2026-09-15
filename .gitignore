@@ -33,3 +33,9 @@ next-env.d.ts
 
 # Keep the example env file tracked
 !.env.example
+!.env.test.example
+
+# Playwright
+test-results/
+playwright-report/
+blob-report/

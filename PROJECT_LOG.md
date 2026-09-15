@@ -9,6 +9,24 @@
 | السؤال | الحالة | مؤثر على |
 |---|---|---|
 | القائمة النهائية للمنصات | ✅ حُسمت (Talabat, InstaShop, Harry App, Elmenus, Facebook, Phone) | Platform seed & Visual Tokens |
+## [2026-09-15] تأسيس بنية اختبارات المتصفح الحقيقية Playwright وتكوين المشروع (Task 1: Playwright Setup & Configuration)
+**النوع:** Test Infrastructure & Configuration
+**الدافع والمشكلة:**
+- استجابة لطلب العميل ببدء الخطة الشاملة لاختبارات النظام عبر المتصفح الحقيقي (Playwright E2E) مع الحفاظ على سويت الاختبارات المنطقية القائم (245 اختبار).
+- الحاجة لتثبيت `@playwright/test` وتحميل متصفح Chromium وتجهيز ملف الإعدادات `playwright.config.ts` لدعم محاكاة المتصفح باللغتين العربية (RTL) والإنجليزية (LTR)، بالإضافة لمحاكاة شاشات التابلت (iPad Pro 11).
+**اللي اتعمل:**
+- تثبيت حزمة `@playwright/test` وتنزيل متصفح Chromium الرسمي بنجاح.
+- إنشاء ملف الإعدادات `playwright.config.ts` مع دعم:
+  - التشغيل المتسلسل الفردي (`workers: 1`) لمنع تعارض المعاملات في قاعدة بيانات Supabase المشتركة.
+  - إعداد 3 مشاريع مستقلة: `chromium-ar`، `chromium-en`، و `tablet` (iPad Pro 11).
+  - الربط التلقائي بسيرفر التطوير المحلي (`webServer: { command: "npm run dev", url: "http://localhost:3000" }`).
+- إضافة أوامر التشغيل المتعددة في `package.json`: `test:pw`, `test:pw:en`, `test:pw:tablet`, `test:pw:all`, `test:pw:ui`, `test:pw:headed`.
+- تحديث `.gitignore` لتجاهل مخرجات وتقارير Playwright مع الحفاظ على ملفات البيئة التجريبية النموذجية `!.env.test.example`.
+- إنشاء أول اختبار دخاني بسيط `tests/playwright/smoke.spec.ts`.
+- اجتياز بوابات الجودة بالكامل:
+  - `npm run typecheck` (0 errors).
+  - `npm run test:e2e` (245/245 passed 100%).
+**الملفات المتأثرة:** `package.json`, `package-lock.json`, `playwright.config.ts`, `tests/playwright/smoke.spec.ts`, `.gitignore`, `PROJECT_LOG.md`
 
 ## [2026-09-13] ترقية واجهة التقارير والتنزيل غير المتزامن لشيتات إكسل xlsx مع زر شيت العمليات الشامل (Task 4: Reports UI & Native Excel UX)
 **النوع:** UI/UX & Native Excel Integration (TDD, Red -> Green)
