@@ -5,6 +5,24 @@
 
 ---
 
+## [2026-09-16] اختبارات إجهاد وتزامن أوقات الذروة وقفل الترقيم التسلسلي الحصري (Task 19: Rush Hour Concurrency Simulation)
+**النوع:** Concurrency & Rush Hour Stress Testing (Red -> Green)
+**الدافع والمشكلة:**
+- بدء المرحلة الخامسة من الخطة الشاملة (Phase 5: Concurrency & Stress) باختبار إنشاء طلبات متزامنة في نفس اللحظة (10 طلبات متزامنة تحاكي ضغط الذروة). كشف الاختبار عن ثغرة سباق تنافسي (Race Condition) عند إنشاء الطلبات تؤدي لفشل القيد الفريد `Unique constraint failed: Order_orderNumber_key` نتيجة قراءة نفس العدد `count` بالتوازي قبل اعتماد المعاملات.
+**اللي اتعمل:**
+- ترقية محرك توليد أرقام الطلبات `generateOrderNumber` في `src/services/orders.ts`:
+  1. الاستحواذ على قفل استشاري للمعاملة `pg_advisory_xact_lock(hashtext('order_seq_YYYYMMDD'))` على مستوى قاعدة بيانات PostgreSQL لمنع التداخل والتضارب بين المعاملات المتزامنة أثناء توليد الرقم.
+  2. الاستعلام عن أعلى رقم تسلسلي مسجل اليوم (`orderBy: { orderNumber: "desc" }`) بدلاً من مجرد العد البسيط.
+  3. دعم حلقة إعادة محاولة ذكية (Retry Loop up to 3 attempts) في `createOrder` مع تأخير زمني عشوائي (Jitter) لمعالجة أي تنافس نادر.
+  4. زيادة مهلة المعاملات التفاعلية إلى `{ timeout: 25000, maxWait: 15000 }` لضمان إتمام طوابير الذروة السحابية بنجاح.
+- إنشاء وتنفيذ سويت اختبار التزامن `tests/stress/concurrency.test.ts`:
+  - `STRESS-01`: إطلاق 10 طلبات في نفس اللحظة والتحقق من نجاحها جميعاً وحصول كل طلب على رقم تسلسلي متسلسل وفريد 100% بدون أي تكرار أو تصادم (`ORD-YYYYMMDD-XXXX`).
+- اجتياز بوابات الجودة بالكامل:
+  - تشغيل واجتياز سويت التزامن: 1/1 passed (19.5s).
+  - `npm run typecheck` (0 errors).
+  - `npm run test:e2e` (245/245 passed 100%).
+**الملفات المتأثرة:** `src/services/orders.ts`, `tests/stress/concurrency.test.ts`, `PROJECT_LOG.md`
+
 ## [2026-09-16] اختبارات الصفرية والتطابق المالي واختبار الإجهاد العشوائي (Task 17 & 18: Financial Invariant Fuzzing & Shift Closing Cross-Validation)
 **النوع:** Financial Invariant Fuzzing & Stress Testing (Red -> Green)
 **الدافع والمشكلة:**

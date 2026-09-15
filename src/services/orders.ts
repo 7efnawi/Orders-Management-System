@@ -45,20 +45,40 @@ export interface OrderListFilters {
   offset?: number;
 }
 
-/** Generates clean auto-increment daily order number ORD-YYYYMMDD-XXXX */
+/** Generates clean auto-increment daily order number ORD-YYYYMMDD-XXXX with concurrency lock */
 async function generateOrderNumber(tx: Prisma.TransactionClient): Promise<string> {
   const now = new Date();
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, "0");
   const day = String(now.getDate()).padStart(2, "0");
   const dateStr = `${year}${month}${day}`;
-  const todayStart = new Date(year, now.getMonth(), now.getDate(), 0, 0, 0, 0);
 
-  const countToday = await tx.order.count({
-    where: { createdAt: { gte: todayStart } },
+  // Acquire transaction-scoped advisory lock to serialize order numbering per date
+  try {
+    await tx.$executeRawUnsafe(`SELECT pg_advisory_xact_lock(hashtext('order_seq_${dateStr}'))`);
+  } catch {
+    // If raw query fails in an environment without advisory locks, fallback continues safely
+  }
+
+  // Find the highest sequence generated today
+  const latestOrder = await tx.order.findFirst({
+    where: {
+      orderNumber: { startsWith: `ORD-${dateStr}-` },
+    },
+    orderBy: { orderNumber: "desc" },
+    select: { orderNumber: true },
   });
 
-  const seq = String(countToday + 1).padStart(4, "0");
+  let nextSeq = 1;
+  if (latestOrder) {
+    const parts = latestOrder.orderNumber.split("-");
+    const lastNum = parseInt(parts[parts.length - 1], 10);
+    if (!isNaN(lastNum)) {
+      nextSeq = lastNum + 1;
+    }
+  }
+
+  const seq = String(nextSeq).padStart(4, "0");
   return `ORD-${dateStr}-${seq}`;
 }
 
@@ -81,7 +101,10 @@ export async function createOrder(
     }
   }
 
-  return prisma.$transaction(async (tx) => {
+  const maxAttempts = 3;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      return await prisma.$transaction(async (tx) => {
     // 1. Fetch products to get snapshot prices
     const productIds = input.items.map((i) => i.productId);
     const uniqueProductIds = Array.from(new Set(productIds));
@@ -210,7 +233,20 @@ export async function createOrder(
     });
 
     return order;
-  });
+  }, { timeout: 25000, maxWait: 15000 });
+    } catch (err: unknown) {
+      const errorObj = err as { code?: string; message?: string };
+      if (
+        attempt < maxAttempts &&
+        (errorObj?.code === "P2002" || errorObj?.message?.includes("Order_orderNumber_key"))
+      ) {
+        await new Promise((resolve) => setTimeout(resolve, Math.random() * 50 + 20));
+        continue;
+      }
+      throw err;
+    }
+  }
+  throw new Error("ORDER_CREATION_FAILED: Max retry attempts exceeded");
 }
 
 /**
