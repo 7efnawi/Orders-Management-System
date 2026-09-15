@@ -5,6 +5,24 @@
 
 ---
 
+## [2026-09-16] اختبارات عدم الحذف التام وفرض حصانة السجلات والتتبع (Task 16: No-Hard-Delete & Immutability Tests)
+**النوع:** Security & Immutability Verification (Red -> Green)
+**الدافع والمشكلة:**
+- استكمال المرحلة الثالثة من الخطة الشاملة (Phase 3: API Security & Immutability) بالتحقق برمجياً من المبدأ الإرشادي الأساسي للنظام (No Hard Delete Invariant): منع حذف أي أوردر نهائياً، إلزامية سبب الإلغاء، حظر التعديل أو الحذف على سجل التدقيق ومسارات العملاء (HTTP 405 Method Not Allowed)، وتأكيد اتباع جداول التوصيف والقوائم لنمط الحذف المنطقي (`isActive=false`).
+**اللي اتعمل:**
+- إنشاء وتنفيذ سويت اختبارات الحصانة وعدم الحذف `tests/security/immutability.test.ts`:
+  - `SEC-NODELETE-01`: التأكد من عدم تصدير أي دوال حذف نهائي (`DELETE`) في مسارات طلبات الأوردر (`/api/orders`, `/api/orders/[id]`) أو طبقة الخدمات (`services/orders.ts`).
+  - `SEC-NODELETE-02`: التحقق من إلزامية سبب الإلغاء الصريح (`CancelReason`) في ماكينة الحالات (`assertTransition`) ومنع الإلغاء بدونه.
+  - `SEC-NODELETE-03`: التحقق من الحصانة التامة لدليل العملاء وردع طلبات `DELETE` بـ HTTP 405 Method Not Allowed.
+  - `SEC-AUDIT-01`: التحقق من الحصانة التامة لسجل المراقبة والتدقيق وردع كافة عمليات التعديل والحذف (`POST`, `PUT`, `PATCH`, `DELETE`) بـ HTTP 405 Method Not Allowed وخلو طبقة الخدمة من أي دوال حذف.
+  - `SEC-EDIT-01`: التحقق من ثبات الحالات النهائية (`DELIVERED`, `CANCELLED`) ومنع الانتقال العكسي لحالات الطلب.
+  - `SEC-LOOKUP-01`: التحقق من نمط الحذف المنطقي (`isActive=false`) لجداول المنيو والمستخدمين.
+- اجتياز بوابات الجودة بالكامل:
+  - تشغيل واجتياز سويت الحصانة: 6/6 passed (563.9ms).
+  - `npm run typecheck` (0 errors).
+  - `npm run test:e2e` (245/245 passed 100%).
+**الملفات المتأثرة:** `tests/security/immutability.test.ts`, `PROJECT_LOG.md`
+
 ## [2026-09-16] اختبارات أمان واجهات البرمجة واختراق مصفوفة الصلاحيات (Task 15: API Security & RBAC Penetration Tests)
 **النوع:** Security & RBAC Penetration Testing (Red -> Green)
 **الدافع والمشكلة:**
