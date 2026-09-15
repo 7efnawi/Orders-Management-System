@@ -5,6 +5,28 @@
 
 ---
 
+## [2026-09-16] اختبارات الاستجابة لأجهزة التابلت وحل تمدد العرض الأفقي (Task 20: Tablet Responsive Layout & Flexbox Overflow Fix)
+**النوع:** Responsive Layout & Tablet Compatibility Testing (Red -> Green)
+**الدافع والمشكلة:**
+- تنفيذ المهمة 20 من المرحلة الخامسة (Task 20: Responsive / Tablet Viewport Testing) للتحقق من توافق النظام وسلاسة عرضه على شاشات التابلت وآيباد المطبخ والكاشير (iPad Pro 11 - 834x1194).
+- كشف فحص التابلت الآلي عن وجود تمدد أفقي زائد (Horizontal Scroll / Viewport Overflow بمقدار 30 بكسل) في صفحة العملاء يؤدي لتجاوز عرض الصفحة حدود شاشة الجهاز (`scrollWidth > clientWidth`).
+**اللي اتعمل:**
+- تشخيص وحل فخ Flexbox الكلاسيكي (`min-width: auto` على العناصر الحاوية للجداول ذات `overflow-x-auto`):
+  1. إضافة `w-full min-w-0` إلى عنصر `<main>` الرئيسي في `src/app/[locale]/(dashboard)/layout.tsx` لاحتواء العرض ومنع تمدد الشاشات الفرعية.
+  2. تحسين استجابة شريط الفلاتر `src/components/customers/customer-filter-bar.tsx` باستخدام `lg:flex-row` و `flex-wrap` بدلاً من `sm:flex-row` لمنع تزاحم وتراص عناصر البحث على شاشات التابلت الرأسية.
+  3. إضافة `min-w-0` إلى حاوية `src/components/customers/customers-client.tsx` ومغلف الجدول في `src/components/customers/customer-table.tsx`.
+- إعداد مشروع `tablet` في `playwright.config.ts` بدقة 834×1194 باستخدام Chromium.
+- إنشاء وتنفيذ سويت اختبارات التابلت `tests/playwright/responsive.spec.ts`:
+  - `RESP-01`: فحص انعدام التمدد الأفقي لشاشة عرض المطبخ (`scrollWidth <= clientWidth`).
+  - `RESP-02`: فحص سلامة استجابة نافذة إضافة الطلب على التابلت وإمكانية التمرير بداخلها.
+  - `RESP-03`: فحص صفحة العملاء وتأكيد التمرير الأفقي المحصور داخل الجدول بدون تمدد عرض الصفحة الرئيسية.
+  - `RESP-04`: فحص صفحة التقارير والرسوم البيانية وتناسقها التام على أبعاد التابلت.
+- اجتياز بوابات الجودة بالكامل:
+  - تشغيل واجتياز سويت التابلت: 4/4 passed (32.2s).
+  - `npm run typecheck` (0 errors).
+  - `npm run test:e2e` (245/245 passed 100%).
+**الملفات المتأثرة:** `playwright.config.ts`, `src/app/[locale]/(dashboard)/layout.tsx`, `src/components/customers/customer-filter-bar.tsx`, `src/components/customers/customer-table.tsx`, `src/components/customers/customers-client.tsx`, `tests/playwright/responsive.spec.ts`, `PROJECT_LOG.md`
+
 ## [2026-09-16] اختبارات إجهاد وتزامن أوقات الذروة وقفل الترقيم التسلسلي الحصري (Task 19: Rush Hour Concurrency Simulation)
 **النوع:** Concurrency & Rush Hour Stress Testing (Red -> Green)
 **الدافع والمشكلة:**

@@ -115,9 +115,9 @@ export function CustomerTable({
   }
 
   return (
-    <div className="space-y-3">
-      <div className="rounded-xl border border-border/70 bg-card shadow-xs overflow-hidden">
-        <div className="overflow-x-auto">
+    <div className="space-y-3 w-full min-w-0">
+      <div className="w-full min-w-0 rounded-xl border border-border/70 bg-card shadow-xs overflow-hidden">
+        <div className="w-full overflow-x-auto">
           <table className="table-fixed w-full text-sm divide-y divide-border/60">
             <colgroup>
               <col className="w-[22%] min-w-[170px]" />

@@ -18,7 +18,7 @@ export default async function DashboardLayout({
   return (
     <>
       <DashboardHeader user={user} locale={locale} />
-      <main className="flex flex-1 flex-col">{children}</main>
+      <main className="flex flex-1 flex-col w-full min-w-0">{children}</main>
       <Toaster position="top-center" richColors />
     </>
   );

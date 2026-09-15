@@ -47,8 +47,8 @@ export function CustomerFilterBar({
   const hasActiveFilters = Boolean(search || (segment && segment !== "ALL") || hasProblems);
 
   return (
-    <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-card p-3.5 rounded-xl border border-border/70 shadow-xs">
-      <div className="flex flex-1 flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 bg-card p-3.5 rounded-xl border border-border/70 shadow-xs">
+      <div className="flex flex-1 flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2.5 min-w-0">
         {/* Search Input */}
         <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
@@ -108,7 +108,7 @@ export function CustomerFilterBar({
       </div>
 
       {/* Action Buttons: Export, Reset & Refresh */}
-      <div className="flex items-center justify-end gap-2 shrink-0">
+      <div className="flex flex-wrap items-center justify-end gap-2 shrink-0">
         {onExport && (
           <Button
             type="button"

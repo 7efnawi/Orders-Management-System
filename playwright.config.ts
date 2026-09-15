@@ -29,7 +29,10 @@ export default defineConfig({
     },
     {
       name: "tablet",
-      use: { ...devices["iPad Pro 11"] },
+      use: {
+        ...devices["iPad Pro 11"],
+        defaultBrowserType: "chromium",
+      },
     },
   ],
   webServer: {

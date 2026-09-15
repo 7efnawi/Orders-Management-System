@@ -129,7 +129,7 @@ export function CustomersClient({ initialData }: CustomersClientProps) {
   }, [debouncedSearch, segment, hasProblems]);
 
   return (
-    <div className="mx-auto flex w-full max-w-[1536px] flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-8">
+    <div className="mx-auto flex w-full max-w-[1536px] min-w-0 flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-8">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1">
