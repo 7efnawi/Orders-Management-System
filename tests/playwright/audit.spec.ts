@@ -37,15 +37,12 @@ test.describe("Audit Log & Activity Monitoring — Browser E2E", () => {
     await ownerPage.goto("/ar/audit");
     await ownerPage.waitForLoadState("networkidle");
 
-    // Preset filter buttons exist
-    const todayPreset = ownerPage.locator("button").filter({ hasText: /اليوم|Today|الكل|All/i }).first();
-    if (await todayPreset.isVisible()) {
-      await todayPreset.click();
-      await ownerPage.waitForTimeout(400);
-    }
+    // Filter bar presets exist
+    const presets = ownerPage.locator("button").filter({ hasText: /اليوم|أمس|الكل|Today|All/i });
+    expect(await presets.count()).toBeGreaterThanOrEqual(1);
 
-    // If an audit entry exists, test opening the diff modal
-    const diffButton = ownerPage.locator("button").filter({ hasText: /فحص الفارق|الفارق|Diff|View/i }).first();
+    // If an audit entry exists in table, test opening the diff modal
+    const diffButton = ownerPage.locator("table tbody tr button").first();
     if (await diffButton.isVisible()) {
       await diffButton.click();
       const dialog = ownerPage.locator("[role='dialog']");
