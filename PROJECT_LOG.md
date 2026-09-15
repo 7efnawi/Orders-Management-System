@@ -5,6 +5,21 @@
 
 ---
 
+## [2026-09-16] اختبارات الصفرية والتطابق المالي واختبار الإجهاد العشوائي (Task 17 & 18: Financial Invariant Fuzzing & Shift Closing Cross-Validation)
+**النوع:** Financial Invariant Fuzzing & Stress Testing (Red -> Green)
+**الدافع والمشكلة:**
+- تنفيذ المرحلة الرابعة من الخطة الشاملة (Phase 4: Financial Invariant Fuzzing) باختبار المحركات المالية والحسابية تحت أقصى درجات الضغط والبيانات العشوائية غير المتوقعة لضمان الصفرية التامة لأي تسريب نقدي أو انحراف في التقريب (Zero-drift / Zero Cash Leak) وفق متطلبات الـ SRS (FR-CLOSE-02..04, FR-ORD-12).
+**اللي اتعمل:**
+- إنشاء وتنفيذ سويت الفحص المالي العشوائي `tests/stress/financial-fuzzer.test.ts`:
+  - `FUZZ-01`: توليد وفحص 10,000 طلب عشوائي لدارك كيتشن مع تنوع الأصناف، الخصومات، أسطول التوصيل (التصفير التام لرسوم توصيل أسطول التطبيقات `driverType === APP`)، وطرق الدفع (كاش، فيزا، أونلاين). التأكد من التطابق التام لمعادلة الإيراد الإجمالي `totalCash + totalVisa + totalOnline === totalRevenue`، وخلو المجموع من أي قيم سالبة حتى لو تجاوز الخصم قيمة الطلب.
+  - `FUZZ-02`: فحص استقرار دالة التقريب النقدي `roundCurrency` عبر 100,000 رقم عشوائي بفاصلة عائمة والتأكد من انعدام الانحراف (>0.01).
+  - `FUZZ-03`: مطابقة إغلاق الوردية عبر 500 وردية عشوائية وتأكيد المعادلة المحاسبية الحتمية `netCash === totalCash - totalExpenses` واستبعاد الطلبات الملغاة كلياً من الإيرادات والرسوم.
+- اجتياز بوابات الجودة بالكامل:
+  - تشغيل واجتياز سويت الفحص المالي: 3/3 passed (101.3ms).
+  - `npm run typecheck` (0 errors).
+  - `npm run test:e2e` (245/245 passed 100%).
+**الملفات المتأثرة:** `tests/stress/financial-fuzzer.test.ts`, `PROJECT_LOG.md`
+
 ## [2026-09-16] اختبارات عدم الحذف التام وفرض حصانة السجلات والتتبع (Task 16: No-Hard-Delete & Immutability Tests)
 **النوع:** Security & Immutability Verification (Red -> Green)
 **الدافع والمشكلة:**
