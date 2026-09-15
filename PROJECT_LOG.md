@@ -7,7 +7,29 @@
 
 ## Open Questions
 | السؤال | الحالة | مؤثر على |
-|---|---|---|
+## [2026-09-15] اختبارات المتصفح الحقيقية لإنشاء وإدارة الطلبات واستقرار المحددات (Task 3: Orders Browser E2E & Stable Locators)
+**النوع:** Browser E2E & Selector Resilience (Red -> Green)
+**الدافع والمشكلة:**
+- تنفيذ المرحلة الثانية من الخطة الشاملة باختبار دورة حياة إنشاء الطلب بالكامل عبر متصفح Chromium الحقيقي، ومحاكاة إدخال بيانات العميل والبراند والمنصة والأصناف وتأكيد الطلب وظهور إيصال الـ POS الحراري.
+- الحاجة لترقية محددات عناصر واجهة إنشاء الطلب `OrderForm` بدعم سمات `data-testid` لمنع هشاشة محددات النصوص عند تعدد اللغات (العربية / الإنجليزية).
+**اللي اتعمل:**
+- إضافة سمات محددات الاختبار المستقرة في `src/components/orders/order-form.tsx`:
+  - `data-testid="customer-phone-input"` لحقل هاتف العميل.
+  - `data-testid="customer-name-input"` لحقل اسم العميل.
+  - `data-testid="customer-address-input"` لحقل عنوان التوصيل.
+  - `data-testid="submit-order-button"` لزر تأكيد وإنشاء الطلب في كل من عرض السلة وعرض الإيصال الحراري.
+- إنشاء نموذج كائن صفحة الطلبات `OrderFormPage` (`tests/playwright/pages/order-form.page.ts`) مع استبعاد أصناف الاختبار المعزولة غير القياسية لضمان اختيار أصناف سوشي أصلية معتمدة برمجياً.
+- إنشاء وتنفيذ سويت اختبارات الطلبات `tests/playwright/orders.spec.ts`:
+  - `PW-ORD-01`: قيام الكاشير بإنشاء أوردر كامل وإرساله لـ `/api/orders` وظهور نافذة الإيصال الحراري برقم الأوردر المتسلسل.
+  - `PW-ORD-02`: معاينة جدول الطلبات من قبل المدير مع فلاتر الحالة والألسنة (الكل، نشطة، تم التسليم).
+  - `PW-ORD-03`: تشغيل البحث التلقائي عن العميل عبر الهاتف دون أخطاء.
+  - `PW-ORD-04`: تفاعل شريط البحث وفلترة الأوردرات في جدول الإدارة.
+- اجتياز بوابات الجودة بالكامل:
+  - تشغيل واجتياز سويت Playwright للطلبات: 4/4 passed (49.3s).
+  - `npm run typecheck` (0 errors).
+  - `npm run test:e2e` (245/245 passed 100%).
+**الملفات المتأثرة:** `src/components/orders/order-form.tsx`, `tests/playwright/pages/order-form.page.ts`, `tests/playwright/orders.spec.ts`, `PROJECT_LOG.md`
+
 ## [2026-09-15] تجهيز حسابات الاختبار ونماذج كائنات الصفحات وتركيبات المصادقة الحقيقية (Task 2: Auth Fixtures & Page Object Model)
 **النوع:** Test Infrastructure & Auth E2E (Red -> Green)
 **الدافع والمشكلة:**

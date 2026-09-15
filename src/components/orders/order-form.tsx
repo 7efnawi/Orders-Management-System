@@ -684,6 +684,7 @@ export function OrderForm({
 
               <div className="relative">
                 <Input
+                  data-testid="customer-phone-input"
                   dir="ltr"
                   value={customerPhone}
                   onChange={(e) => {
@@ -755,6 +756,7 @@ export function OrderForm({
                 {t("customerName")} <span className="text-destructive">*</span>
               </Label>
               <Input
+                data-testid="customer-name-input"
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
                 placeholder={t("customerNamePlaceholder")}
@@ -768,6 +770,7 @@ export function OrderForm({
                 {t("customerAddress")}
               </Label>
               <Input
+                data-testid="customer-address-input"
                 value={customerAddress}
                 onChange={(e) => setCustomerAddress(e.target.value)}
                 placeholder={t("customerAddressPlaceholder")}
@@ -1326,6 +1329,7 @@ export function OrderForm({
 
                 {/* Submit Button */}
                 <Button
+                  data-testid="submit-order-button"
                   type="button"
                   size="lg"
                   disabled={isSubmitting || cart.length === 0 || !customerPhone.trim() || !customerName.trim()}
@@ -1379,6 +1383,7 @@ export function OrderForm({
 
               {/* Direct Submit CTA under receipt */}
               <Button
+                data-testid="submit-order-button"
                 type="button"
                 size="lg"
                 disabled={isSubmitting || cart.length === 0 || !customerPhone.trim() || !customerName.trim()}
