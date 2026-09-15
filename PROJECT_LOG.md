@@ -8,7 +8,30 @@
 ## Open Questions
 | السؤال | الحالة | مؤثر على |
 |---|---|---|
-| القائمة النهائية للمنصات | ✅ حُسمت (Talabat, InstaShop, Harry App, Elmenus, Facebook, Phone) | Platform seed & Visual Tokens |
+## [2026-09-15] تجهيز حسابات الاختبار ونماذج كائنات الصفحات وتركيبات المصادقة الحقيقية (Task 2: Auth Fixtures & Page Object Model)
+**النوع:** Test Infrastructure & Auth E2E (Red -> Green)
+**الدافع والمشكلة:**
+- تتطلب اختبارات المتصفح الحقيقية عبر Playwright وجود حسابات مستخدمين معتمدة رسمياً ومربوطة بنظام Supabase Auth ومخزنة في جدول `User` في قاعدة بيانات PostgreSQL المحلية، بالإضافة لعزل الجلسات وإعادة استخدامها دون تكرار كود تسجيل الدخول.
+- دعم تسجيل الدخول لجميع الأدوار الصلاحية الثلاثة (المالك OWNER، مدير التشغيل MANAGER، والكاشير CASHIER).
+**اللي اتعمل:**
+- إنشاء سكربت التجهيز الآمن والمزامنة الذاتية `scripts/ensure-test-accounts.ts` لإنشاء وتحديث حسابات الاختبار في Supabase Auth عبر مفتاح الخدمة الإداري وجدول المستخدمين المحلي `prisma.user.upsert`.
+- إنشاء نموذج متغيرات البيئة التجريبية `.env.test.example` وملف إعدادات الحسابات `tests/playwright/fixtures/test-accounts.ts`.
+- بناء نماذج كائنات الصفحات (Page Object Model):
+  - `LoginPage` (`tests/playwright/pages/login.page.ts`) لمعالجة حقول البريد وكلمة المرور والأخطاء وتأكيد التحويل.
+  - `NavigationPage` (`tests/playwright/pages/navigation.page.ts`) للتنقل السلس وتبديل اللغات وتسجيل الخروج.
+- إنشاء تركيبات المصادقة المعزولة `tests/playwright/fixtures/auth.ts` مع دعم الصفحات الموثقة مسبقاً (`ownerPage`, `managerPage`, `cashierPage`).
+- إنشاء وتنفيذ سويت اختبارات المصادقة الشامل `tests/playwright/auth.spec.ts`:
+  - `PW-AUTH-01`: تسجيل دخول المالك والوصول للوحة التحكم.
+  - `PW-AUTH-02`: ثبات الجلسة وعدم توجيه المستخدم لصفحة الدخول بعد تحديث الصفحة (Refresh).
+  - `PW-AUTH-03`: إظهار رسالة التنبيه بالخطأ عند إدخال بيانات غير صحيحة ومنع الدخول.
+  - `PW-AUTH-04`: تسجيل دخول مدير التشغيل بنجاح.
+  - `PW-AUTH-05`: تسجيل دخول الكاشير بنجاح.
+- اجتياز بوابات الجودة بالكامل:
+  - تشغيل واجتياز سويت Playwright: 5/5 passed.
+  - `npm run typecheck` (0 errors).
+  - `npm run test:e2e` (245/245 passed 100%).
+**الملفات المتأثرة:** `scripts/ensure-test-accounts.ts`, `.env.test.example`, `tests/playwright/fixtures/test-accounts.ts`, `tests/playwright/fixtures/auth.ts`, `tests/playwright/pages/login.page.ts`, `tests/playwright/pages/navigation.page.ts`, `tests/playwright/auth.spec.ts`, `PROJECT_LOG.md`
+
 ## [2026-09-15] تأسيس بنية اختبارات المتصفح الحقيقية Playwright وتكوين المشروع (Task 1: Playwright Setup & Configuration)
 **النوع:** Test Infrastructure & Configuration
 **الدافع والمشكلة:**
