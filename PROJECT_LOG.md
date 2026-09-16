@@ -5,6 +5,16 @@
 
 ---
 
+## [2026-09-16] عزل حزم بريزما كحزم خادم خارجية صريحة في Next.js (serverExternalPackages Hardening)
+**النوع:** Build & Next.js Bundler Configuration
+**الدافع والمشكلة:**
+- لمنع Turbopack و Next.js من محاولة تضمين أو فحص ملفات `@prisma/client` أو `prisma` كجزء من حزم العميل أو المتصفح، وتعزيز استبعادها التام.
+**اللي اتعمل:**
+- إضافة `serverExternalPackages: ["@prisma/client", "prisma"]` داخل `next.config.ts`.
+- التحقق من سرعة بناء الإنتاج وتوليد كافة الـ 50 مساراً بنجاح فائق (6.2 ثانية).
+- اجتياز بوابات `npm run typecheck` و `npm run build`.
+**الملفات المتأثرة:** `next.config.ts`, `PROJECT_LOG.md`
+
 ## [2026-09-16] تفعيل توليد عميل بريزما التلقائي لبيئة Vercel و CI/CD (Prisma Generate Automation)
 **النوع:** Build & DevOps Invariant
 **الدافع والمشكلة:**
