@@ -2,8 +2,6 @@
 
 # 🍣 Order Control System
 
-### نظام إدارة طلبات الدارك كيتشن
-
 **A production-grade, real-time order management system built for multi-brand dark kitchen operations.**
 
 [![Next.js](https://img.shields.io/badge/Next.js-16.3-black?logo=next.js)](https://nextjs.org/)
@@ -422,15 +420,22 @@ Fully bilingual with **15 translation namespaces** and strict symmetry enforceme
 
 ---
 
-## 📚 Documentation
+## 📚 Documentation & Engineering Blueprints
 
-| Document | Description |
-|---|---|
-| [`docs/SRS.md`](docs/SRS.md) | Software Requirements Specification |
-| [`docs/USE_CASES.md`](docs/USE_CASES.md) | Detailed use case narratives |
-| [`docs/NON_FUNCTIONAL_REQUIREMENTS.md`](docs/NON_FUNCTIONAL_REQUIREMENTS.md) | Performance, security & usability requirements |
-| [`docs/TESTING_REPORT.md`](docs/TESTING_REPORT.md) | Comprehensive 5-pillar testing report |
-| [`PROJECT_LOG.md`](PROJECT_LOG.md) | Architecture Decision Record (ADR) — updated with every commit |
+All architectural, operational, and API specifications are available in dual format: interactive Markdown (`.md`) and executive styled PDF (`.pdf`) for printing:
+
+| Document | Format | Description |
+|---|:---:|---|
+| **System Architecture** | [`Markdown`](docs/ARCHITECTURE.md) · [`PDF`](docs/PDFs/ARCHITECTURE.pdf) | C4 Context/Container diagrams, state machine, concurrency locking & financial flows |
+| **Operations Field Manual** | [`Markdown`](docs/OPERATIONS_MANUAL.md) · [`PDF`](docs/PDFs/OPERATIONS_MANUAL.pdf) | Step-by-step runbooks for Cashier POS, Kitchen Expeditor/Kanban, Shift Manager & Owner |
+| **REST API Specification** | [`Markdown`](docs/API_REFERENCE.md) · [`PDF`](docs/PDFs/API_REFERENCE.pdf) | 40 REST endpoints, Zod input/output schemas, error codes & security invariants |
+| **Database Schema & Dictionary** | [`Markdown`](docs/DATA_DICTIONARY.md) · [`PDF`](docs/PDFs/DATA_DICTIONARY.pdf) | Complete catalog of 15 Prisma models, 7 enums, constraints, relations & B-Tree indexes |
+| **Cloud Deployment & DevOps** | [`Markdown`](docs/DEPLOYMENT_GUIDE.md) · [`PDF`](docs/PDFs/DEPLOYMENT_GUIDE.pdf) | Vercel Edge hosting, Supabase pooling (:6543 vs :5432), PITR backups & disaster recovery |
+| **5-Pillar Testing Report** | [`Markdown`](docs/TESTING_REPORT.md) · [`PDF`](docs/PDFs/TESTING_REPORT.pdf) | Comprehensive report on 373+ passing tests: logic, security, fuzzing & performance |
+| **Software Requirements (SRS)** | [`Markdown`](docs/SRS.md) · [`PDF`](docs/PDFs/SRS.pdf) | Baseline functional requirements and dark kitchen operational scope |
+| **Use Cases Specification** | [`Markdown`](docs/USE_CASES.md) · [`PDF`](docs/PDFs/USE_CASES.pdf) | Detailed use case narratives and interaction scenarios |
+| **Non-Functional Requirements** | [`Markdown`](docs/NON_FUNCTIONAL_REQUIREMENTS.md) · [`PDF`](docs/PDFs/NON_FUNCTIONAL_REQUIREMENTS.pdf) | Latency, throughput, security, accessibility & uptime requirements |
+| **Architecture Decision Record** | [`PROJECT_LOG.md`](PROJECT_LOG.md) | Continuous ADR tracking every architectural decision across development |
 
 ---
 

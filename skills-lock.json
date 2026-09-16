@@ -115,6 +115,12 @@
       "skillPath": "skills/misc/migrate-to-shoehorn/SKILL.md",
       "computedHash": "7d31e494a384d1a5b88d1dec6e1f50e673ef1a60f7b0b6e92babfbb242f79b62"
     },
+    "pdf": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "skillPath": "skills/pdf/SKILL.md",
+      "computedHash": "37226d4220d844377e6b2a386c51a011df4cd130855ff0b80bcc22f9c28abd57"
+    },
     "prototype": {
       "source": "mattpocock/skills",
       "sourceType": "github",
@@ -198,6 +204,12 @@
       "sourceType": "github",
       "skillPath": ".claude/skills/ui-ux-pro-max/SKILL.md",
       "computedHash": "d1de8ff8d228cd4204bf06eb959ef4317d5b927908d9f42765971e33e80c8a7e"
+    },
+    "view-pdf": {
+      "source": "anthropics/knowledge-work-plugins",
+      "sourceType": "github",
+      "skillPath": "pdf-viewer/skills/view-pdf/SKILL.md",
+      "computedHash": "3b5f99f6b143eef94df0c20eb98972d2e77f53f4682e308dfe21035771cee3b0"
     },
     "wait-what": {
       "source": "mattpocock/skills",

@@ -5,6 +5,29 @@
 
 ---
 
+## [2026-09-16] الحزمة الهندسية والتوثيقية الشاملة ومخططات النظام (Comprehensive Engineering Documentation & Visual Blueprints)
+**النوع:** Architecture, Documentation & Quality Engineering (MD + Executive PDF)
+**الدافع والمشكلة:**
+- استكمال المنظومة التوثيقية والهندسية للمشروع لرفع جاهزيته إلى مستوى الأنظمة المؤسسية (Enterprise-Grade)، وتوفير رسوم بيانية تفاعلية (Mermaid) وأدلة تشغيلية ميدانية للمطعم، ومرجع شامل للواجهات وقواعد البيانات، مع توفير نسختين متطابقتين لكل وثيقة: نسخة Markdown تفاعلية ونسخة PDF تنفيذية منسقة للطباعة.
+**اللي اتعمل:**
+1. **بناء محرك تجميع الـ PDF التنفيذي (`scripts/generate-doc-pdfs.ts`):**
+   - تطوير محرك أوتوماتيكي عبر Chromium (Playwright) و Marked لتحويل ملفات الـ Markdown إلى وثائق A4 فاخرة مدعومة بخطوط Inter و Cairo ورسوم Mermaid المتجهة (SVG).
+2. **المعمارية ومخططات النظام (`docs/ARCHITECTURE.md` + `docs/PDFs/ARCHITECTURE.pdf`):**
+   - مخطط C4 Level 1 (سياق النظام) ومخطط C4 Level 2 (الحاويات والطبقات).
+   - مخطط ماكينة حالات الطلب (Order State Machine Flowchart).
+   - مخطط تسلسل التزامن وقفل بوستجريس الاستشاري لأوقات الذروة (`pg_advisory_xact_lock`).
+   - مخطط التدفق الحسابي والصفرية المالية (`netCash = totalCash - totalExpenses`).
+3. **دليل التشغيل الميداني للمطعم (`docs/OPERATIONS_MANUAL.md` + `docs/PDFs/OPERATIONS_MANUAL.pdf`):**
+   - دليل تشغيل الكاشير السريع (<30 ثانية لكل طلب)، دليل شاشة المطبخ والكانبان ونبضات التحذير، دليل مدير الوردية، ودليل المالك والمطابقة المالية.
+4. **المرجع الشامل لواجهات البرمجة (`docs/API_REFERENCE.md` + `docs/PDFs/API_REFERENCE.pdf`):**
+   - توثيق تفصيلي لـ 40 مسار REST API عبر 12 نطاقاً مع مخططات التحقق Zod وثوابت الأمان.
+5. **قاموس البيانات ومخطط بوستجريس (`docs/DATA_DICTIONARY.md` + `docs/PDFs/DATA_DICTIONARY.pdf`):**
+   - توثيق الـ 15 نموذجاً و 7 تعدادات (Enums) ومصفوفة الفهارس B-Tree.
+6. **دليل النشر والبنية السحابية والتعافي (`docs/DEPLOYMENT_GUIDE.md` + `docs/PDFs/DEPLOYMENT_GUIDE.pdf`):**
+   - إعدادات Vercel و Supabase Pooler (:6543) مقابل Direct (:5432)، خطة التعافي من الكوارث (PITR و pg_dump)، وبروتوكول بدء أول حساب مالك.
+7. **تحديث `README.md`:** إضافة جدول الروابط المزدوجة (Markdown و PDF) لكافة الوثائق.
+**الملفات المتأثرة:** `docs/ARCHITECTURE.md`, `docs/OPERATIONS_MANUAL.md`, `docs/API_REFERENCE.md`, `docs/DATA_DICTIONARY.md`, `docs/DEPLOYMENT_GUIDE.md`, `docs/PDFs/*`, `scripts/generate-doc-pdfs.ts`, `README.md`, `PROJECT_LOG.md`
+
 ## [2026-09-16] إزالة البيانات الحساسة وملف المبيعات وتحديث قواعد التجاهل (Sensitive Data Removal & Gitignore Hardening)
 **النوع:** Security & Data Privacy
 **الدافع والمشكلة:**
