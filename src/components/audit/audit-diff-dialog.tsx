@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useTranslations, useLocale } from "next-intl";
-import { AuditAction, Role } from "@prisma/client";
+import type { AuditAction, Role } from "@/types/enums";
 import {
   ArrowRight,
   Clock,

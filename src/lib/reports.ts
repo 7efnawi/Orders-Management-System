@@ -1,4 +1,4 @@
-import { OrderStatus, PaymentMethod } from "@prisma/client";
+import { OrderStatus, PaymentMethod } from "@/types/enums";
 import { type DecimalLike, toNumber, roundCurrency } from "./closing";
 
 // محرك حسابات التقارير والتحليلات (Phase 8 — FR-RPT) — Directives §2, §3

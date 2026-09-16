@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { OrderStatus } from "@prisma/client";
+import { OrderStatus } from "@/types/enums";
 
 export interface PrepTimerOptions {
   startTime?: Date | string | null;

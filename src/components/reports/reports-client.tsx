@@ -13,7 +13,7 @@ import {
   BarChart3,
 } from "lucide-react";
 import { toast } from "sonner";
-import { Role } from "@prisma/client";
+import { Role } from "@/types/enums";
 import { cn } from "@/lib/utils";
 import type {
   ReportsPayload,

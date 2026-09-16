@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useTranslations } from "next-intl";
-import { Role } from "@prisma/client";
+import type { Role } from "@/types/enums";
 import {
   Activity,
   Clock,

@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
-import { Role } from "@prisma/client";
+import { Role } from "@/types/enums";
 import {
   LayoutGrid,
   UtensilsCrossed,

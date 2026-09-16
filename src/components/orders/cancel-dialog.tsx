@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { CancelReason } from "@prisma/client";
+import { CancelReason } from "@/types/enums";
 
 interface CancelDialogProps {
   orderId: string | null;

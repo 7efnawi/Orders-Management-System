@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { z } from "zod";
-import { DriverType } from "@prisma/client";
+import { DriverType } from "@/types/enums";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,

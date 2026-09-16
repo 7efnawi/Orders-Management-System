@@ -5,7 +5,7 @@ import { getReportsData } from "@/services/reports";
 import { listBrands } from "@/services/menu";
 import { listPlatforms } from "@/services/lookups";
 import { ReportsClient } from "@/components/reports/reports-client";
-import { Role } from "@prisma/client";
+import { Role } from "@/types/enums";
 
 export default async function ReportsPage({
   params,

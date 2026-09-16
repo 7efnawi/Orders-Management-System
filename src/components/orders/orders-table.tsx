@@ -47,7 +47,7 @@ import { OrderDetailsModal } from "./order-details-modal";
 import { AssignDriverDialog, type AssignDriverOrder } from "@/components/delivery/assign-driver-dialog";
 import { KitchenKanban } from "./kitchen-kanban";
 import { PrepTimerBadge } from "./prep-timer-badge";
-import { OrderStatus, DiscountStatus, PaymentMethod, Role, CancelReason } from "@prisma/client";
+import { OrderStatus, DiscountStatus, PaymentMethod, Role, CancelReason } from "@/types/enums";
 import { cn } from "@/lib/utils";
 
 export interface OrderRowItem {

@@ -51,7 +51,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { PaymentMethod, Role } from "@prisma/client";
+import { PaymentMethod, Role } from "@/types/enums";
 import { cn } from "@/lib/utils";
 
 export interface BrandOption {

@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Role } from "@prisma/client";
+import { Role } from "@/types/enums";
 import type { DashboardOverview } from "@/services/orders";
 import { CashierDashboard } from "./cashier-dashboard";
 import { ManagerDashboard } from "./manager-dashboard";

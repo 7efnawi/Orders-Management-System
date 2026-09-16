@@ -1,4 +1,5 @@
-import { OrderStatus, PaymentMethod, Prisma } from "@prisma/client";
+import { OrderStatus, PaymentMethod } from "@/types/enums";
+import type { Prisma } from "@prisma/client";
 
 /** Decimal-like type supporting numbers, strings, and Prisma Decimal instances */
 export type DecimalLike = number | string | Prisma.Decimal | { toNumber?: () => number; toString?: () => string };

@@ -33,7 +33,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { AssignDriverDialog } from "@/components/delivery/assign-driver-dialog";
-import { OrderStatus, DiscountStatus, PaymentMethod, CancelReason } from "@prisma/client";
+import { OrderStatus, DiscountStatus, PaymentMethod, CancelReason } from "@/types/enums";
 import { cn } from "@/lib/utils";
 
 interface OrderDetailsModalProps {

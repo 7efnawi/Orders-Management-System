@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { Clock, Flame, AlertTriangle } from "lucide-react";
-import { OrderStatus } from "@prisma/client";
+import { OrderStatus } from "@/types/enums";
 import { usePrepTimer } from "@/hooks/use-prep-timer";
 import { cn } from "@/lib/utils";
 

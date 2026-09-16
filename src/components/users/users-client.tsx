@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useFormatter, useTranslations } from "next-intl";
-import { Role } from "@prisma/client";
+import { Role } from "@/types/enums";
 import { toast } from "sonner";
 import {
   Users,

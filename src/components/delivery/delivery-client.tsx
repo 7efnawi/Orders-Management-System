@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { DriverType } from "@prisma/client";
+import { DriverType } from "@/types/enums";
 import {
   Bike,
   MapPin,

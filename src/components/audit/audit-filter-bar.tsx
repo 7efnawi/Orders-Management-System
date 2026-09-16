@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useTranslations } from "next-intl";
-import { AuditAction, Role } from "@prisma/client";
+import { AuditAction, type Role } from "@/types/enums";
 import {
   Search,
   Filter,

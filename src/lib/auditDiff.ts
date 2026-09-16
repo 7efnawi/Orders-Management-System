@@ -1,4 +1,4 @@
-import { AuditAction, Role } from "@prisma/client";
+import { AuditAction, Role } from "@/types/enums";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Phase 10: Audit Semantic Diff Engine & Pure Utilities (Client + Server Safe)

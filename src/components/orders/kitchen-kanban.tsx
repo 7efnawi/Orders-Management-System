@@ -29,7 +29,7 @@ import { PrepTimerBadge } from "./prep-timer-badge";
 import { AssignDriverOrder } from "@/components/delivery/assign-driver-dialog";
 import { PendingDiscountOrder } from "./discount-dialog";
 import { OrderRowItem } from "./orders-table";
-import { OrderStatus, DiscountStatus, Role } from "@prisma/client";
+import { OrderStatus, DiscountStatus, Role } from "@/types/enums";
 import { ALLOWED_TRANSITIONS } from "@/lib/orderStateMachine";
 import { cn } from "@/lib/utils";
 

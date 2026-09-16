@@ -22,7 +22,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PlatformBadge } from "@/components/ui/platform-badge";
-import { OrderStatus, Role } from "@prisma/client";
+import { OrderStatus, Role } from "@/types/enums";
 import { cn } from "@/lib/utils";
 import type { DashboardOverview } from "@/services/orders";
 

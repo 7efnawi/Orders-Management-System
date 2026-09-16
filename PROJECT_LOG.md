@@ -5,6 +5,22 @@
 
 ---
 
+## [2026-09-16] عزل تعدادات بريزما البرمجية لحل فشل بناء الإنتاج على Vercel (Client-Safe Enums & Browser Bundle Isolation)
+**النوع:** Bugfix, Architecture & Build Invariant
+**الدافع والمشكلة:**
+- أثناء بناء الإنتاج على Vercel (`next build`)، فشل التحزيم مع الخطأ:
+  `Module not found: Can't resolve '.prisma/client/index-browser'`
+  نتيجة محاولة Webpack تضمين `@prisma/client/index-browser.js` عند استيراد التعدادات (Enums) كقيم تشغيلية (Runtime JavaScript Values) داخل مكونات العميل (`"use client"`) أو المكتبات المشتركة مع المتصفح.
+**اللي اتعمل:**
+- إنشاء طبقة التعدادات الآمنة للمتصفح `src/types/enums.ts` التي تُصدّر كائنات JavaScript نقية (`as const`) مع أنواع TypeScript المتطابقة بنسبة 100% مع تعدادات بريزما السبعة: `Role`, `OrderStatus`, `PaymentMethod`, `DriverType`, `DiscountStatus`, `CancelReason`, `AuditAction`.
+- استبدال استيرادات `@prisma/client` في كافة مكونات الواجهة (`src/components/`), وخطافات React (`src/hooks/use-prep-timer.ts`), ومكتبات المنطق المشتركة (`src/lib/auditDiff.ts`, `src/lib/orderStateMachine.ts`, `src/lib/reports.ts`, `src/lib/closing.ts`).
+- تحويل أي استيراد لنماذج بريزما في المكتبات المشتركة إلى استيراد نوعي صريح (`import type { Prisma }`).
+- اجتياز جميع بوابات التحقق الإلزامية:
+  1. `npm run typecheck` (`tsc --noEmit`): 0 أخطاء.
+  2. `npm run build` (`next build` Turbopack): نجح البناء بالكامل وتوليد الـ 50 مساراً.
+  3. `npm run test:e2e`: نجاح 245 من أصل 245 اختباراً بنسبة 100%.
+**الملفات المتأثرة:** `src/types/enums.ts`, `src/components/**/*`, `src/hooks/use-prep-timer.ts`, `src/lib/auditDiff.ts`, `src/lib/orderStateMachine.ts`, `src/lib/reports.ts`, `src/lib/closing.ts`, `PROJECT_LOG.md`
+
 ## [2026-09-16] دمج المخططات البصرية والرسوم الهندسية داخل README.md الرئيسي (Visual Diagrams Integration in README)
 **النوع:** Documentation & Project Showcase
 **الدافع والمشكلة:**

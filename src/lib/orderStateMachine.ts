@@ -1,4 +1,4 @@
-import { OrderStatus, CancelReason, DriverType } from "@prisma/client";
+import { OrderStatus, CancelReason, DriverType } from "@/types/enums";
 
 export { OrderStatus };
 
