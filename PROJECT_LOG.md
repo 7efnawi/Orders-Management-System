@@ -5,6 +5,16 @@
 
 ---
 
+## [2026-09-16] تفعيل توليد عميل بريزما التلقائي لبيئة Vercel و CI/CD (Prisma Generate Automation)
+**النوع:** Build & DevOps Invariant
+**الدافع والمشكلة:**
+- في بيئات النشر السحابي النظيفة (مثل حاويات Vercel الخالية من الـ cache)، يجب التأكد من توليد ملفات عميل بريزما (`.prisma/client`) فور تثبيت الحزم وقبل بدء ترجمة Next.js لمنع أي أخطاء متعلقة بفقدان مكتبة العميل أو ملفات التوليد.
+**اللي اتعمل:**
+- إضافة سكربت `"postinstall": "prisma generate"` داخل `package.json` لضمان تشغيل التوليد آلياً بعد أي `npm install`.
+- تعديل سكربت البناء ليصبح `"build": "prisma generate && next build"` كضمانة مزدوجة حتى في حال تجاوز مرحلة التثبيت.
+- اجتياز فحص `npm run typecheck` بنجاح (0 أخطاء).
+**الملفات المتأثرة:** `package.json`, `PROJECT_LOG.md`
+
 ## [2026-09-16] عزل تعدادات بريزما البرمجية لحل فشل بناء الإنتاج على Vercel (Client-Safe Enums & Browser Bundle Isolation)
 **النوع:** Bugfix, Architecture & Build Invariant
 **الدافع والمشكلة:**
