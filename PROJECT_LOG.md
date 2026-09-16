@@ -5,6 +5,28 @@
 
 ---
 
+## [2026-09-16] المشغلات الموحدة للاختبارات وبوابة التحقق الشاملة (Task 22: Unified Test Runners & Full Quality Gate Suite)
+**النوع:** Test Architecture & CI Quality Gates (Red -> Green)
+**الدافع والمشكلة:**
+- استكمال المهمة الأخيرة 22 من الخطة الشاملة للاختبارات (Task 22: Unified Test Runner) بإنشاء مشغلات مركزية موحدة للأعمدة الخمسة (Logic Tests, Security Tests, Stress & Performance Tests, Browser E2E Tests) ودمجها بسلاسة في `package.json`.
+**اللي اتعمل:**
+- إنشاء مشغل اختبارات الأمان الموحد `tests/security/run-security.ts`:
+  - يشغل بالتتابع اختبارات اختراق الصلاحيات (`rbac-penetration.test.ts` - 64 اختبار) واختبارات الحصانة وعدم الحذف (`immutability.test.ts` - 6 اختبارات).
+- إنشاء مشغل اختبارات الإجهاد والأداء الموحد `tests/stress/run-stress.ts`:
+  - يشغل بالتتابع الفحص المالي العشوائي (`financial-fuzzer.test.ts` - 3 اختبارات / 10,000 طلب)، واختبار التزامن وقفل السباق (`concurrency.test.ts` - 10 طلبات متزامنة)، واختبارات قياس الأداء (`performance.test.ts` - 6 معايير NFR).
+- إنشاء المشغل الشامل للأعمدة الخمسة `tests/run-all-pillars.ts` وربطه بأمر `npm run test:all`:
+  - العمود 1: المنطق وانتقالات الحالات (`npm run test:e2e` — 245 اختبار منطقي).
+  - العمود 2: أمان واجهات البرمجة وفرض الصلاحيات والحصانة (`npm run test:security` — 70 اختبار أمان).
+  - العمود 3 و 4: التطابق المالي والتزامن والقياسات غير الوظيفية (`npm run test:stress` — 10 اختبارات إجهاد وتزامن وأداء).
+  - العمود 5: استجابة الشاشات والتابلت بالمتصفح الحقيقي (`npm run test:pw:tablet` — 4 اختبارات Playwright).
+- تحديث أوامر `package.json` بإضافة `test:security`, `test:stress`, `test:all`.
+- اجتياز بوابات الجودة بالكامل:
+  - تشغيل واجتياز `npm run test:security` بنسبة 100%.
+  - تشغيل واجتياز `npm run test:stress` بنسبة 100%.
+  - `npm run typecheck` (0 errors).
+  - `npm run test:e2e` (245/245 passed 100%).
+**الملفات المتأثرة:** `package.json`, `tests/security/run-security.ts`, `tests/stress/run-stress.ts`, `tests/run-all-pillars.ts`, `PROJECT_LOG.md`
+
 ## [2026-09-16] اختبارات قياس الأداء ومعايير الاستجابة غير الوظيفية (Task 21: NFR Performance Benchmarks)
 **النوع:** Performance Benchmarking & NFR Compliance Testing (Red -> Green)
 **الدافع والمشكلة:**
