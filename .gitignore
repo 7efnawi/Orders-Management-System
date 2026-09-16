@@ -40,3 +40,11 @@ next-env.d.ts
 test-results/
 playwright-report/
 blob-report/
+
+# Sensitive business data & spreadsheets
+*.xlsx
+*.xls
+*.csv
+*.tsv
+*مبيعات*
+docs/client-proposal*
