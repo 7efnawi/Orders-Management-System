@@ -5,6 +5,21 @@
 
 ---
 
+## [2026-09-16] دمج المخططات البصرية والرسوم الهندسية داخل README.md الرئيسي (Visual Diagrams Integration in README)
+**النوع:** Documentation & Project Showcase
+**الدافع والمشكلة:**
+- إبراز المعمارية الهندسية ومخططات سير العمل بصرياً داخل الصفحة الرئيسية للمستودع على GitHub لتمكين أي زائر أو مستثمر أو مهندس من فهم المنظومة التشغيلية وقواعد الأمان والتدقيق المالي بمجرد فتح المستودع.
+**اللي اتعمل:**
+- دمج مخططات C4 Level 1 (سياق النظام) و C4 Level 2 (الحاويات والطبقات) في قسم المعمارية.
+- إضافة قسم مخصص جديد: `Core Workflows & Operational Diagrams` يضم صور الرسوم البيانية عالية الدقة:
+  1. ماكينة حالات الطلب (Order State Machine Flow).
+  2. تسلسل أقفال بوستجريس الاستشارية في أوقات الذروة (Advisory Locking Sequence).
+  3. دورة التدفق الحسابي والصفرية المالية (Zero-Drift Financial Flow).
+  4. شاشة الكانبان ومراحل تحضير السوشي بالمطبخ (Kitchen Kanban Flow).
+- استبدال كود الـ ERD بصورة المخطط العلائقي الكامل عالي الدقة لقاعدة البيانات (Entity-Relationship — ERD).
+- تحديث فهرس المحتويات (Table of Contents) برابط مباشر للرسوم.
+**الملفات المتأثرة:** `README.md`, `PROJECT_LOG.md`
+
 ## [2026-09-16] الحزمة الهندسية والتوثيقية الشاملة ومخططات النظام (Comprehensive Engineering Documentation & Visual Blueprints)
 **النوع:** Architecture, Documentation & Quality Engineering (MD + Executive PDF)
 **الدافع والمشكلة:**

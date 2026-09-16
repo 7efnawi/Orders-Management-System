@@ -27,6 +27,7 @@
 - [Key Features](#-key-features)
 - [Tech Stack](#-tech-stack)
 - [Architecture](#-architecture)
+- [Workflows & Diagrams](#-core-workflows--operational-diagrams)
 - [Database Schema](#-database-schema)
 - [Getting Started](#-getting-started)
 - [Project Structure](#-project-structure)
@@ -122,6 +123,14 @@ Order Control System is a comprehensive web application designed to replace frag
 
 ## 🏗 Architecture
 
+### System Architecture Diagrams
+
+#### C4 Level 1: System Context
+![C4 Level 1 System Context](docs/Charts/C4%20Level%201%20System%20Context.png)
+
+#### C4 Level 2: Containers & Layered Architecture
+![C4 Level 2 Containers](docs/Charts/C4%20Level%202%20Containers.png)
+
 ### Strict Separation of Concerns
 
 ```
@@ -160,26 +169,35 @@ Order Control System is a comprehensive web application designed to replace frag
 
 ---
 
+## 🔄 Core Workflows & Operational Diagrams
+
+### 1. Order State Machine Flow
+Strict unidirectional progression from order creation to final delivery, with mandatory cancellation reasons and app fleet delivery fee zeroing:
+
+![Order State Machine](docs/Charts/Order%20State%20Machine.png)
+
+### 2. Rush Hour Concurrency & Advisory Locking Sequence
+How PostgreSQL advisory transaction locks (`pg_advisory_xact_lock`) eliminate race conditions and collisions during simultaneous order creations:
+
+![Advisory Lock Sequence](docs/Charts/Advisory%20Lock%20Sequence.png)
+
+### 3. Zero-Drift Financial Accounting Flow
+End-to-end financial calculation pipeline from item pricing up to the cash drawer closing reconciliation (`netCash = totalCash - totalExpenses`):
+
+![Zero-Drift Financial Flow](docs/Charts/Zero-Drift%20Financial%20Flow.png)
+
+### 4. Kitchen Kanban Line Flow
+Real-time preparation stages tracked on the kitchen expeditor tablet with overdue timer pulses:
+
+![Kitchen Kanban Flow](docs/Charts/Kitchen%20Kanban%20Flow.png)
+
+---
+
 ## 🗄 Database Schema
 
 **15 Models** with **7 Enums** managed by Prisma 7:
 
-```mermaid
-erDiagram
-    User ||--o{ Order : "creates as cashier"
-    User ||--o{ Shift : "opens/closes"
-    User ||--o{ AuditLog : "generates"
-    Brand ||--o{ Category : "has"
-    Brand ||--o{ Order : "receives"
-    Platform ||--o{ Order : "sourced from"
-    Category ||--o{ Product : "contains"
-    Customer ||--o{ Order : "places"
-    Order ||--o{ OrderItem : "contains"
-    Order }o--|| DeliveryZone : "delivers to"
-    Order }o--|| DeliveryDriver : "assigned to"
-    Shift ||--o| DailyClosing : "produces"
-    ExpenseType ||--o{ Expense : "categorizes"
-```
+![Entity-Relationship Diagram](docs/Charts/Entity-Relationship%20%E2%80%94%20ERD.png)
 
 ### Enums
 
