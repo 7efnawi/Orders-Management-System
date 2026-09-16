@@ -5,6 +5,15 @@
 
 ---
 
+## [2026-09-17] اعتماد سكربتات التثبيت الصريحة في npm (allowScripts Configuration)
+**النوع:** Build & Package Management Security
+**الدافع والمشكلة:**
+- في إصدارات npm الحديثة على بيئات CI/CD مثل Vercel، تظهر رسائل تحذيرية (`npm warn allow-scripts`) بخصوص الحزم التي تستخدم lifecycle scripts (مثل `@prisma/engines`, `prisma`, `esbuild`, `@swc/core`).
+**اللي اتعمل:**
+- تعريف كائن `allowScripts` صريحاً داخل `package.json` باعتماد السكربتات الخاصة بالحزم الأساسية الموثوقة للمشروع (`@prisma/engines`, `prisma`, `esbuild`, `@swc/core`, `@parcel/watcher`, `unrs-resolver`).
+- اجتياز بوابات الجودة `npm run typecheck` بنجاح (0 أخطاء).
+**الملفات المتأثرة:** `package.json`, `PROJECT_LOG.md`
+
 ## [2026-09-16] عزل حزم بريزما كحزم خادم خارجية صريحة في Next.js (serverExternalPackages Hardening)
 **النوع:** Build & Next.js Bundler Configuration
 **الدافع والمشكلة:**

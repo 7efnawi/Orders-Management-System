@@ -23,6 +23,14 @@
     "verify:phase7": "tsx scripts/verify-phase7.ts",
     "verify:phase11": "tsx scripts/verify-phase11.ts"
   },
+  "allowScripts": {
+    "@parcel/watcher": true,
+    "@prisma/engines": true,
+    "@swc/core": true,
+    "esbuild": true,
+    "prisma": true,
+    "unrs-resolver": true
+  },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",
     "@prisma/adapter-pg": "^7.10.0",
